@@ -1,0 +1,30 @@
+LXT2 info: dumpfile psAWG_tb.lxt opened for output.
+===== Single pass
+AWG TDATA at      530 (x:x): 000001f4        500 -- PASS
+AWG TDATA at     5580 (0:663): 000001f5        501 -- PASS
+AWG TDATA at    25580 (0:663): 000001f6        502 -- PASS
+AWG TDATA at    45580 (0:663): 000001f7        503 -- PASS
+AWG TDATA at    65580 (0:663): 000001f8        504 -- PASS
+AWG TDATA at    85580 (0:663): 000001f4        500 -- PASS
+===== Single pass rearm
+AWG TDATA at    90890 (1:1326): 000001f5        501 -- PASS
+AWG TDATA at   110890 (1:1326): 000001f6        502 -- PASS
+AWG TDATA at   130890 (1:1326): 000001f7        503 -- PASS
+AWG TDATA at   150890 (1:1326): 000001f8        504 -- PASS
+AWG TDATA at   170890 (1:1326): 000001f4        500 -- PASS
+===== Multi pass
+AWG TDATA at   171290 (1:1326): 000001f4        500 -- PASS
+AWG TDATA at   176300 (2:2003): 000001f5        501 -- PASS
+AWG TDATA at   196300 (2:2003): 000001f6        502 -- PASS
+AWG TDATA at   216300 (2:2003): 000001f7        503 -- PASS
+AWG TDATA at   236300 (2:2003): 000001f8        504 -- PASS
+AWG TDATA at   256300 (2:2003): 000001f4        500 -- PASS
+AWG TDATA at   276300 (2:2003): 000001f5        501 -- PASS
+AWG TDATA at   296300 (2:2003): 000001f6        502 -- PASS
+AWG TDATA at   316300 (2:2003): 000001f7        503 -- PASS
+AWG TDATA at   336300 (2:2003): 000001f8        504 -- PASS
+AWG TDATA at   356300 (2:2003): 000001f4        500 -- PASS
+AWG TDATA at   376300 (2:2003): 000001f5        501 -- PASS
+AWG TDATA at   396300 (2:2003): 000001f6        502 -- PASS
+AWG TDATA at   416300 (2:2003): 000001f7        503 -- PASS
+PASS

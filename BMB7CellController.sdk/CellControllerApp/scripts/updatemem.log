@@ -1,0 +1,19 @@
+#-----------------------------------------------------------
+# updatemem v2018.2.1 (64-bit)
+# SW Build 2288692 on Thu Jul 26 18:23:50 MDT 2018
+# 
+# Start of session at: Wed Mar  3 16:24:32 2021
+# Process ID: 22835
+# Current directory: /home/lxusers/w/wenorum/src/BMB7CellController/BMB7CellController.sdk/CellControllerApp/scripts
+# Command line: updatemem -mode batch -source /eda/xilinx/2018.2/SDK/2018.2/scripts/updatemem/main.tcl -notrace -tclargs -meminfo ../../CellController_hw_platform_0/CellController.mmi -data ../Release/CellControllerApp.elf -proc system_i/microblaze_0 -bit ../../CellController_hw_platform_0/CellController.bit -out ../../CellController_hw_platform_0/download.bit -force
+# Log file: /home/lxusers/w/wenorum/src/BMB7CellController/BMB7CellController.sdk/CellControllerApp/scripts/updatemem.log
+# Journal file: /home/lxusers/w/wenorum/src/BMB7CellController/BMB7CellController.sdk/CellControllerApp/scripts/updatemem.jou
+#-----------------------------------------------------------
+source /eda/xilinx/2018.2/SDK/2018.2/scripts/updatemem/main.tcl -notrace
+ Loading bitfile ../../CellController_hw_platform_0/CellController.bit
+Loading data files...
+Updating memory content...
+Creating bitstream...
+Writing bitstream ../../CellController_hw_platform_0/download.bit...
+  update_mem: Time (s): cpu = 00:00:10 ; elapsed = 00:00:15 . Memory (MB): peak = 933.305 ; gain = 427.469 ; free physical = 3267 ; free virtual = 37843
+INFO: [Common 17-206] Exiting updatemem at Wed Mar  3 16:24:48 2021...
