@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-2"><title>CellControllerConfiguration</title></head><body>
+<h1><a name="Introduction"></a>Introduction</h1>The scripts described in this document are part of 
+the cell controller source.&nbsp; To check the scripts out from the 
+repository at /hgrepos/BPM_CC/SDK use the command<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">hg clone /hgrepos/BPM_CC/SDK</span><br>
+</div>
+The scripts can then be reached by<br>
+<div style="margin-left: 40px;"><span style="font-family: monospace;">cd SDK/scripts</span><br>
+</div>
+The BMB7 scripts are one level deeper, in the the tools directory.<br>
+<br>
+<h1>Setting Cell Controller Network Parameters</h1>
+
+<ol>
+  <li>Set the switch on the front panel of the cell controller to 
+'CFG' which connects pin 1 and 9 of the PMOD A connector 
+(J13).&nbsp; This sets the IPv4 network address to 192.168.1.127 and the
+ ethernet MAC address to AA:BB:CC:DD:EE:FF.&nbsp; Pin 1 of the connector
+ is the one farthest from the edge of the board and the RJ45 connector (which means that pin 12 is nearest the RJ45 connector).<br>
+  </li>
+  <li>Connect the cell controller to a machine on the 192.168.1.0/24 network.</li>
+  <li>Power up the cell controller.</li>
+  <li>If the cell controller has already been assigned a proper ethernet
+ MAC address and must only be assigned an IPv4 network address then run:<br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; </span><span style="font-family: Courier New,Courier,monospace;">python program_spartan_6_configuration.py -t 192.168.1.127 -i </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">ww</span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">w.xxx.yyy.zzz</span></span><br>
+where <span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">www.xxx.yyy.zzz</span></span> is the IPv4 address for the cell controller to use.<br>
+If the controller needs both a proper ethernet MAC address and an IPv4 
+network address then run:<br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; </span><span style="font-family: Courier New,Courier,monospace;">python program_spartan_6_configuration.py </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-family: Courier New,Courier,monospace;">-t 192.168.1.127 -m</span> </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">uu:vv:ww:xx:yy</span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">:zz</span></span><span style="font-family: Courier New,Courier,monospace;"> -i </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">ww</span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">w.xxx.yyy.zzz</span></span><br>
+
+where <span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">uu:vv:ww:xx:yy</span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">:zz</span></span><span style="font-family: monospace;"> </span>is the ethernet MAC address and <span style="font-family: monospace;"></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">www.xxx.yyy.zzz</span></span> is the IPv4 address for the cell controller to use.<br>
+</li>
+<li>Power down the cell controller and disconnect it from the 192.168.1.0/24 network.</li>
+
+  <li>Move the switch on the front panel of the cell controller to 
+'OPR'.&nbsp; The cell controller is now ready for use with its new 
+network configuration.</li></ol>
+<p><br>
+</p>
+
+<h1>Remote JTAG<br>
+</h1>
+
+The Spartan6 on the BMB7 can act as a Xilinx JTAG programming pod.&nbsp;
+ To use this feature with the Vivado tools perform the following steps:<br>
+<ol>
+  <li>Start the 'virtual cable' script:<br>
+    <span style="font-family: Courier New,Courier,monospace;">python xilinx_virtual_cable.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span></li>
+  <li>In the Vivado Hardware Manager Tcl Console:<br>
+    <span style="font-family: Courier New,Courier,monospace;">connect_hw_server </span><span style="font-family: Courier New,Courier,monospace;"><br>
+    </span><span style="font-family: Courier New,Courier,monospace;">open_hw_target -xvc_url 127.0.0.1:2542</span></li>
+</ol>
+<p><span style="font-family: monospace;"><span style="font-family: serif;">If you have trouble getting this going make sure that t</span></span><span style="font-family: monospace;"><span style="font-family: serif;">here
+ is no hardware USB/JTAG pod connected to the computer running the 
+Xilinx tools and virtual cable script.&nbsp; The tools seem to get 
+confused when multiple programming options are available.&nbsp; They 
+also can get confused if more than one 'hw_server' process is 
+running.&nbsp; Use 'ps ax' to check for any of these and kill them 
+before trying the steps above.<br>
+    </span></span></p>
+<p><span style="font-family: monospace;"><span style="font-family: serif;">The </span></span>'virtual
+ cable' script in step one above must be terminated before running any 
+of the other python scripts mentioned below. <br>
+</p>
+<br>
+<h1>Updating Cell Controller Firmware</h1>
+<h2>&nbsp;Creating a boot image</h2>
+
+The cell controller boot image combines the FPGA firmware and the 
+embedded processor software.&nbsp; The image can be created from the 
+Vivado SDK using the "Create Boot Image" menu item or, more simply, by 
+running the following command from a Vivado shell in the cell controller
+ SDK <big><span style="font-family: monospace;">scripts</span></big> directory.<br>
+<div style="margin-left: 40px;"><span style="font-family: Courier New,Courier,monospace;">sh createBitfile.sh</span><span style="font-family: monospace;"> </span><br>
+</div>
+This script runs the Vivado updatemem program to create a boot image in the file <span style="font-family: Courier New,Courier,monospace;">../../CellController_hw_platform_0/download.bit</span>.<br>
+<h2>Loading a boot image into flash memory</h2>
+<p>To load a cell controller boot image into flash memory and arrange for it to become the bootable version run the <span style="font-family: Courier New,Courier,monospace;">flashImage.sh</span>
+ script with two arguments, namely the IP 
+address of the cell controller to be updated and  the boot image file to
+ be loaded into that cell controller's flash memory.&nbsp; For example, 
+assuming that the boot image is in the directory mentioned above:<span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-family: Courier New,Courier,monospace;">sh flashImage.sh </span><span style="font-family: Courier New,Courier,monospace;">128.3.12</span><span style="font-family: Courier New,Courier,monospace;">7.42 </span><span style="font-family: Courier New,Courier,monospace;">../../CellController_hw_platform_0/download.bit</span><span style="font-family: monospace;"><br>
+</span></p>The individual python scripts invoked by the flashImage.sh script are:<br>
+
+
+<ol>
+  <li>Determine the hash code associated with any image(s) in the BMB7 flash memory:<br>
+<span style="font-family: Courier New,Courier,monospace;">python list_kintex_7_images.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><br>
+Look for the list of hexadecimal values marked with SHA256.</li>
+<li>If the previous command identified a single hash code, erase that image using<br>
+  <span style="font-family: Courier New,Courier,monospace;">python erase_kintex_7_image.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"> -s </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;Hash Code&gt;</span></span><span style="font-family: monospace;"><span style="font-style: italic;"></span></span><br>
+The flashImage.sh script can't erase multiple images.&nbsp; If the list 
+in step 1 above contains more than one entry you'll have to run <span style="font-family: Courier New,Courier,monospace;">erase_kintex_7_image_table.py</span><span style="font-family: monospace;"> </span>to clear out the list.</li>
+<li>If step 2 erased an image, run <span style="font-family: Courier New,Courier,monospace;">list_kintex_7_images.py</span> again to confirm that the erase worked.</li>
+<li>Load the boot image into the flash memory:<br>
+  <span style="font-family: Courier New,Courier,monospace;">python add_kintex_7_image.py -t  </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"> -b </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;Boot Image File&gt;</span></span></li>
+<li>Determine the hash code associated with the image just loaded into the BMB7 flash memory:<br>
+
+  <span style="font-family: Courier New,Courier,monospace;">python list_kintex_7_images.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span></li>
+<li>Program that hash code as the one to boot:<br>
+  <span style="font-family: Courier New,Courier,monospace;">python program_spartan_6_configuration.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;"></span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;"></span></span><span style="font-family: Courier New,Courier,monospace;"></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-family: Courier New,Courier,monospace;"></span></span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;"></span></span><span style="font-family: Courier New,Courier,monospace;"> -s </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;Hash Code&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"></span><br>
+</li>
+
+</ol><h2>Downloading image to Kintex7</h2>
+
+<p>At the time of writing using the Vivado tools  (2015.4) to download 
+the Kintex7 image is quite slow.&nbsp; A much faster approach is to use 
+the following script:<br>&nbsp;
+&nbsp;&nbsp;&nbsp; <span style="font-family: Courier New,Courier,monospace;">python program_kintex_7.py -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"> -b </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;Boot Image File&gt;</span></span><span style="font-family: monospace;"><span style="font-style: italic;"></span></span><br>
+</p>
+<h2>Updating Spartan6 Firmware<br>
+</h2>
+
+<p>To update the flash memory with a new version of Spartan6 firmware:<span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp; </span><span style="font-family: Courier New,Courier,monospace;">py</span><span style="font-family: Courier New,Courier,monospace;">thon </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-family: Courier New,Courier,monospace;">program_spartan_6_image.py</span> -t </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;BMB7 IP Address&gt;</span></span><span style="font-family: Courier New,Courier,monospace;"> -b </span><span style="font-family: Courier New,Courier,monospace;"><span style="font-style: italic;">&lt;Boot Image File&gt;</span></span><br>
+</p>
+<p>The new firmware will take effect the next time that the board is powered up.<br>
+</p>
+<p><br>
+</p>
+
+<h1>BMB7 Indicator LEDs</h1>
+<p>There are six multi-color LEDs at the edge of the board furthest from
+ the QSFP connectors.&nbsp; The table below describes the values 
+indicated by these LEDs. &nbsp; The table begins with the LED nearest 
+the edge of the board and finishes with the LED nearest the center.<br>
+&nbsp;&nbsp;&nbsp; <br>
+</p>
+<table style="text-align: left; width: 650px; height: 235px; margin-left: 40px;" cellspacing="2" cellpadding="2" border="1">
+  <tbody>
+    <tr>
+      <td style="text-align: center;"><span style="font-weight: bold;">LED</span><br>
+      </td>
+      <td style="text-align: center;"><span style="font-weight: bold;">Description</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D6<br>
+      </td>
+      <td style="text-align: left;">Flashing green indicates presence of microcontroller system clock.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D2<br>
+      </td>
+      <td style="text-align: left;">Red indicates I<sup>2</sup>C boot failure.&nbsp; Green indicates I<sup>2</sup>C boot success.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D3<br>
+      </td>
+      <td style="text-align: left;">Flashing red: PROM configuration invalid, using defaults.<br>
+
+Flashing blue: Debug mode jumper attached, using defaults.<br>
+
+Flashing green: PROM configuration valid, using PROM settings.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D1<br>
+      </td>
+      <td style="text-align: left;">Green indicates that Spartan6 is out of reset.&nbsp; Flashing blue indicates UDP I/O in progress.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D5<br>
+      </td>
+      <td style="text-align: left;">Red &#8211; Not getting values from all 
+cell controllers.&nbsp; This indicates multiple failed cell controller 
+loop links or a failed cell controller.<br>
+
+Yellow &#8211; Getting values from all cell controllers, but not from all on
+ both links.&nbsp; This indicates a failed link somewhere in the cell 
+controller loop.<br>
+
+Green &#8211; Getting values from all cell controllers on both links.
+      </td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">D4<br>
+      </td>
+      <td style="text-align: left;">Red &#8211; Not getting values from all BPMs.&nbsp; This indicates multiple failed BPM loop links or a failed BPM.<br>
+Yellow &#8211; Getting values from all BPMs, but not from all on both 
+links.&nbsp; This indicates a failed link somewhere in the BPM loop.<br>
+Green &#8211; Getting values from all BPMs on both links.<br>
+Blinks blue on arrival of EVR heartbeat event.<br>
+</td>
+    </tr>
+  </tbody>
+</table>
+<p style="margin-left: 40px;"><br>
+</p>
+<h1>Other Indicators<br>
+</h1>
+<p>&nbsp;The green indicator LEDs in the 
+mezzanine card and pilot tone generator card RJ45 connectors light when 
+communication between the mezzanine card and the pilot tone generator 
+card has been established.</p>
+<p>The STATUS, REFMON and LD indicator LEDs 
+on the pilot tone generator card light when the corresponding pin of the
+ AD9520 PLL chip is low.&nbsp; If all LEDs are on it is an indication 
+that the pilot tone generator card is not receiving a reference clock 
+from the BMB7 or that the AD9520 has been disabled.&nbsp; All three LEDs
+ are off when the AD9520 has locked to the reference clock and is 
+producing a pilot tone.<br>
+</p>
+
+
+<ol>
+
+</ol>
+
+
+<ol>
+
+</ol>
+
+
+</body></html>

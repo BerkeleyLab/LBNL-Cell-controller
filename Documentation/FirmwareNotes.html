@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><title>Cell Controller Firmware</title></head><body>
+<h1>Introduction</h1>The communication protocol from BPMs to cell controllers and among cell controllers is Aurora 8B/10B, 3.125 Gb/s.<br>
+<br>
+The firmware to replicate the values from all the BPMs among all the 
+cell controllers is based on ‘Merge and Unique’ blocks which accept two 
+streams and merge them into one.&nbsp; Inside each block is a ‘received 
+packet’ bitmap and a ‘received packet’ counter.&nbsp; Each packet 
+contains the node number of the entity (BPM or cell controller, as 
+appropriate) which initiated that packet.&nbsp; The firmware in the 
+‘Merge and Unique’ block forwards a packet only if the corresponding bit
+ in the bitmap is clear.&nbsp; When a packet is forwarded the 
+corresponding bit in the bitmap is set and the counter is incremented.<br>
+<br>
+At the fast acquisition rate all cell controllers clear all the bitmaps 
+and counters.&nbsp; The BPM readout block awaits values from the local 
+BPMs.&nbsp; Once all these values have arrived a packet containing all 
+the deviations from the desired orbit is sent to the cell controller 
+communication block.<br>
+<br>
+The cell controller communication block accepts packets from the incoming Aurora links
+ and the local stream and forwards them to the alternate outgoing Aurora
+ links.&nbsp; Outgoing packets to each link are also merged and stored 
+in the local dual-port RAM.&nbsp; Once the number of packets forwarded 
+to the dual-port RAM reaches the number of cell controllers in the 
+system the dual-port RAM contents are made available to the fast orbit 
+feedback processing firmware.<br>
+<h1>Local BPM Readout</h1>
+The Aurora receiver blocks convert incoming 
+Aurora packets from the clockwise and counterclockwise links to AXI 
+streams.&nbsp; The two AXI streams are merged into one with data from a 
+particular BPM appearing only once.&nbsp; The values are stored in 
+block RAM until values from all locally-connected BPMs have been 
+received.&nbsp; The orbit setpoints are then subtracted and the results 
+sent as an AXI stream to the cell communication block.&nbsp; The raw 
+(before setpoint removal) BPM values are also sent to the Errant 
+Electron Beam Interlock blocks.<br>
+<div style="text-align: center;"><img style=" width: 689px; height: 217px;" alt="" src="FirmwareBPMreadout.svg"><br>
+<div style="text-align: justify;"><br>
+</div>
+
+</div>
+<h1>Errant Electron Beam Interlock</h1>
+Each cell controller contains two EEBI blocks.&nbsp; Each EEBI block subtracts an offset from two local BPM values and confirms 
+that the results are within a specified range.&nbsp; If this is not so, or if the 
+difference between the two results exceeds a specified range the 
+EEBI relay is opened and will remain so until the interlock is reset by manually activating 
+the front panel reset switch. The complete interlock state machine operation is as follows.<br>
+<ul>
+  <li>If the state is TRIPPED, remain there with the relay OPEN until the front panel reset switch is activated,<br>
+  </li>
+  <li>else, if the EEBI offsets or limits have not been received from the IOC, enter the UNCONFIGURED state with the relay OPEN,</li>
+  <li>else, if the beam current reading from the IOC is up-to-date and 
+the beam current is below threshold, enter the UNDERCURRENT state with 
+the relay CLOSED,</li>
+  <li>else, if the beam position readings are more than one fast 
+acquisition interval old, enter the TIMEOUT state with the relay OPEN,</li>
+  <li>else, if a beam position monitor ADC is clipping (input is out of range), enter the CLIPPING state with the relay OPEN,</li>
+  <li>else, if any beam position or beam trajectory is out of range, enter the TRIPPED state with the relay OPEN,</li>
+  <li>otherwise enter the ARMED state with the relay CLOSED.</li>
+</ul>
+<p>&nbsp;Thus the following occurs when the beam current reading from the IOC is late.<br>
+</p>
+<ul>
+  <li>If the state was UNDERCURRENT the state becomes:</li>
+  <ul>
+    <li>TIMEOUT if selected BPM readings are stale (non-latching fault),</li>
+    <li>CLIPPING if a BPM ADC is clipping (non-latching fault),</li>
+    <li>TRIPPED if any BPM value or trajectory is out of range (latching fault),</li>
+    <li>ARMED if none of the above three conditions are met,
+    </li>
+  </ul>
+  <li>otherwise the state remains the same, assuming that no other conditions changed.<br>
+  </li>
+</ul>
+<h1>Cell Communication</h1>
+The Aurora receiver blocks convert incoming Aurora packets from the 
+clockwise and counterclockwise links to AXI streams.&nbsp; Note that the
+ terms 'clockwise' and 'counterclockwise' refer to the physical fiber 
+links.&nbsp; Data flow in both directions on both links. &nbsp; Each of 
+the incoming AXI
+ streams is merged with the stream of local BPM offsets and 
+forwarded to following firmware only if the packet is from a cell 
+controller that has not been previously sent.&nbsp; Values from the CCW 
+link plus local stream are converted to Aurora packets and sent to the 
+CW cell link.&nbsp; Values from the CW link plus local stream are 
+converted to Aurora packets and sent to the CCW cell link.&nbsp; The CCW
+ plus local stream and CW plus local stream are merged and stored in 
+block RAM.&nbsp; When values from all cell controllers in the system 
+have been received the contents of this block RAM are used by the fast 
+orbit feedback computation block to determine the settings to be sent to
+ the power supplies for which this cell controller is responsible.<br>
+<div style="text-align: center;"><img style=" width: 644px; height: 455px;" alt="" src="FirmwareCellReadout.svg"><br>
+</div>
+
+<h1>Corrector Power Supply Setpoint Computation</h1>
+
+
+<p>Once the cell controller has received the beam positions from its 
+local beam position monitors, computed the deviations of those positions
+ from the desired location and received the deviations from desired 
+locations of the beam position monitors attached to all the other cell 
+controllers it computes the fast orbit feedback corrector currents using
+ the firmware outlined in the following subsections.&nbsp; The following
+ figure summarizes the operations carried to to determine the setpoint value to be sent to each corrector power supply.<br>
+</p>
+<p style="text-align: center;"><img style=" width: 80%; height: 283px;" alt="" src="DSP.svg"><br>
+</p>
+<p>The dot product result is a fixed-point representation with a resolution of 2<sup>-10</sup>
+ mA (976.5625 nA) per count.&nbsp; All subsequent computations until the
+ conversion to floating point Amperes are carried out in this 
+representation.&nbsp; The soft start/stop operation ramps the fast orbit
+ feedback gain between zero and the specified value (or back) over
+ about 100 ms.&nbsp; The dot product is 26 bits wide so the range is 
+about ±32.7 A.&nbsp; The multiplier product and subsequent blocks are 28 bits 
+wide for a range of about ±131 A.</p>
+<p>The soft start gain factor is held at 0 until all cell controllers 
+have indicated that their local FOFB enable status is asserted.&nbsp; A 
+cell controller's local FOFB enable status is asserted only when its <a href="EPICSnotes.html#FOFBenable">EPICS enable</a> is set, the beam current measurement from the IOC is up-to-date, and the beam current measurement from the IOC is above the <a href="EPICSnotes.html#EEBIthresh">EEBI threshold</a>.
+</p>
+
+
+<p></p>
+<h2>Inverse Sensitivity Matrix Multiplication</h2>
+<p>First a set of raw corrector currents is obtained by multiplying the vector of beam position deviations by the <a href="EPICSnotes.html#FOFB_Matrix">inverse 
+sensitivity matrix</a>,
+as shown in the following equation:</p>
+
+<p style="margin-left: 40px;">
+  <math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo>[</mo><mtable columnalign="center center center center center center center center" rowspacing="0.5ex" displaystyle="false"><mtr><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>0</mn><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>0</mn><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>0</mn><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>0</mn><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>0</mn><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>0</mn><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd></mtr><mtr><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>1</mn><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>1</mn><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mn>1</mn><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>1</mn><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>1</mn><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mn>1</mn><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd></mtr><mtr><mtd><mo>⋮</mo></mtd><mtd><mo>⋮</mo></mtd><mtd><mo>⋱</mo></mtd><mtd><mo>⋮</mo></mtd><mtd><mo>⋮</mo></mtd><mtd><mo>⋮</mo></mtd><mtd><mo>⋱</mo></mtd><mtd><mo>⋮</mo></mtd></mtr><mtr><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mi>N</mi><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mi>N</mi><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>x</mi><mrow><mi>N</mi><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mi>N</mi><mo>,</mo><mn>0</mn></mrow></msub></msub></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mi>N</mi><mo>,</mo><mn>1</mn></mrow></msub></msub></mtd><mtd><mo>⋯</mo></mtd><mtd><msub><mi>c</mi><msub><mi>y</mi><mrow><mi>N</mi><mo>,</mo><mn>511</mn></mrow></msub></msub></mtd></mtr><mtr><mtd></mtd></mtr></mtable><mo>]</mo></mrow><mo>⋅</mo><mrow><mo>[</mo><mtable columnalign="center" rowspacing="0.5ex" displaystyle="false"><mtr><mtd><msub><mi>Δ</mi><msub><mi>x</mi><mn>0</mn></msub></msub></mtd></mtr><mtr><mtd><msub><mi>Δ</mi><msub><mi>x</mi><mn>1</mn></msub></msub></mtd></mtr><mtr><mtd><mo>⋮</mo></mtd></mtr><mtr><mtd><msub><mi>Δ</mi><msub><mi>x</mi><mn>511</mn></msub></msub></mtd></mtr><mtr><mtd><msub><mi>Δ</mi><msub><mi>y</mi><mn>0</mn></msub></msub></mtd></mtr><mtr><mtd><msub><mi>Δ</mi><msub><mi>y</mi><mn>1</mn></msub></msub></mtd></mtr><mtr><mtd><mo>⋮</mo></mtd></mtr><mtr><mtd><msub><mi>Δ</mi><msub><mi>y</mi><mn>511</mn></msub></msub></mtd></mtr><mtr><mtd></mtd></mtr></mtable><mo>]</mo></mrow><mo>=</mo><mrow><mo>[</mo><mtable columnalign="center" rowspacing="0.5ex" displaystyle="false"><mtr><mtd><msub><mi>S</mi><mn>0</mn></msub></mtd></mtr><mtr><mtd><msub><mi>S</mi><mn>1</mn></msub></mtd></mtr><mtr><mtd><mo>⋮</mo></mtd></mtr><mtr><mtd><msub><mi>S</mi><mi>N</mi></msub></mtd></mtr><mtr><mtd></mtd></mtr></mtable><mo>]</mo></mrow></mrow><annotation encoding="TeX">\left[
+ \begin{array}{cccccccc}
+c_{x_{0,0}} &amp; c_{x_{0,1}} &amp; \cdots &amp; c_{x_{0,511}} &amp; 
+c_{y_{0,0}} &amp;  c_{y_{0,1}} &amp; \cdots &amp;  c_{y_{0,511}} \\
+c_{x_{1,0}} &amp; c_{x_{1,1}} &amp; \cdots &amp; c_{x_{1,511}} &amp; 
+c_{y_{1,0}} &amp;  c_{y_{1,1}} &amp; \cdots &amp;  c_{y_{1,511}} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \vdots 
+&amp; \ddots &amp; \vdots \\
+c_{x_{N,0}} &amp; c_{x_{N,1}} &amp; \cdots &amp; c_{x_{N,511}} &amp; 
+c_{y_{N,0}} &amp;  c_{y_{N,1}} &amp; \cdots &amp;  c_{y_{N,511}} \\
+\end{array} \right ]
+\cdot
+\left [ \begin{array}{c}
+\Delta_{x_{0}} \\
+\Delta_{x_{1}} \\
+\vdots \\
+\Delta_{x_{511}} \\
+\Delta_{y_{0}} \\
+\Delta_{y_{1}} \\
+\vdots \\
+\Delta_{y_{511}} \\
+\end{array} \right ]
+=
+\left [ \begin{array}{c}
+S_{0} \\
+S_{1} \\
+\vdots \\
+S_{N} \\
+\end{array} \right ]
+</annotation></semantics></math><br>
+</p>
+<p>The matrix multiplication takes about 5.2 µs to complete irrespective of the number of rows.&nbsp; The 
+entire 1024 elements of the vector and of each row of the matrix always 
+take part in the computation.&nbsp; Missing beam position monitors are 
+handled simply by setting the corresponding matrix elements to zero.<span style="font-weight: bold;"><br>
+</span></p>
+<p><span style="font-weight: bold;"></span>The coefficient matrix elements are 32 bit two's complement
+ integers scaled from a range of [-1,1) A/µm so the least-significant bit of each element corresponds 
+to a value of 2<sup>-31</sup> A/µm.&nbsp; The position deviation vector values have units of nm so the products of each term have a resolution of 2<sup>-31</sup>
+ mA.&nbsp; The least significant 16 bits are discarded before being sent
+ to the dot product accumulators and the least significant five bits of 
+the accumulators are discarded leaving a 32 bit two's complement product
+ vector with a resolution of 2<sup>-10</sup> mA per count.<br>
+</p>
+<h2>Filtering</h2>
+<p>Each element of the raw corrector current vector is passed through a 
+1000 tap FIR filter.&nbsp; Each filter has its own set of 1000
+programmable <a href="EPICSnotes.html#FOFB_FIRnn">coefficients</a> with range [-1,1).&nbsp; The filter 
+computation takes about 5.2 µs to complete irrespective of the number of
+ correctors.&nbsp; If the sum of the coefficients for a given filter is 1.0 then that
+filter will have unity DC gain and the result will have a resolution of 2<sup>-10</sup>
+ mA per count, the same as the result of the inverse sensitivity matrix 
+multiplication.&nbsp; <br>
+</p><h2>Gain</h2>
+<p>The filter outputs are multiplied by a per-supply <a href="EPICSnotes.html#FOFBgains">gain factor</a> before 
+being added to the slow orbit feedback offsets.&nbsp; Gain factor values
+ are in the range [0,16).<br>
+</p>
+<h2>Fast Feedback Clipping</h2>
+
+
+
+The scaled filter output may <a href="EPICSnotes.html#ffbLimits">clipped</a> to some range before 
+being summed with the offset provided by the slow orbit feedback system.<br>
+
+
+<h2>Slow orbit feedback offset<br>
+</h2>
+
+The scaled and clipped filter outputs are added to values set by the slow orbit feedback system.<br>
+<h2>Clipping</h2>
+
+
+The summation result may <a href="EPICSnotes.html#psLimits">clipped</a> to some range before 
+being sent to the supplies. <br>
+<br>
+<br>
+<p>
+</p>&nbsp;
+
+
+<br>
+</body></html>
