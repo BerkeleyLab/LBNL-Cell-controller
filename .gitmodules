@@ -1,0 +1,3 @@
+[submodule "gateware/submodules/bedrock"]
+	path = gateware/submodules/bedrock
+	url = https://github.com/BerkeleyLab/Bedrock.git
