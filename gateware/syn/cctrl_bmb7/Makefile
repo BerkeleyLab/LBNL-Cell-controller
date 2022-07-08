@@ -1,5 +1,6 @@
 HARDWARE = bmb7
 PROJECT_PART = xc7k160tffg676-2
+PROJECT_BOARD = none
 XILINX_TOOL := VIVADO
 FPGA_VENDOR := xilinx
 FPGA_APPLICATION := cctrl
@@ -100,6 +101,7 @@ IP_CORES_DIRS += $(evr_mgt_gtx_DIR) $(fixToFloat_DIR) $(floatMultiply_DIR) $(flo
 IP_CORES_XDCS += $(evr_mgt_gtx_TOP:%.v=%.xdc) $(floatResultFIFO_TOP:%.v=%.xdc) $(fofbPCS_PMA_with_shared_logic_TOP:%.v=%.xdc) $(fofbPCS_PMA_without_shared_logic_TOP:%.v=%.xdc) $(linkStatisticsMux_DIR/linkStatisticsMux_clocks.xdc)
 IP_CORES_XCIS += $(evr_mgt_gtx_DIR)/evr_mgt_gtx.xci $(fixToFloat_DIR)/fixToFloat.xci $(floatMultiply_DIR)/floatMultiply.xci $(floatResultFIFO_DIR)/floatResultFIFO.xci $(floatToDouble_DIR)/floatToDouble.xci $(fofbCoefficientMul_DIR)/fofbCoefficientMul.xci $(fofbFIRplusIntegral_DIR)/fofbFIRplusIntegral.xci $(fofbFixToFloat_DIR)/fofbFixToFloat.xci $(fofbGainMultiplier_DIR)/fofbGainMultiplier.xci $(fofbIntegralFixToFloat_DIR)/fofbIntegralFixToFloat.xci $(fofbIntegralMultiplier_DIR)/fofbIntegralMultiplier.xci $(fofbPCS_PMA_with_shared_logic_DIR)/fofbPCS_PMA_with_shared_logic.xci $(fofbPCS_PMA_without_shared_logic_DIR)/fofbPCS_PMA_without_shared_logic.xci $(fofbReadLinksMux_DIR)/fofbReadLinksMux.xci $(fofbSupplyFilter_DIR)/fofbSupplyFilter.xci $(forwardCellLinkMux_DIR)/forwardCellLinkMux.xci $(linkStatisticsMux_DIR)/linkStatisticsMux.xci $(psSetpointCalcConvertToAmps_DIR)/psSetpointCalcConvertToAmps.xci $(psSetpointCalcFixToFloat_DIR)/psSetpointCalcFixToFloat.xci $(readBPMlinksMux_DIR)/readBPMlinksMux.xci $(readOldBPMs_DoubleToFloat_DIR)/readOldBPMs_DoubleToFloat.xci $(readOldBPMs_FIFO_DIR)/readOldBPMs_FIFO.xci $(readOldBPMs_Fix_DIR)/readOldBPMs_Fix.xci $(readOldBPMs_Multiply_DIR)/readOldBPMs_Multiply.xci
 IP_CORES_SRCS_DIRS = $(IP_CORES_DIRS)
+IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /hdl, $(IP_CORES_DIRS))
 
@@ -216,14 +218,14 @@ vpath %.sh $(GW_SCRIPTS_DIR)
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file'
 
-# vivado -mode batch -nojou -nolog -source 
-# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/project_proc.tcl 
-# prop.tcl ipcores_repos.tcl prio_xci_files.tcl 
-# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/vivado_project.tcl 
+# vivado -mode batch -nojou -nolog -source
+# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/project_proc.tcl
+# prop.tcl ipcores_repos.tcl prio_xci_files.tcl
+# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/vivado_project.tcl
 # -tclargs zcu208 bpm_zcu208_top "" system_top.xdc prop.tcl ipcores_repos.tcl prio_xci_files.tcl ../../top/bpm_zcu208/bpm_zcu208_top.v
 
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/gpioIDX.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 # Generate bundled .xdc from other .xdc. Don't change the order of the
 # prerequisites as we need constraints in the order specified
@@ -234,13 +236,14 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(IP_CORES_XDCS) $(SYSTEM_TOP_TIM_XDC)
 %firmwareBuildDate.v: set_firmware_build_date.tcl
 	$(VIVADO_CMD) -source $< -tclargs $@
 
-%gpioIDX.v: $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/config.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
-	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
+# Unused here
+# %gpioIDX.v: $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/config.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
+# 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
 
 # TO-DO: review
-# ipcores_repos.tcl:
-# 	sed -e 's|$$DIRS|$(IP_CORES_CUSTOM_TARGET_DIRS)|g' \
-# 		ipcores_repos.tcl.in > $@
+ipcores_repos.tcl:
+	sed -e 's|$$DIRS|$(IP_CORES_CUSTOM_TARGET_DIRS)|g' \
+		ipcores_repos.tcl.in > $@
 
 # prio_xci_files.tcl: ila_td256_s4096_cap.xci
 # 	sed -e 's|$$XCI_FILES|$<|g' \
@@ -256,7 +259,7 @@ vpath %.bd $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 # FIXME: Is there an easier way to do this?
 .SECONDEXPANSION:
 $(IP_CORES_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).xci
-	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/ip_core_proc.tcl $(GW_SCRIPTS_DIR)/gen_ip_core.tcl -tclargs $< $(PROJECT_PART)
+	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/ip_core_proc.tcl $(GW_SCRIPTS_DIR)/gen_ip_core.tcl -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD)
 	# fix line-continuation between (* *) attribute that iverilog doesn't understand
 	# from: https://catonmat.net/sed-one-liners-explained-part-one,
 	# 39. Append a line to the next if it ends with a backslash "\".
@@ -267,7 +270,7 @@ $(IP_CORES_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).xci
 	(find $($(basename $(notdir $@))_DIR) -mindepth 1 -maxdepth 1 -not \( -name \*rfs.v \) -name "*.v" -exec echo "-l"'{}' \; || true) >> $($(basename $(notdir $@))_VFLAGS_COMMAND_FILE)
 
 $(BD_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).bd
-	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd.tcl -tclargs $< $(PROJECT_PART) $(IP_CORES_CUSTOM_TARGET_DIRS)
+	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd.tcl -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
 
 # clean generate IP cores files, but the source ones (.xci or .bd)
 clean::
