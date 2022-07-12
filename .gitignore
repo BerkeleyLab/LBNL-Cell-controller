@@ -145,6 +145,7 @@ work/
 axi_lite_generic_reg
 evr_axi
 bmb7_udp
+drp_bridge
 
 # Makefile-generated
 *system_top.xdc
