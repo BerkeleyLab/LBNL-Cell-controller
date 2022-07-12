@@ -3,6 +3,7 @@ PROJECT_PART = xc7k160tffg676-2
 PROJECT_BOARD = none
 XILINX_TOOL := VIVADO
 FPGA_VENDOR := xilinx
+FPGA_PLATFORM := 7series
 FPGA_APPLICATION := cctrl
 
 CMD_SEP = ;
@@ -26,14 +27,11 @@ vpath %.v $(TOP_LVL_DIR)
 vpath %.xdc $(TOP_LVL_DIR)
 
 VIVADO_SYNTH_EXTRA_TCL = prop.tcl ipcores_repos.tcl prio_xci_files.tcl
-# TO-DO review
-# VIVADO_SYNTH_EXTRA_TCL = prop.tcl
 
 include $(BUILD_DIR)/top_rules.mk
 
 # ignore xilinx primitives
-# TO-DO review
-# UNISIM_CRAP += '-e GTYE4_CHANNEL|MMCME4_ADV'
+UNISIM_CRAP += -e 'GTXE2_CHANNEL|MMCME2_ADV'
 
 # Top level files for depedency tracking
 SYSTEM_TOP_PINS_XDC = $(TARGET)_top_pins.xdc
@@ -42,72 +40,70 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 # ip_cores generation scripts/names
 
 # custom ip_cores that requires packaging
-# TO-DO review
-# include $(MODULES_DIR)/evr_axi_rules.mk
-# include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
+include $(MODULES_DIR)/evr_axi_rules.mk
+include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply
-evr_mgt_gtx_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/evr_mgt_gtx
+evr_mgt_gtx_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/evr_mgt_gtx
 evr_mgt_gtx_TOP = $(evr_mgt_gtx_DIR)/evr_mgt_gtx.v
-fixToFloat_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fixToFloat
+fixToFloat_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fixToFloat
 fixToFloat_TOP = $(fixToFloat_DIR)/synth/fixToFloat.v
-floatMultiply_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/floatMultiply
+floatMultiply_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/floatMultiply
 floatMultiply_TOP = $(floatMultiply_DIR)/synth/floatMultiply.v
-floatResultFIFO_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/floatResultFIFO
+floatResultFIFO_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/floatResultFIFO
 floatResultFIFO_TOP = $(floatResultFIFO_DIR)/synth/floatResultFIFO.vhd
-floatToDouble_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/floatToDouble
+floatToDouble_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/floatToDouble
 floatToDouble_TOP = $(floatToDouble_DIR)/synth/floatToDouble.v
-fofbCoefficientMul_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbCoefficientMul
+fofbCoefficientMul_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbCoefficientMul
 fofbCoefficientMul_TOP = $(fofbCoefficientMul_DIR)/synth/fofbCoefficientMul.vhd
-fofbFIRplusIntegral_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbFIRplusIntegral
+fofbFIRplusIntegral_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbFIRplusIntegral
 fofbFIRplusIntegral_TOP = $(fofbFIRplusIntegral_DIR)/synth/fofbFIRplusIntegral.v
-fofbFixToFloat_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbFixToFloat
+fofbFixToFloat_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbFixToFloat
 fofbFixToFloat_TOP = $(fofbFixToFloat_DIR)/synth/fofbFixToFloat.v
-fofbGainMultiplier_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbGainMultiplier
+fofbGainMultiplier_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbGainMultiplier
 fofbGainMultiplier_TOP = $(fofbGainMultiplier_DIR)/synth/fofbGainMultiplier.v
-fofbIntegralFixToFloat_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbIntegralFixToFloat
+fofbIntegralFixToFloat_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbIntegralFixToFloat
 fofbIntegralFixToFloat_TOP = $(fofbIntegralFixToFloat_DIR)/synth/fofbIntegralFixToFloat.v
-fofbIntegralMultiplier_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbIntegralMultiplier
+fofbIntegralMultiplier_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbIntegralMultiplier
 fofbIntegralMultiplier_TOP = $(fofbIntegralMultiplier_DIR)/synth/fofbIntegralMultiplier.v
-fofbPCS_PMA_with_shared_logic_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbPCS_PMA_with_shared_logic
+fofbPCS_PMA_with_shared_logic_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbPCS_PMA_with_shared_logic
 fofbPCS_PMA_with_shared_logic_TOP = $(fofbPCS_PMA_with_shared_logic_DIR)/synth/fofbPCS_PMA_with_shared_logic.v
-fofbPCS_PMA_without_shared_logic_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbPCS_PMA_without_shared_logic
+fofbPCS_PMA_without_shared_logic_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbPCS_PMA_without_shared_logic
 fofbPCS_PMA_without_shared_logic_TOP = $(fofbPCS_PMA_without_shared_logic_DIR)/synth/fofbPCS_PMA_without_shared_logic.v
-fofbReadLinksMux_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbReadLinksMux
+fofbReadLinksMux_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbReadLinksMux
 fofbReadLinksMux_TOP = $(fofbReadLinksMux_DIR)/synth/fofbReadLinksMux.v
-fofbSupplyFilter_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/fofbSupplyFilter
+fofbSupplyFilter_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/fofbSupplyFilter
 fofbSupplyFilter_TOP = $(fofbSupplyFilter_DIR)/synth/fofbSupplyFilter.vhd
-forwardCellLinkMux_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/forwardCellLinkMux
+forwardCellLinkMux_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/forwardCellLinkMux
 forwardCellLinkMux_TOP = $(forwardCellLinkMux_DIR)/synth/forwardCellLinkMux.v
-linkStatisticsMux_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/linkStatisticsMux
+linkStatisticsMux_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/linkStatisticsMux
 linkStatisticsMux_TOP = $(linkStatisticsMux_DIR)/synth/linkStatisticsMux.v
-psSetpointCalcConvertToAmps_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/psSetpointCalcConvertToAmps
+psSetpointCalcConvertToAmps_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/psSetpointCalcConvertToAmps
 psSetpointCalcConvertToAmps_TOP = $(psSetpointCalcConvertToAmps_DIR)/synth/psSetpointCalcConvertToAmps.v
-psSetpointCalcFixToFloat_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/psSetpointCalcFixToFloat
+psSetpointCalcFixToFloat_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/psSetpointCalcFixToFloat
 psSetpointCalcFixToFloat_TOP = $(psSetpointCalcFixToFloat_DIR)/synth/psSetpointCalcFixToFloat.v
-readBPMlinksMux_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/readBPMlinksMux
+readBPMlinksMux_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/readBPMlinksMux
 readBPMlinksMux_TOP = $(readBPMlinksMux_DIR)/synth/readBPMlinksMux.v
-readOldBPMs_DoubleToFloat_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/readOldBPMs_DoubleToFloat
+readOldBPMs_DoubleToFloat_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/readOldBPMs_DoubleToFloat
 readOldBPMs_DoubleToFloat_TOP = $(readOldBPMs_DoubleToFloat_DIR)/synth/readOldBPMs_DoubleToFloat.v
-readOldBPMs_FIFO_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/readOldBPMs_FIFO
+readOldBPMs_FIFO_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/readOldBPMs_FIFO
 readOldBPMs_FIFO_TOP = $(readOldBPMs_FIFO_DIR)/synth/readOldBPMs_FIFO.v
-readOldBPMs_Fix_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/readOldBPMs_Fix
+readOldBPMs_Fix_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/readOldBPMs_Fix
 readOldBPMs_Fix_TOP = $(readOldBPMs_Fix_DIR)/synth/readOldBPMs_Fix.v
-readOldBPMs_Multiply_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/readOldBPMs_Multiply
+readOldBPMs_Multiply_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/readOldBPMs_Multiply
 readOldBPMs_Multiply_TOP = $(readOldBPMs_Multiply_DIR)/synth/readOldBPMs_Multiply.v
 
 IP_CORES_TOP_LVL_SRCS += $(evr_mgt_gtx_TOP) $(fixToFloat_TOP) $(floatMultiply_TOP) $(floatResultFIFO_TOP) $(floatToDouble_TOP) $(fofbCoefficientMul_TOP) $(fofbFIRplusIntegral_TOP) $(fofbFixToFloat_TOP) $(fofbGainMultiplier_TOP) $(fofbIntegralFixToFloat_TOP) $(fofbIntegralMultiplier_TOP) $(fofbPCS_PMA_with_shared_logic_TOP) $(fofbPCS_PMA_without_shared_logic_TOP) $(fofbReadLinksMux_TOP) $(fofbSupplyFilter_TOP) $(forwardCellLinkMux_TOP) $(linkStatisticsMux_TOP) $(psSetpointCalcConvertToAmps_TOP) $(psSetpointCalcFixToFloat_TOP) $(readBPMlinksMux_TOP) $(readOldBPMs_DoubleToFloat_TOP) $(readOldBPMs_FIFO_TOP) $(readOldBPMs_Fix_TOP) $(readOldBPMs_Multiply_TOP)
 IP_CORES_DIRS += $(evr_mgt_gtx_DIR) $(fixToFloat_DIR) $(floatMultiply_DIR) $(floatResultFIFO_DIR) $(floatToDouble_DIR) $(fofbCoefficientMul_DIR) $(fofbFIRplusIntegral_DIR) $(fofbFixToFloat_DIR) $(fofbGainMultiplier_DIR) $(fofbIntegralFixToFloat_DIR) $(fofbIntegralMultiplier_DIR) $(fofbPCS_PMA_with_shared_logic_DIR) $(fofbPCS_PMA_without_shared_logic_DIR) $(fofbReadLinksMux_DIR) $(fofbSupplyFilter_DIR) $(forwardCellLinkMux_DIR) $(linkStatisticsMux_DIR) $(psSetpointCalcConvertToAmps_DIR) $(psSetpointCalcFixToFloat_DIR) $(readBPMlinksMux_DIR) $(readOldBPMs_DoubleToFloat_DIR) $(readOldBPMs_FIFO_DIR) $(readOldBPMs_Fix_DIR) $(readOldBPMs_Multiply_DIR)
 IP_CORES_XDCS += $(evr_mgt_gtx_TOP:%.v=%.xdc) $(floatResultFIFO_TOP:%.v=%.xdc) $(fofbPCS_PMA_with_shared_logic_TOP:%.v=%.xdc) $(fofbPCS_PMA_without_shared_logic_TOP:%.v=%.xdc) $(linkStatisticsMux_DIR/linkStatisticsMux_clocks.xdc)
-IP_CORES_XCIS += $(evr_mgt_gtx_DIR)/evr_mgt_gtx.xci $(fixToFloat_DIR)/fixToFloat.xci $(floatMultiply_DIR)/floatMultiply.xci $(floatResultFIFO_DIR)/floatResultFIFO.xci $(floatToDouble_DIR)/floatToDouble.xci $(fofbCoefficientMul_DIR)/fofbCoefficientMul.xci $(fofbFIRplusIntegral_DIR)/fofbFIRplusIntegral.xci $(fofbFixToFloat_DIR)/fofbFixToFloat.xci $(fofbGainMultiplier_DIR)/fofbGainMultiplier.xci $(fofbIntegralFixToFloat_DIR)/fofbIntegralFixToFloat.xci $(fofbIntegralMultiplier_DIR)/fofbIntegralMultiplier.xci $(fofbPCS_PMA_with_shared_logic_DIR)/fofbPCS_PMA_with_shared_logic.xci $(fofbPCS_PMA_without_shared_logic_DIR)/fofbPCS_PMA_without_shared_logic.xci $(fofbReadLinksMux_DIR)/fofbReadLinksMux.xci $(fofbSupplyFilter_DIR)/fofbSupplyFilter.xci $(forwardCellLinkMux_DIR)/forwardCellLinkMux.xci $(linkStatisticsMux_DIR)/linkStatisticsMux.xci $(psSetpointCalcConvertToAmps_DIR)/psSetpointCalcConvertToAmps.xci $(psSetpointCalcFixToFloat_DIR)/psSetpointCalcFixToFloat.xci $(readBPMlinksMux_DIR)/readBPMlinksMux.xci $(readOldBPMs_DoubleToFloat_DIR)/readOldBPMs_DoubleToFloat.xci $(readOldBPMs_FIFO_DIR)/readOldBPMs_FIFO.xci $(readOldBPMs_Fix_DIR)/readOldBPMs_Fix.xci $(readOldBPMs_Multiply_DIR)/readOldBPMs_Multiply.xci
+IP_CORES_XCIS += evr_mgt_gtx.xci fixToFloat.xci floatMultiply.xci floatResultFIFO.xci floatToDouble.xci fofbCoefficientMul.xci fofbFIRplusIntegral.xci fofbFixToFloat.xci fofbGainMultiplier.xci fofbIntegralFixToFloat.xci fofbIntegralMultiplier.xci fofbPCS_PMA_with_shared_logic.xci fofbPCS_PMA_without_shared_logic.xci fofbReadLinksMux.xci fofbSupplyFilter.xci forwardCellLinkMux.xci linkStatisticsMux.xci psSetpointCalcConvertToAmps.xci psSetpointCalcFixToFloat.xci readBPMlinksMux.xci readOldBPMs_DoubleToFloat.xci readOldBPMs_FIFO.xci readOldBPMs_Fix.xci readOldBPMs_Multiply.xci
 IP_CORES_SRCS_DIRS = $(IP_CORES_DIRS)
 IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /hdl, $(IP_CORES_DIRS))
 
-# TO-DO: review. is the inclusion of just the system.bd enough? will everything else get generated?
 BD += system
-system_DIR = $(PLATFORM_BMB7_CCTRL_DIR)/system
+system_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system
 system_TOP = $(system_DIR)/synth/system.v
 
 BD_TOP_LVL_SRCS += $(system_TOP)
@@ -130,12 +126,16 @@ VFLAGS_DEP += -y$(ISERDES_DIR)
 VFLAGS_DEP += -y$(XILINX_DIR)
 VFLAGS_DEP += -y$(SERIAL_IO_DIR)
 VFLAGS_DEP += -y$(PERIPH_DRIVERS_DIR)
+VFLAGS_DEP += -y$(PERIPH_DRIVERS_DIR)/i2cbridge
 VFLAGS_DEP += -y$(HOMELESS_DIR)
+VFLAGS_DEP += -y$(BADGER_DIR)
+VFLAGS_DEP += -y$(BADGER_DIR)/tests
 
 # Local directories for searching
 VFLAGS_DEP += -y.
 VFLAGS_DEP += -y$(MODULES_DIR)
 VFLAGS_DEP += -y$(TOP_LVL_DIR)
+VFLAGS_DEP += -y$(PLATFORM_7SERIES_MGT_DIR)
 VFLAGS_DEP += $(addprefix -y, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -y, $(BD_SRCS_DIRS))
 
@@ -150,39 +150,36 @@ VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
 # does not match the module name, which is the case for Xilinx ip cores.
 # As we don't exactly know the names of the sources, create a file with
 # the switches that will be consumed by iverilog later
-evr_mgt_gtx_VFLAGS_COMMAND_FILE = evr_mgt_gtx.txt
-fixToFloat_VFLAGS_COMMAND_FILE = fixToFloat.txt
-floatMultiply_VFLAGS_COMMAND_FILE = floatMultiply.txt
-floatResultFIFO_VFLAGS_COMMAND_FILE = floatResultFIFO.txt
-floatToDouble_VFLAGS_COMMAND_FILE = floatToDouble.txt
-fofbCoefficientMul_VFLAGS_COMMAND_FILE = fofbCoefficientMul.txt
-fofbFIRplusIntegral_VFLAGS_COMMAND_FILE = fofbFIRplusIntegral.txt
-fofbFixToFloat_VFLAGS_COMMAND_FILE = fofbFixToFloat.txt
-fofbGainMultiplier_VFLAGS_COMMAND_FILE = fofbGainMultiplier.txt
-fofbIntegralFixToFloat_VFLAGS_COMMAND_FILE = fofbIntegralFixToFloat.txt
-fofbIntegralMultiplier_VFLAGS_COMMAND_FILE = fofbIntegralMultiplier.txt
-fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE = fofbPCS_PMA_with_shared_logic.txt
-fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE = fofbPCS_PMA_without_shared_logic.txt
-fofbReadLinksMux_VFLAGS_COMMAND_FILE = fofbReadLinksMux.txt
-fofbSupplyFilter_VFLAGS_COMMAND_FILE = fofbSupplyFilter.txt
-forwardCellLinkMux_VFLAGS_COMMAND_FILE = forwardCellLinkMux.txt
-linkStatisticsMux_VFLAGS_COMMAND_FILE = linkStatisticsMux.txt
-psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE = psSetpointCalcConvertToAmps.txt
-psSetpointCalcFixToFloat_VFLAGS_COMMAND_FILE = psSetpointCalcFixToFloat.txt
-readBPMlinksMux_VFLAGS_COMMAND_FILE = readBPMlinksMux.txt
-readOldBPMs_DoubleToFloat_VFLAGS_COMMAND_FILE = readOldBPMs_DoubleToFloat.txt
-readOldBPMs_FIFO_VFLAGS_COMMAND_FILE = readOldBPMs_FIFO.txt
-readOldBPMs_Fix_VFLAGS_COMMAND_FILE = readOldBPMs_Fix.txt
-readOldBPMs_Multiply_VFLAGS_COMMAND_FILE = readOldBPMs_Multiply.txt
-
+evr_mgt_gtx_VFLAGS_COMMAND_FILE = evr_mgt_gtx_iverilog_cfile.txt
+fixToFloat_VFLAGS_COMMAND_FILE = fixToFloat_iverilog_cfile.txt
+floatMultiply_VFLAGS_COMMAND_FILE = floatMultiply_iverilog_cfile.txt
+floatResultFIFO_VFLAGS_COMMAND_FILE = floatResultFIFO_iverilog_cfile.txt
+floatToDouble_VFLAGS_COMMAND_FILE = floatToDouble_iverilog_cfile.txt
+fofbCoefficientMul_VFLAGS_COMMAND_FILE = fofbCoefficientMul_iverilog_cfile.txt
+fofbFIRplusIntegral_VFLAGS_COMMAND_FILE = fofbFIRplusIntegral_iverilog_cfile.txt
+fofbFixToFloat_VFLAGS_COMMAND_FILE = fofbFixToFloat_iverilog_cfile.txt
+fofbGainMultiplier_VFLAGS_COMMAND_FILE = fofbGainMultiplier_iverilog_cfile.txt
+fofbIntegralFixToFloat_VFLAGS_COMMAND_FILE = fofbIntegralFixToFloat_iverilog_cfile.txt
+fofbIntegralMultiplier_VFLAGS_COMMAND_FILE = fofbIntegralMultiplier_iverilog_cfile.txt
+fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE = fofbPCS_PMA_with_shared_logic_iverilog_cfile.txt
+fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE = fofbPCS_PMA_without_shared_logic_iverilog_cfile.txt
+fofbReadLinksMux_VFLAGS_COMMAND_FILE = fofbReadLinksMux_iverilog_cfile.txt
+fofbSupplyFilter_VFLAGS_COMMAND_FILE = fofbSupplyFilter_iverilog_cfile.txt
+forwardCellLinkMux_VFLAGS_COMMAND_FILE = forwardCellLinkMux_iverilog_cfile.txt
+linkStatisticsMux_VFLAGS_COMMAND_FILE = linkStatisticsMux_iverilog_cfile.txt
+psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE = psSetpointCalcConvertToAmps_iverilog_cfile.txt
+psSetpointCalcFixToFloat_VFLAGS_COMMAND_FILE = psSetpointCalcFixToFloat_iverilog_cfile.txt
+readBPMlinksMux_VFLAGS_COMMAND_FILE = readBPMlinksMux_iverilog_cfile.txt
+readOldBPMs_DoubleToFloat_VFLAGS_COMMAND_FILE = readOldBPMs_DoubleToFloat_iverilog_cfile.txt
+readOldBPMs_FIFO_VFLAGS_COMMAND_FILE = readOldBPMs_FIFO_iverilog_cfile.txt
+readOldBPMs_Fix_VFLAGS_COMMAND_FILE = readOldBPMs_Fix_iverilog_cfile.txt
+readOldBPMs_Multiply_VFLAGS_COMMAND_FILE = readOldBPMs_Multiply_iverilog_cfile.txt
 
 VFLAGS_COMMAND_FILE += \
 	$(evr_mgt_gtx_VFLAGS_COMMAND_FILE) \
 	$(fixToFloat_VFLAGS_COMMAND_FILE) \
 	$(floatMultiply_VFLAGS_COMMAND_FILE) \
-	$(floatResultFIFO_VFLAGS_COMMAND_FILE) \
 	$(floatToDouble_VFLAGS_COMMAND_FILE) \
-	$(fofbCoefficientMul_VFLAGS_COMMAND_FILE) \
 	$(fofbFIRplusIntegral_VFLAGS_COMMAND_FILE) \
 	$(fofbFixToFloat_VFLAGS_COMMAND_FILE) \
 	$(fofbGainMultiplier_VFLAGS_COMMAND_FILE) \
@@ -191,7 +188,6 @@ VFLAGS_COMMAND_FILE += \
 	$(fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE) \
 	$(fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE) \
 	$(fofbReadLinksMux_VFLAGS_COMMAND_FILE) \
-	$(fofbSupplyFilter_VFLAGS_COMMAND_FILE) \
 	$(forwardCellLinkMux_VFLAGS_COMMAND_FILE) \
 	$(linkStatisticsMux_VFLAGS_COMMAND_FILE) \
 	$(psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE) \
@@ -201,6 +197,9 @@ VFLAGS_COMMAND_FILE += \
 	$(readOldBPMs_FIFO_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_Fix_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_Multiply_VFLAGS_COMMAND_FILE)
+# $(floatResultFIFO_VFLAGS_COMMAND_FILE) \
+# $(fofbCoefficientMul_VFLAGS_COMMAND_FILE) \
+# $(fofbSupplyFilter_VFLAGS_COMMAND_FILE) \
 
 VFLAGS_DEP += $(addprefix -c, $(VFLAGS_COMMAND_FILE))
 
@@ -216,14 +215,7 @@ vpath %.sh $(GW_SCRIPTS_DIR)
 
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
-# prerequisites as well as a system_top.xdc file'
-
-# vivado -mode batch -nojou -nolog -source
-# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/project_proc.tcl
-# prop.tcl ipcores_repos.tcl prio_xci_files.tcl
-# /home/cb/Work/LBNL/projects/gitlab/alsu-digitizers/gateware/ip_cores/bedrock//build-tools/vivado_tcl/vivado_project.tcl
-# -tclargs zcu208 bpm_zcu208_top "" system_top.xdc prop.tcl ipcores_repos.tcl prio_xci_files.tcl ../../top/bpm_zcu208/bpm_zcu208_top.v
-
+# prerequisites as well as a system_top.xdc file
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS)
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
@@ -236,18 +228,16 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(IP_CORES_XDCS) $(SYSTEM_TOP_TIM_XDC)
 %firmwareBuildDate.v: set_firmware_build_date.tcl
 	$(VIVADO_CMD) -source $< -tclargs $@
 
-# Unused here
-# %gpioIDX.v: $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/config.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
-# 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
+%gpioIDX.v: $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
+	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
 
-# TO-DO: review
 ipcores_repos.tcl:
 	sed -e 's|$$DIRS|$(IP_CORES_CUSTOM_TARGET_DIRS)|g' \
 		ipcores_repos.tcl.in > $@
 
-# prio_xci_files.tcl: ila_td256_s4096_cap.xci
-# 	sed -e 's|$$XCI_FILES|$<|g' \
-# 		prio_xci_files.tcl.in > $@
+prio_xci_files.tcl: ila_td256_s4096_cap.xci
+	sed -e 's|$$XCI_FILES|$<|g' \
+		prio_xci_files.tcl.in > $@
 
 # ip_cores commands. Keep track only of the top-level. If this changed or doesn't
 # exist regenerate eveything. Otherwise, consider this up to date
@@ -281,6 +271,8 @@ clean::
 include $(BUILD_DIR)/bottom_rules.mk
 
 CLEAN += *.bit
+CLEAN += *.bin
+CLEAN += *.prm
 CLEAN += system_top.xdc
 CLEAN += $(TOP_LVL_DIR)/firmwareBuildDate.v
 CLEAN += $(TOP_LVL_DIR)/gpioIDX.v
