@@ -1,0 +1,61 @@
+stages:
+  - prepare
+  - gateware
+  - software
+
+variables:
+  XILINX_VIVADO: /non-free/Xilinx/Vivado_and_Vitis/2020.2/Vivado/2020.2
+  XILINX_VITIS: /non-free/Xilinx/Vivado_and_Vitis/2020.2/Vitis/2020.2
+  CI_REGISTRY: mohs.dhcp.lbl.gov
+  CONTAINER_IMAGE: $CI_REGISTRY/xilinx_env
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: normal
+
+image: $CONTAINER_IMAGE:$CI_COMMIT_REF_NAME
+
+services:
+  - name: mohs.dhcp.lbl.gov/docker:20.10.12-dind
+    command: ["--insecure-registry", "mohs.dhcp.lbl.gov"]
+    alias: docker
+
+include:
+  - local: .gitlab/ci/build-image.gitlab-ci.yml
+
+# Gateware jobs
+# Gitlab doesn't seem to suport the usage of variables in
+# a "dependencies" or "needs" statement. So, unroll the job
+# description, as to simplify job descriptions
+gw_cctrl_bmb7:
+  before_script:
+    - cd gateware/syn/cctrl_bmb7 && ls /non-free
+  stage: gateware
+  script:
+    - make clean && PATH=$XILINX_VIVADO/bin:$PATH time make cctrl_bmb7_top.bit
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    expire_in: 7 days
+    paths:
+      - gateware/syn/cctrl_bmb7/cctrl_bmb7_top.bit
+      - gateware/syn/cctrl_bmb7/_xilinx/cctrl_bmb7_top/*.runs/impl_1/*.rpt
+      - gateware/syn/cctrl_bmb7/system.xsa
+
+# Software jobs
+# Gitlab doesn't seem to suport the usage of variables in
+# a "dependencies" or "needs" statement. So, unroll the job
+# description...
+sw_cctrl_bmb7:
+  before_script:
+    - cd software/app/cctrl
+  stage: software
+  script:
+    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH time make TARGET=cctrl_bmb7
+  # Get artifacts from this job, needed to compile the sofware
+  needs:
+    - job: gw_cctrl_bmb7
+      artifacts: true
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    expire_in: 7 days
+    paths:
+      - software/app/cctrl/cctrl_bmb7.elf
