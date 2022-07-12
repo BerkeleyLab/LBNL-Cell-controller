@@ -49,4 +49,5 @@ evr_axi: $(evr_axi_SRCS)
 	$(VIVADO_CREATE_IP) $@ $($@_TARGET) $($@_VERSION) $^
 	touch $@
 
+CLEAN += evr_axi
 CLEAN_DIRS += $(evr_axi_TARGET)

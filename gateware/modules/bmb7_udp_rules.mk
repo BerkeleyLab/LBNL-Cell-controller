@@ -17,4 +17,5 @@ bmb7_udp: $(bmb7_udp_SRCS)
 	$(VIVADO_CREATE_IP) $@ $($@_TARGET) $($@_VERSION) $^
 	touch $@
 
+CLEAN += bmb7_udp
 CLEAN_DIRS += $(bmb7_udp_TARGET)
