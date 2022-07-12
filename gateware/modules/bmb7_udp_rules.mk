@@ -6,7 +6,7 @@ __bmb7_udp_SRCS = \
 	rx8b9b.v \
 	tx8b9b.v
 bmb7_udp_SRCS = $(addprefix $(bmb7_udp_DIR)/, $(__bmb7_udp_SRCS))
-bmb7_udp_VERSION = 1.0
+bmb7_udp_VERSION = 1.1
 bmb7_udp_TARGET = _gen/bmb7_udp
 
 # For top-level makefile
