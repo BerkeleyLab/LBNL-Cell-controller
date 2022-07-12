@@ -42,6 +42,7 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 # custom ip_cores that requires packaging
 include $(MODULES_DIR)/evr_axi_rules.mk
 include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
+include $(MODULES_DIR)/bmb7_udp_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply
 evr_mgt_gtx_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/evr_mgt_gtx
