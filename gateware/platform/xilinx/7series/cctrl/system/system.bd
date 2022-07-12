@@ -1531,7 +1531,7 @@
       </spirit:componentInstance>
       <spirit:componentInstance>
         <spirit:instanceName>axi_lite_generic_reg</spirit:instanceName>
-        <spirit:componentRef spirit:library="user" spirit:name="axi_lite_generic_reg" spirit:vendor="LBNL" spirit:version="2.0"/>
+        <spirit:componentRef spirit:library="user" spirit:name="axi_lite_generic_reg" spirit:vendor="lbl.gov" spirit:version="2.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_axi_lite_generic_reg_0_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_ADDR_WIDTH">8</spirit:configurableElementValue>
