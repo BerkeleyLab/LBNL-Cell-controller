@@ -24,7 +24,7 @@ SW_SRC_DIR     	   = $(SOFTWARE_DIR)/src
 SW_APP_DIR         = $(SOFTWARE_DIR)/app
 
 # Cell Controller Software
-SW_CCTRL_DIR         = $(SW_APP_DIR)/cctrl
+SW_CCTRL_APP_DIR     = $(SW_APP_DIR)/cctrl
 SW_CCTRL_SCRIPTS_DIR = $(SW_BPM_DIR)/scripts
 
 include $(BEDROCK_DIR)/dir_list.mk
