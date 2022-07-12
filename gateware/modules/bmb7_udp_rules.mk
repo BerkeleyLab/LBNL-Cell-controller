@@ -1,8 +1,8 @@
 bmb7_udp_DIR = $(MODULES_DIR)/bmb7_udp
 __bmb7_udp_SRCS = \
 	UDPport.v \
-	bmb7_udp_v1_0.v \
-	bmb7_udp_v1_0_S_AXI.v \
+	bmb7_udp.v \
+	bmb7_udp_S_AXI.v \
 	rx8b9b.v \
 	tx8b9b.v
 bmb7_udp_SRCS = $(addprefix $(bmb7_udp_DIR)/, $(__bmb7_udp_SRCS))
