@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module bmb7_udp_v1_0 #
+	module bmb7_udp #
 	(
 		// Users to add parameters here
         parameter RX_DBG = "false",
@@ -50,14 +50,14 @@
 		input wire  s_axi_rready
 	);
 // Instantiation of Axi Bus Interface S_AXI
-	bmb7_udp_v1_0_S_AXI # ( 
+	bmb7_udp_S_AXI # (
         .RX_DBG(RX_DBG),
         .TX_DBG(TX_DBG),
         .RX8_DBG(RX8_DBG),
         .TX8_DBG(TX8_DBG),
 		.C_S_AXI_DATA_WIDTH(C_S_AXI_DATA_WIDTH),
 		.C_S_AXI_ADDR_WIDTH(C_S_AXI_ADDR_WIDTH)
-	) bmb7_udp_v1_0_S_AXI_inst (
+	) bmb7_udp_S_AXI_inst (
 		.bitClk(bitClk),
         .bitClk4x(bitClk4x),
         .serialRx(serialRx),
