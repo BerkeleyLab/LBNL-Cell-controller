@@ -10,7 +10,12 @@ IP_CORES_CUSTOM += drp_bridge
 IP_CORES_CUSTOM_TARGET_DIRS += $(drp_bridge_TARGET)
 
 drp_bridge: $(drp_bridge_SRCS)
-	$(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/lbl_ip.tcl -source $(drp_bridge_DIR)/prop.tcl $(BUILD_DIR)/vivado_tcl/create_ip.tcl -tclargs $@ $($@_TARGET) $($@_VERSION) $^
+	$(VIVADO_CMD) \
+		-source $(BUILD_DIR)/vivado_tcl/lbl_ip.tcl \
+		-source $(drp_bridge_DIR)/prop.tcl \
+		-source $(drp_bridge_DIR)/ip_bus.tcl \
+		$(BUILD_DIR)/vivado_tcl/create_ip.tcl \
+		-tclargs $@ $($@_TARGET) $($@_VERSION) $^
 	touch $@
 
 CLEAN += drp_bridge
