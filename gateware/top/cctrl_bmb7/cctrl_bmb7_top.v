@@ -719,7 +719,7 @@ wire pilotToneReference;
 OBUFDS pilotToneRefBuf(.I(pilotToneReference),
                     .O(PILOT_TONE_REFCLK_P), .OB(PILOT_TONE_REFCLK_N));
 
-pilotToneReference # ( 
+pilotToneReference # (
     .DIRECT_OUTPUT_ENABLE(PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE),
     .DEBUG("false"))
   pilotToneRef(
