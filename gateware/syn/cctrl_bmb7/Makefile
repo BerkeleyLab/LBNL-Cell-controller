@@ -31,7 +31,7 @@ VIVADO_SYNTH_EXTRA_TCL = prop.tcl ipcores_repos.tcl prio_xci_files.tcl
 include $(BUILD_DIR)/top_rules.mk
 
 # ignore xilinx primitives
-UNISIM_CRAP += -e 'GTXE2_CHANNEL|MMCME2_ADV'
+UNISIM_CRAP += -e 'FDP|OBUFT|GTXE2_CHANNEL|GTXE2_COMMON|MMCME2_ADV'
 
 # Top level files for depedency tracking
 SYSTEM_TOP_PINS_XDC = $(TARGET)_top_pins.xdc
@@ -137,7 +137,7 @@ VFLAGS_DEP += -y$(BADGER_DIR)/tests
 VFLAGS_DEP += -y.
 VFLAGS_DEP += -y$(MODULES_DIR)
 VFLAGS_DEP += -y$(TOP_LVL_DIR)
-VFLAGS_DEP += -y$(PLATFORM_7SERIES_MGT_DIR)
+VFLAGS_DEP += -y$(PLATFORM_7SERIES_DIR)
 VFLAGS_DEP += $(addprefix -y, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -y, $(BD_SRCS_DIRS))
 
