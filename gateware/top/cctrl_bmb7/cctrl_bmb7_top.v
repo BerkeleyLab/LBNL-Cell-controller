@@ -828,6 +828,7 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .TxData(consoleTxD),
                    .RxData(consoleRxD));
 
+`ifndef SIMULATE
 //////////////////////////////////////////////////////////////////////////////
 // Block design (MicroBlaze)
 
@@ -961,5 +962,6 @@ wire DUMMY_UART_LOOPBACK;
         .GPIO_IN(GPIO_IN_FLATTENED),
         .GPIO_OUT(GPIO_OUT),
         .GPIO_STROBES(GPIO_STROBES));
-        
+`endif // `ifndef SIMULATE
+
 endmodule
