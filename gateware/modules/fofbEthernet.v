@@ -30,7 +30,7 @@ module fofbEthernet #(
     input  wire                  ETH_REF_N, ETH_REF_P,
     input  wire                  ETH_RX_N, ETH_RX_P,
     output wire                  ETH_TX_N, ETH_TX_P,
-    
+
     output reg  [AXIS_WIDTH-1:0] sysRx_M_AXIS_TDATA,
     output reg             [7:0] sysRx_M_AXIS_TUSER,
     output reg                   sysRx_M_AXIS_TVALID = 0);
@@ -100,6 +100,7 @@ if (PCS_PMA_SHARED_LOGIC_IN_CORE == "true") begin
   wire gt0_qplloutrefclklost_out;
   assign eth_gmii_rxd = 8'h00;
   assign eth_gmii_rx_dv = 1'b0;
+`ifndef SIMULATE
   fofbPCS_PMA_with_shared_logic PCS_PMA (
   .gtrefclk_p(ETH_REF_P),          // input wire gtrefclk_p
   .gtrefclk_n(ETH_REF_N),          // input wire gtrefclk_n
@@ -134,6 +135,7 @@ if (PCS_PMA_SHARED_LOGIC_IN_CORE == "true") begin
   .gt0_qplloutclk_out(gt0_qplloutclk_out), // output wire gt0_qplloutclk_out
   .gt0_qplloutrefclk_out(gt0_qplloutrefclk_out) // output wire gt0_qplloutrefclk_out
   );
+`endif
   assign ethClk = userclk2_out;
   assign pcs_pma_shared = { gtrefclk_out,
                             gtrefclk_bufg_out,
@@ -161,6 +163,7 @@ else begin
   wire gt0_qplloutclk_in    = pcs_pma_shared[1];
   wire gt0_qplloutrefclk_in = pcs_pma_shared[0];
   assign ethClk = userclk2;
+`ifndef SIMULATE
   fofbPCS_PMA_without_shared_logic PCS_PMA (
   .gtrefclk_bufg(gtrefclk_bufg),   // input wire gtrefclk_bufg
   .gtrefclk(gtrefclk),             // input wire gtrefclk
@@ -197,6 +200,7 @@ else begin
   .gt0_qplloutclk_in(gt0_qplloutclk_in), // input wire gt0_qplloutclk_in
   .gt0_qplloutrefclk_in(gt0_qplloutrefclk_in) // input wire gt0_qplloutrefclk_in
   );
+`endif
 end
 endgenerate
 
