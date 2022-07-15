@@ -146,6 +146,7 @@ wire mergedFOFBenabled = mergedTUSER[0];
 localparam LINK_CCW = 1'b0, LINK_CW = 1'b1;
 localparam ST_SUCCESS = 2'd0;
 
+`ifndef SIMULATE
 fofbReadLinksMux fofbReadLinksMux (
     .ACLK(auClk),
     .ARESETN(~auReset),
@@ -167,6 +168,7 @@ fofbReadLinksMux fofbReadLinksMux (
     .M00_AXIS_TUSER(mergedTUSER),
     .S00_ARB_REQ_SUPPRESS(1'b0),
     .S01_ARB_REQ_SUPPRESS(1'b0));
+`endif
 
 //
 // Forward link packet counts to system clock domain

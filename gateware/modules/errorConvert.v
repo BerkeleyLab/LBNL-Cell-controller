@@ -23,6 +23,7 @@ always @(posedge clk) begin
 end
 assign status = { 24'h0, empty, 2'h0, swap, 4'h0 };
 
+`ifndef SIMULATE
 fixToFloat errorFixToFloat (
   .aclk(clk),                        // input wire aclk
   .s_axis_a_tvalid(writeStrobe),     // input wire s_axis_a_tvalid
@@ -45,11 +46,13 @@ floatToDouble errorFloatToDouble (
   .s_axis_a_tdata(productValue),      // input wire [31 : 0] s_axis_a_tdata
   .m_axis_result_tvalid(doubleValid), // output wire m_axis_result_tvalid
   .m_axis_result_tdata(doubleValue)); // output wire [63 : 0] m_axis_result_tdata
+`endif
 
 assign fifoIn = swap ? { doubleValue[7:0],   doubleValue[15:8],
                          doubleValue[23:16], doubleValue[31:24],
                          doubleValue[39:32], doubleValue[47:40],
                          doubleValue[55:48], doubleValue[63:56] } : doubleValue;
+`ifndef SIMULATE
 floatResultFIFO errorResultFIFO (
   .clk(clk),                        // input wire clk
   .srst(csrStrobe & writeData[1]),  // input wire srst
@@ -59,5 +62,6 @@ floatResultFIFO errorResultFIFO (
   .dout({resultHi, resultLo}),      // output wire [63 : 0] dout
   .full(),                          // output wire full
   .empty(empty));                   // output wire empty
+`endif
 
 endmodule

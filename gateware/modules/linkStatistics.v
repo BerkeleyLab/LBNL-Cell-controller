@@ -28,6 +28,7 @@ module linkStatistics #(
 (* mark_debug = dbg *) wire [7:0] mergedTDATA;
 (* mark_debug = dbg *) wire       mergedTVALID;
 (* mark_debug = dbg *) reg        mergedTREADY = 0;
+`ifndef SIMULATE
 linkStatisticsMux linkStatisticsMux (
   .ACLK(auroraUserClk),
   .ARESETN(1'b1),
@@ -56,6 +57,7 @@ linkStatisticsMux linkStatisticsMux (
   .S01_ARB_REQ_SUPPRESS(1'b0),
   .S02_ARB_REQ_SUPPRESS(1'b0),
   .S03_ARB_REQ_SUPPRESS(1'b0));
+`endif
 
 
 // Statistics histogram dual-port RAM

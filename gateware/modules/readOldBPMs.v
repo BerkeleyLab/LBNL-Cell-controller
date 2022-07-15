@@ -8,19 +8,19 @@ module readOldBPMs #(
     parameter DEBUG = "false"
     ) (
     input  wire                clk,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     input  wire                indexStrobe,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     input  wire                dataStrobe,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     input  wire         [31:0] gpioOut,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     output wire                fifoTVALID,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     output wire         [63:0] fifoTDATA,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     output wire          [6:0] fifoTUSER,
-    (* mark_debug = DEBUG *) 
+    (* mark_debug = DEBUG *)
     input  wire                fifoTREADY);
 
 localparam FOFB_INDEX_WIDTH = 9;
@@ -34,6 +34,7 @@ end
 wire                   floatTVALID;
 wire            [31:0] floatTDATA;
 wire [TUSER_WIDTH-1:0] floatTUSER;
+`ifndef SIMULATE
 readOldBPMs_DoubleToFloat doubleToFloat (
     .aclk(clk),
     .s_axis_a_tvalid(dataStrobe),
@@ -42,11 +43,13 @@ readOldBPMs_DoubleToFloat doubleToFloat (
     .m_axis_result_tvalid(floatTVALID),
     .m_axis_result_tdata(floatTDATA),
     .m_axis_result_tuser(floatTUSER));
+`endif
 
 // Convert single precision mm to single precision nm
 wire                   productTVALID;
 wire            [31:0] productTDATA;
 wire [TUSER_WIDTH-1:0] productTUSER;
+`ifndef SIMULATE
 readOldBPMs_Multiply multiply (
     .aclk(clk),
     .s_axis_a_tvalid(floatTVALID),
@@ -57,11 +60,13 @@ readOldBPMs_Multiply multiply (
     .m_axis_result_tvalid(productTVALID),
     .m_axis_result_tdata(productTDATA),
     .m_axis_result_tuser(productTUSER));
+`endif
 
 // Convert single precision nm to integer nm
 (* mark_debug = DEBUG *) wire                   nmTVALID;
 (* mark_debug = DEBUG *) wire            [31:0] nmTDATA;
 (* mark_debug = DEBUG *) wire [TUSER_WIDTH-1:0] nmTUSER;
+`ifndef SIMULATE
 readOldBPMs_Fix fix (
     .aclk(clk),
     .s_axis_a_tvalid(productTVALID),
@@ -70,6 +75,7 @@ readOldBPMs_Fix fix (
     .m_axis_result_tvalid(nmTVALID),
     .m_axis_result_tdata(nmTDATA),
     .m_axis_result_tuser(nmTUSER));
+`endif
 
 // Latch X data
 reg [31:0] xLatch;
@@ -82,6 +88,7 @@ end
 // Buffer values
 // A 16-deep FIFO is adequate since that's the
 // most that can be in a single cPCI packet.
+`ifndef SIMULATE
 readOldBPMs_FIFO fifo (
     .s_axis_aresetn(1'b1),
     .s_axis_aclk(clk),
@@ -92,5 +99,6 @@ readOldBPMs_FIFO fifo (
     .m_axis_tready(fifoTREADY),
     .m_axis_tdata(fifoTDATA),
     .m_axis_tuser(fifoTUSER));
+`endif
 
 endmodule

@@ -89,7 +89,7 @@ reg fofbReadoutActive_d, fofbReadoutValid_d = 0;
 (*mark_debug=FIR_DEBUG*) reg sumValid = 0;
 localparam FAKE_DATA_COUNTER_WIDTH = 12;
 reg [FAKE_DATA_COUNTER_WIDTH-1:0] fakeDataCounter = 0;
-              
+
 always @(posedge clk) begin
     fofbReadoutActive_d <= fofbReadoutActive;
     fofbReadoutValid_d <= fofbReadoutValid;
@@ -187,6 +187,7 @@ fofbDataDPRAM #(.DATA_WIDTH(COEFFICIENT_WIDTH)) coefficientDPRAMY (
 // Multiply position error by coefficient
 wire [PRODUCT_WIDTH-1:0] productY, productX;
 (*mark_debug=MAT_DBG*)reg[ACCUMULATOR_WIDTH-1:0]accumulatorY, accumulatorX;
+`ifndef SIMULATE
 fofbCoefficientMul mulX (.CLK(clk),
                          .A(xVal),
                          .B(coefficientX),
@@ -195,6 +196,7 @@ fofbCoefficientMul mulY (.CLK(clk),
                          .A(yVal),
                          .B(coefficientY),
                          .P(productY));
+`endif
 
 // Accumulate dot product
 localparam SUM_WIDTH = ACCUMULATOR_WIDTH + 1;
@@ -242,6 +244,7 @@ assign fir_reload_TLAST = coefficientWritePlane;
 (*mark_debug=FIR_DBG*) wire fir_config_TVALID;
 assign fir_config_TDATA = coefficientWriteValue[7:0];
 assign fir_config_TVALID = firConfigStrobe && (coefficientWriteRow == r);
+`ifndef SIMULATE
 fofbSupplyFilter fir (
   .aclk(clk),
   .s_axis_data_tvalid(fir_S_TVALID),
@@ -258,6 +261,7 @@ fofbSupplyFilter fir (
   .m_axis_data_tdata(fir_M_TDATA),
   .event_s_reload_tlast_missing(fir_reload_tlast_missing[r]),
   .event_s_reload_tlast_unexpected(fir_reload_tlast_unexpected[r]));
+`endif
 
 // FIR is configured to have output value contain some bits of fraction
 // since this makes the output a multiple of 8 bits as required by AXI.
