@@ -117,6 +117,10 @@ BD_SRCS_DIRS += $(addsuffix /hdl, $(BD_DIRS))
 
 BD_bds = $(addsuffix .bd, $(BD))
 
+# Add ethernet-core rules, paths
+include $(MODULES_DIR)/aggregate_rules.mk
+vpath %.v $(CORE_DIR) $(CRC_DIR)
+
 # For iverilog to search for dependencies
 
 # Bedrock directories for searching
@@ -132,6 +136,10 @@ VFLAGS_DEP += -y$(PERIPH_DRIVERS_DIR)/i2cbridge
 VFLAGS_DEP += -y$(HOMELESS_DIR)
 VFLAGS_DEP += -y$(BADGER_DIR)
 VFLAGS_DEP += -y$(BADGER_DIR)/tests
+
+# Ethernet core directories for searching
+VFLAGS_DEP += -y$(CORE_DIR)
+VFLAGS_DEP += -y$(CRC_DIR)
 
 # Local directories for searching
 VFLAGS_DEP += -y.
@@ -219,7 +227,7 @@ vpath %.sh $(GW_SCRIPTS_DIR)
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 # Generate bundled .xdc from other .xdc. Don't change the order of the
 # prerequisites as we need constraints in the order specified
@@ -280,6 +288,7 @@ CLEAN += *.bin
 CLEAN += *.prm
 CLEAN += system_top.xdc
 CLEAN += $(TOP_LVL_DIR)/firmwareBuildDate.v
+CLEAN += $(TOP_LVL_DIR)/aggregate.v
 CLEAN += $(TOP_LVL_DIR)/gpioIDX.v
 CLEAN += $(IP_CORES_CUSTOM)
 CLEAN += $(VFLAGS_COMMAND_FILE)
