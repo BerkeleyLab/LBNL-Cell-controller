@@ -1,3 +1,6 @@
 [submodule "gateware/submodules/bedrock"]
 	path = gateware/submodules/bedrock
 	url = https://github.com/BerkeleyLab/Bedrock.git
+[submodule "gateware/submodules/ethernet-core"]
+	path = gateware/submodules/ethernet-core
+	url = ../../hdl-libraries/ethernet-core.git

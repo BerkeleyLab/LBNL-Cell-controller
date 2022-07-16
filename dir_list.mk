@@ -10,6 +10,7 @@ PLATFORM_DIR       = $(GATEWARE_DIR)/platform
 GW_SCRIPTS_DIR     = $(GATEWARE_DIR)/scripts
 
 BEDROCK_DIR        = $(SUBMODULES_DIR)/bedrock
+ETHERNET_CORE_DIR  = $(SUBMODULES_DIR)/ethernet-core
 PLATFORM_7SERIES_DIR  = $(PLATFORM_DIR)/xilinx/7series
 PLATFORM_7SERIES_CCTRL_DIR  = $(PLATFORM_7SERIES_DIR)/cctrl
 
@@ -27,3 +28,9 @@ SW_CCTRL_APP_DIR     = $(SW_APP_DIR)/cctrl
 SW_CCTRL_SCRIPTS_DIR = $(SW_BPM_DIR)/scripts
 
 include $(BEDROCK_DIR)/dir_list.mk
+# Don't include this as it will overwrite some previously defined variables
+# include $(ETHERNET_CORE_DIR)/dir_list.mk
+CORE_DIR           = $(ETHERNET_CORE_DIR)/core
+CLIENTS_DIR        = $(ETHERNET_CORE_DIR)/clients
+CRC_DIR            = $(ETHERNET_CORE_DIR)/crc
+MODEL_DIR          = $(ETHERNET_CORE_DIR)/model
