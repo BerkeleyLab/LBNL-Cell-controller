@@ -42,7 +42,8 @@ forwardData #(.DATA_WIDTH(2*COUNTER_WIDTH+1))
     .outData({evrHiReload, evrLoReload, evrDirect}));
 
 reg pilotToneToggle = 0;
-(* IOB = (DIRECT_OUTPUT_ENABLE == "false") ? "true" : "false" *)
+// (* IOB = (DIRECT_OUTPUT_ENABLE == "false") ? "true" : "false" *)
+(* IOB = "true" *)
 reg pilotToneToggle_b = 0;
 assign pilotToneReference = ((DIRECT_OUTPUT_ENABLE == "false")  || !direct) ?
                                                      pilotToneToggle_b : evrClk;
@@ -57,7 +58,7 @@ always @(posedge evrClk) begin
         else begin
             evrCounter <= evrHiReload;
         end
-            
+
     end
     else begin
         evrCounter <= evrCounter - 1;
