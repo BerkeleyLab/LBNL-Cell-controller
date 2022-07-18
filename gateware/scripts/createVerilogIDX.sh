@@ -13,7 +13,8 @@ set -eu
 HDR_FILES=$@
 
 process() {
-    sed -n -e "/ *# *define *\($1[^ ]*\) *\(.*\)/s//localparam \1 = \2/p" $2 |
+    sed -n -e '/ *# *include/q' \
+        -e "/ *# *define *\($1[^ ]*\) *\(.*\)/s//localparam \1 = \2/p" $2 |
     sed -e 's/ *\/[\/\*].*//' -e 's/$/;/'
 }
 
@@ -22,7 +23,7 @@ echo '// DO NOT EDIT -- CHANGES WILL BE OVERWRITTEN WHEN'
 echo '// THIS FILE IS REGENERATED FROM THE C HEADER FILE'
 for f in $HDR_FILES
 do
-    process "GPIO_IDX" "$f"
+    process "GPIO_" "$f"
     process "CFG_" "$f"
     sed -n -e '/ *# *define *VERILOG_\([A-Za-z_]*\).*/s//`define \1/'p "$f"
 done
