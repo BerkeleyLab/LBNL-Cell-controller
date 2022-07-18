@@ -4,8 +4,8 @@ stages:
   - software
 
 variables:
-  XILINX_VIVADO: /non-free/Xilinx/Vivado_and_Vitis/2020.2/Vivado/2020.2
-  XILINX_VITIS: /non-free/Xilinx/Vivado_and_Vitis/2020.2/Vitis/2020.2
+  XILINX_VIVADO: /non-free/Xilinx/Vivado_and_Vitis/2020.2.2/Vivado/2020.2
+  XILINX_VITIS: /non-free/Xilinx/Vivado_and_Vitis/2020.2.2/Vitis/2020.2
   CI_REGISTRY: mohs.dhcp.lbl.gov
   CONTAINER_IMAGE: $CI_REGISTRY/xilinx_env
   DOCKER_HOST: tcp://docker:2375/
