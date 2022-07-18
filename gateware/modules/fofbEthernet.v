@@ -98,6 +98,7 @@ if (PCS_PMA_SHARED_LOGIC_IN_CORE == "true") begin
   wire mmcm_locked_out;
   wire gt0_qplloutclk_out;
   wire gt0_qplloutrefclklost_out;
+  wire gt0_qplloutrefclk_out;
   assign eth_gmii_rxd = 8'h00;
   assign eth_gmii_rx_dv = 1'b0;
 `ifndef SIMULATE
