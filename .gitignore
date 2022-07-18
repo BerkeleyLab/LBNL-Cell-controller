@@ -155,7 +155,8 @@ drp_bridge
 # Script-generated
 *softwareBuildDate.h
 *firmwareBuildDate.v
-*gpioIDX.vh
+*gpioIDX.v
+*aggregate.v
 
 ######################
 # Vivado files
