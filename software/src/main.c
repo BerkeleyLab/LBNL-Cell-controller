@@ -72,7 +72,7 @@ int main()
     xadcInit();
     setPilotToneReference(328 * 2); // SROC/2 for now
     ptInit();
-    udpEPICS = udpInit(XPAR_EPICS_UDP_S_AXI_BASEADDR, "EPICS");
+    udpEPICS = udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");
 
     /*
      * Toss any junk present in UDP receive buffers
