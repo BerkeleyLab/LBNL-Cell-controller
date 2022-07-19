@@ -9,13 +9,12 @@ XSCT ?= xsct -norlwrap
 include ../../../dir_list.mk
 
 TARGET   ?= cctrl_bmb7
-GW_BPM_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
-BIT      ?= $(GW_BPM_TGT_DIR)/$(TARGET)_top.bit
+GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
+BIT      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.bit
 
-PROC_NAME  = proc_0
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
-BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(PROC_NAME)/$(TARGET)_$(PROC_NAME)/bd/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 
 all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(BIN)
 
@@ -114,7 +113,7 @@ vpath *.o $(SW_SRC_DIR)
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
 $(TARGET):
-	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_DEVG_TGT_DIR)/bd.xsa $(CPU_NAME)
+	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_CCTRL_TGT_DIR)/system.xsa $(CPU_NAME)
 
 $(TARGET).elf: $(HDR_FILES) $(HDR_GEN_FILES) $(OBJ_FILES) $(LINKER_FILES)
 	$(CC) $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) $(LIB_FLAGS) $(LD_FLAGS) -o $@ $(filter %.o, $^) $(LIBS)
