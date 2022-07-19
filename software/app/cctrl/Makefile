@@ -64,6 +64,20 @@ __HDR_GEN_FILES = \
 	softwareBuildDate.h
 HDR_GEN_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_GEN_FILES))
 
+__SRC_BMB7UDP_FILES = \
+	bmb7_udp.c \
+	modbusServer.c
+SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
+
+SRC_FILES += $(SRC_BMB7UDP_FILES)
+
+__HDR_BMB7UDP_FILES = \
+	bmb7_udp.h \
+	modbusServer.h
+HDR_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__HDR_BMB7UDP_FILES))
+
+HDR_FILES += $(HDR_BMB7UDP_FILES)
+
 __STP_FILES = \
 	AD9520-4_IDLE.stp \
 	AD9520-4_PT_HI_11_19.stp \
@@ -95,6 +109,7 @@ endif
 INCLUDE_DIRS = \
 	$(SW_SRC_DIR) \
 	$(TARGET_DIR) \
+	$(BMB7UDP_DIR) \
 	$(BSP_DIR)/include
 INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 
