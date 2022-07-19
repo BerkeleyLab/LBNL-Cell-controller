@@ -100,7 +100,8 @@ ila_td256_s4096_cap_TOP = $(ila_td256_s4096_cap_DIR)/synth/ila_td256_s4096_cap.v
 IP_CORES_TOP_LVL_SRCS += $(evr_mgt_gtx_TOP) $(fixToFloat_TOP) $(floatMultiply_TOP) $(floatResultFIFO_TOP) $(floatToDouble_TOP) $(fofbCoefficientMul_TOP) $(fofbFIRplusIntegral_TOP) $(fofbFixToFloat_TOP) $(fofbGainMultiplier_TOP) $(fofbIntegralFixToFloat_TOP) $(fofbIntegralMultiplier_TOP) $(fofbPCS_PMA_with_shared_logic_TOP) $(fofbPCS_PMA_without_shared_logic_TOP) $(fofbReadLinksMux_TOP) $(fofbSupplyFilter_TOP) $(forwardCellLinkMux_TOP) $(linkStatisticsMux_TOP) $(psSetpointCalcConvertToAmps_TOP) $(psSetpointCalcFixToFloat_TOP) $(readBPMlinksMux_TOP) $(readOldBPMs_DoubleToFloat_TOP) $(readOldBPMs_FIFO_TOP) $(readOldBPMs_Fix_TOP) $(readOldBPMs_Multiply_TOP) $(ila_td256_s4096_cap_TOP)
 IP_CORES_DIRS += $(evr_mgt_gtx_DIR) $(evr_mgt_gtx_DIR)/evr_mgt_gtx/example_design $(fixToFloat_DIR) $(floatMultiply_DIR) $(floatResultFIFO_DIR) $(floatToDouble_DIR) $(fofbCoefficientMul_DIR) $(fofbFIRplusIntegral_DIR) $(fofbFixToFloat_DIR) $(fofbGainMultiplier_DIR) $(fofbIntegralFixToFloat_DIR) $(fofbIntegralMultiplier_DIR) $(fofbPCS_PMA_with_shared_logic_DIR) $(fofbPCS_PMA_without_shared_logic_DIR) $(fofbReadLinksMux_DIR) $(fofbSupplyFilter_DIR) $(forwardCellLinkMux_DIR) $(linkStatisticsMux_DIR) $(psSetpointCalcConvertToAmps_DIR) $(psSetpointCalcFixToFloat_DIR) $(readBPMlinksMux_DIR) $(readOldBPMs_DoubleToFloat_DIR) $(readOldBPMs_FIFO_DIR) $(readOldBPMs_Fix_DIR) $(readOldBPMs_Multiply_DIR) $(ila_td256_s4096_cap_DIR)
 IP_CORES_XDCS += $(evr_mgt_gtx_TOP:%.v=%.xdc) $(floatResultFIFO_TOP:%.v=%.xdc) $(fofbPCS_PMA_with_shared_logic_TOP:%.v=%.xdc) $(fofbPCS_PMA_without_shared_logic_TOP:%.v=%.xdc) $(linkStatisticsMux_DIR/linkStatisticsMux_clocks.xdc)
-IP_CORES_XCIS += evr_mgt_gtx.xci fixToFloat.xci floatMultiply.xci floatResultFIFO.xci floatToDouble.xci fofbCoefficientMul.xci fofbFIRplusIntegral.xci fofbFixToFloat.xci fofbGainMultiplier.xci fofbIntegralFixToFloat.xci fofbIntegralMultiplier.xci fofbPCS_PMA_with_shared_logic.xci fofbPCS_PMA_without_shared_logic.xci fofbReadLinksMux.xci fofbSupplyFilter.xci forwardCellLinkMux.xci linkStatisticsMux.xci psSetpointCalcConvertToAmps.xci psSetpointCalcFixToFloat.xci readBPMlinksMux.xci readOldBPMs_DoubleToFloat.xci readOldBPMs_FIFO.xci readOldBPMs_Fix.xci readOldBPMs_Multiply.xci ila_td256_s4096_cap.xci
+# Include only the ones that cannot be included as purely Verilog sources
+IP_CORES_XCIS += fixToFloat.xci floatToDouble.xci floatMultiply.xci floatResultFIFO.xci fofbPCS_PMA_with_shared_logic.xci fofbPCS_PMA_without_shared_logic.xci fofbCoefficientMul.xci fofbSupplyFilter.xci fofbReadLinksMux.xci forwardCellLinkMux.xci linkStatisticsMux.xci readBPMlinksMux.xci psSetpointCalcFixToFloat.xci psSetpointCalcConvertToAmps.xci ila_td256_s4096_cap.xci
 IP_CORES_SRCS_DIRS = $(IP_CORES_DIRS)
 IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
@@ -163,7 +164,6 @@ VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
 # As we don't exactly know the names of the sources, create a file with
 # the switches that will be consumed by iverilog later
 evr_mgt_gtx_VFLAGS_COMMAND_FILE = evr_mgt_gtx_iverilog_cfile.txt
-fixToFloat_VFLAGS_COMMAND_FILE = fixToFloat_iverilog_cfile.txt
 floatMultiply_VFLAGS_COMMAND_FILE = floatMultiply_iverilog_cfile.txt
 floatResultFIFO_VFLAGS_COMMAND_FILE = floatResultFIFO_iverilog_cfile.txt
 floatToDouble_VFLAGS_COMMAND_FILE = floatToDouble_iverilog_cfile.txt
@@ -190,29 +190,33 @@ ila_td256_s4096_cap_VFLAGS_COMMAND_FILE = ila_td256_s4096_cap_iverilog_cfile.txt
 
 VFLAGS_COMMAND_FILE += \
 	$(evr_mgt_gtx_VFLAGS_COMMAND_FILE) \
-	$(fixToFloat_VFLAGS_COMMAND_FILE) \
-	$(floatMultiply_VFLAGS_COMMAND_FILE) \
-	$(floatToDouble_VFLAGS_COMMAND_FILE) \
 	$(fofbFIRplusIntegral_VFLAGS_COMMAND_FILE) \
 	$(fofbFixToFloat_VFLAGS_COMMAND_FILE) \
 	$(fofbGainMultiplier_VFLAGS_COMMAND_FILE) \
 	$(fofbIntegralFixToFloat_VFLAGS_COMMAND_FILE) \
 	$(fofbIntegralMultiplier_VFLAGS_COMMAND_FILE) \
-	$(fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE) \
-	$(fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE) \
-	$(fofbReadLinksMux_VFLAGS_COMMAND_FILE) \
-	$(forwardCellLinkMux_VFLAGS_COMMAND_FILE) \
-	$(linkStatisticsMux_VFLAGS_COMMAND_FILE) \
-	$(psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE) \
-	$(psSetpointCalcFixToFloat_VFLAGS_COMMAND_FILE) \
-	$(readBPMlinksMux_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_DoubleToFloat_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_FIFO_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_Fix_VFLAGS_COMMAND_FILE) \
 	$(readOldBPMs_Multiply_VFLAGS_COMMAND_FILE)
+# $(fixToFloat_VFLAGS_COMMAND_FILE) \
+# $(floatMultiply_VFLAGS_COMMAND_FILE) \
+# $(floatToDouble_VFLAGS_COMMAND_FILE) \
 # $(floatResultFIFO_VFLAGS_COMMAND_FILE) \
 # $(fofbCoefficientMul_VFLAGS_COMMAND_FILE) \
 # $(fofbSupplyFilter_VFLAGS_COMMAND_FILE) \
+# $(fofbReadLinksMux_VFLAGS_COMMAND_FILE) \
+# $(forwardCellLinkMux_VFLAGS_COMMAND_FILE) \
+# $(linkStatisticsMux_VFLAGS_COMMAND_FILE) \
+# $(readBPMlinksMux_VFLAGS_COMMAND_FILE) \
+# $(fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE) \
+# $(fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE) \
+# $(psSetpointCalcFixToFloat_VFLAGS_COMMAND_FILE) \
+# $(psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE) \
+# using ILA with verilog gives an error:
+# input buffer overflow, can't enlarge buffer because scanner uses REJECT,
+# but we don't need it for iverilog as we only use it when not simulating
+# $(ila_td256_s4096_cap_VFLAGS_COMMAND_FILE)
 
 VFLAGS_DEP += $(addprefix -c, $(VFLAGS_COMMAND_FILE))
 
@@ -299,9 +303,20 @@ CLEAN += $(VFLAGS_COMMAND_FILE)
 # input buffer overflow, can't enlarge buffer because scanner uses REJECT,
 # but we don't need it for iverilog as we only use it when not simulating
 CLEAN += $(ila_td256_s4096_cap_VFLAGS_COMMAND_FILE)
+CLEAN += $(fixToFloat_VFLAGS_COMMAND_FILE)
+CLEAN += $(floatMultiply_VFLAGS_COMMAND_FILE)
+CLEAN += $(floatToDouble_VFLAGS_COMMAND_FILE)
 CLEAN += $(floatResultFIFO_VFLAGS_COMMAND_FILE)
 CLEAN += $(fofbCoefficientMul_VFLAGS_COMMAND_FILE)
 CLEAN += $(fofbSupplyFilter_VFLAGS_COMMAND_FILE)
+CLEAN += $(fofbReadLinksMux_VFLAGS_COMMAND_FILE)
+CLEAN += $(forwardCellLinkMux_VFLAGS_COMMAND_FILE)
+CLEAN += $(linkStatisticsMux_VFLAGS_COMMAND_FILE)
+CLEAN += $(readBPMlinksMux_VFLAGS_COMMAND_FILE)
+CLEAN += $(fofbPCS_PMA_with_shared_logic_VFLAGS_COMMAND_FILE)
+CLEAN += $(fofbPCS_PMA_without_shared_logic_VFLAGS_COMMAND_FILE)
+CLEAN += $(psSetpointCalcFixToFloat_VFLAGS_COMMAND_FILE)
+CLEAN += $(psSetpointCalcConvertToAmps_VFLAGS_COMMAND_FILE)
 CLEAN += *.log *.jou *.str
 CLEAN += *.xsa
 CLEAN += psu_init*
