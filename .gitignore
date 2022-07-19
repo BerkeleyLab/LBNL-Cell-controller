@@ -28,6 +28,7 @@ _xilinx/
 
 # BSP-generated directories
 software/app/cctrl/cctrl_*/
+*ad9520Tables.h
 
 ######################
 # Modelsim
