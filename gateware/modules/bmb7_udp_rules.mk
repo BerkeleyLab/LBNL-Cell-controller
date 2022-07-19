@@ -1,10 +1,15 @@
-bmb7_udp_DIR = $(MODULES_DIR)/bmb7_udp
+bmb7_udp_DIR = $(BMB7UDP_DIR)
 __bmb7_udp_SRCS = \
 	UDPport.v \
 	bmb7_udp.v \
 	bmb7_udp_S_AXI.v \
 	rx8b9b.v \
-	tx8b9b.v
+	tx8b9b.v \
+	bmb7_udp.c \
+	modbusServer.c \
+	bmb7_udp.h \
+	modbusServer.h
+
 bmb7_udp_SRCS = $(addprefix $(bmb7_udp_DIR)/, $(__bmb7_udp_SRCS))
 bmb7_udp_VERSION = 1.1
 bmb7_udp_TARGET = _gen/bmb7_udp

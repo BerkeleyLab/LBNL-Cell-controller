@@ -4,3 +4,6 @@
 [submodule "gateware/submodules/ethernet-core"]
 	path = gateware/submodules/ethernet-core
 	url = ../../hdl-libraries/ethernet-core.git
+[submodule "gateware/submodules/BMB7UDP"]
+	path = gateware/submodules/BMB7UDP
+	url = ../../alsu-instrumentation/BMB7UDP.git
