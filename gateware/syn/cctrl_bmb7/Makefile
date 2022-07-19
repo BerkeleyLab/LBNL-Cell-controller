@@ -164,6 +164,7 @@ VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
 # As we don't exactly know the names of the sources, create a file with
 # the switches that will be consumed by iverilog later
 evr_mgt_gtx_VFLAGS_COMMAND_FILE = evr_mgt_gtx_iverilog_cfile.txt
+fixToFloat_VFLAGS_COMMAND_FILE = fixToFloat_iverilog_cfile.txt
 floatMultiply_VFLAGS_COMMAND_FILE = floatMultiply_iverilog_cfile.txt
 floatResultFIFO_VFLAGS_COMMAND_FILE = floatResultFIFO_iverilog_cfile.txt
 floatToDouble_VFLAGS_COMMAND_FILE = floatToDouble_iverilog_cfile.txt
