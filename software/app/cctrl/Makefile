@@ -123,7 +123,7 @@ vpath *.o $(SW_SRC_DIR)
 	sh $(SW_CCTRL_SCRIPTS_DIR)/setSoftwareBuildDate.sh > $@
 
 %ad9520Tables.h: $(STP_FILES)
-	sh $(SW_CCTRL_SCRIPTS_DIR)/createPLLtables.sh $^ > $@
+	bash $(SW_CCTRL_SCRIPTS_DIR)/createPLLtables.sh $^ > $@
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
