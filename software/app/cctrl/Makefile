@@ -65,15 +65,13 @@ __HDR_GEN_FILES = \
 HDR_GEN_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_GEN_FILES))
 
 __SRC_BMB7UDP_FILES = \
-	bmb7_udp.c \
-	modbusServer.c
+	bmb7_udp.c
 SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
 
 SRC_FILES += $(SRC_BMB7UDP_FILES)
 
 __HDR_BMB7UDP_FILES = \
-	bmb7_udp.h \
-	modbusServer.h
+	bmb7_udp.h
 HDR_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__HDR_BMB7UDP_FILES))
 
 HDR_FILES += $(HDR_BMB7UDP_FILES)
