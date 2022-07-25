@@ -2,6 +2,7 @@
 *.swp
 *.orig
 *tags
+*.pyc
 
 ######################
 # Compilation files
