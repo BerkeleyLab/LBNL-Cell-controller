@@ -156,6 +156,8 @@ drp_bridge
 *system_top.xdc
 *prio_xci_files.tcl
 *ipcores_repos.tcl
+*.mmi
+*download.bit
 
 # Script-generated
 *softwareBuildDate.h

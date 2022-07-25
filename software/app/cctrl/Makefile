@@ -10,13 +10,17 @@ include ../../../dir_list.mk
 
 TARGET   ?= cctrl_bmb7
 GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
+XPR      ?= $(GW_CCTRL_TGT_DIR)/_xilinx/$(TARGET)_top/$(TARGET)_top.xpr
 BIT      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.bit
+DEPLOY_BIT ?= $(THIS_DIR)/download.bit
+MMI      ?= $(THIS_DIR)/$(TARGET)_top.mmi
+ELF 	 ?= $(THIS_DIR)/$(TARGET).elf
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
 BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 
-all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(BIN)
+all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
 
 __SRC_FILES = \
 	aurora.c \
@@ -116,6 +120,7 @@ INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 vpath *.c $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.h $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.o $(SW_SRC_DIR)
+vpath *.mmi $(THIS_DIR)
 
 %softwareBuildDate.h: $(SRC_FILES) $(HDR_FILES)
 	sh $(SW_CCTRL_SCRIPTS_DIR)/setSoftwareBuildDate.sh > $@
@@ -133,6 +138,15 @@ $(TARGET).elf: $(HDR_FILES) $(HDR_GEN_FILES) $(OBJ_FILES) $(LINKER_FILES)
 
 $(TARGET).elf.size: $(TARGET).elf
 	$(SIZE) $< | tee $@
+
+$(MMI): $(XPR)
+	vivado -mode batch -nojou -nolog -source $(SW_SCRIPTS_DIR)/gen_mem_info.tcl -tclargs $< $@
+
+$(DEPLOY_BIT): $(MMI)
+	rm -f updatemem.jou updatemem.log
+	updatemem -force -meminfo $< -bit $(BIT) \
+		-data $(ELF) -proc system_i/$(CPU_NAME) \
+		-out $@
 
 # Pull in dependency info for *existing* .o files and don't complain if the
 # corresponding .d file is not found
