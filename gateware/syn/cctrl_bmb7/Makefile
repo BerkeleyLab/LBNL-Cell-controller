@@ -10,11 +10,11 @@ CMD_SEP = ;
 
 include ../../../dir_list.mk
 
-GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
-XPR              = $(GW_CCTRL_TGT_DIR)/_xilinx/$(TARGET)_top/$(TARGET)_top.xpr
-
 # Top level design name
 TARGET ?= $(FPGA_APPLICATION)_$(HARDWARE)
+
+GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
+XPR              = $(GW_CCTRL_TGT_DIR)/_xilinx/$(TARGET)_top/$(TARGET)_top.xpr
 
 # Top level bitstream name
 all: $(TARGET)_top.bit $(TARGET)_top.mmi
