@@ -1,0 +1,2089 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-2">
+    <title>Cell Controller Support</title>
+  </head>
+  <body>
+    <h1>Introduction</h1>
+    This support module provides ASYN drivers to communicate with
+    FPGA-based BPM cell controllers.<span style="font-weight: bold;"></span>&nbsp;
+
+    The module consists of C source and an example database.&nbsp; <br>
+    <p></p>
+    <h1>Database Development </h1>
+    <p>The example application distributed with this support module
+      comes with a database containing all the following records and EDM
+      screens to display them.&nbsp; All record names begin with the
+      macros <span style="font-family: monospace;">$(P)$(R)</span>.&nbsp;
+
+
+
+
+      Only the portions of the record name following these macros are
+      shown in the following tables.&nbsp; Records with names ending
+      with an underscore are for the internal use of the IOC and should
+      not be written to by clients.<br>
+    </p>
+    <h2>Revision Date and Time<br>
+    </h2>
+    DTYP=asynOctetRead and INP="@asyn($(PORT) <span style="font-style:
+      italic;">xxx</span>)", where $(PORT) expands to the port name in
+    the bpmccConfigure command and <span style="font-style: italic;">xxx</span>
+    is a numeric value as described in the following table.&nbsp;
+    Typically SCAN="Passive" and PINI="YES".
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center; vertical-align: middle;"><span style="font-weight: bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Type</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;">firmwareBuildDate<br>
+          </td>
+          <td style="text-align: center;">0x000<br>
+          </td>
+          <td style="text-align: center;">stringin<br>
+          </td>
+          <td style="vertical-align: top;">Cell controller firmware
+            revision date and time.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">softwareBuildDate</td>
+          <td style="text-align: center;">0x001<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">stringin</td>
+          <td style="vertical-align: top;">Cell controller software
+            revision date and time.</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2>Control Records<br>
+    </h2>
+    DTYP=asynInt32 and OUT="@asyn($(PORT) <span style="font-style:
+      italic;">xxx</span>)", where $(PORT) expands to the port name in
+    the bpmccConfigure command and <span style="font-style: italic;">xxx</span>
+    is a numeric value as described in the following table.
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Type</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;">resetGTX<br>
+          </td>
+          <td style="text-align: center;">0x1200<br>
+          </td>
+          <td style="text-align: center;">bo<br>
+          </td>
+          <td style="text-align: left;">Processing this record resets
+            the GTX transceivers.&nbsp; The value written is
+            unimportant.&nbsp; GTX resets are necessary since for
+            reasons yet unknown faults on the EVR link cause the
+            cell-to-cell GTX transceivers to begin transmitting
+            gibberish.<br>
+          </td>
+        </tr>
+        
+        <tr>
+          <td style="text-align: center;"><a name="FOFBenable"></a>FOFBenable</td>
+          <td style="text-align: center;">0x1202<br>
+          </td>
+          <td style="text-align: center;">bo<br>
+          </td>
+          <td style="text-align: left;">Enable/Disable (1/0) the fast
+            orbit feedback contribution to the power supply setpoints.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><a name="psOffsetxx"></a>psOffset<span style="font-style: italic;">xx</span><br>
+          </td>
+          <td style="text-align: center;">0x12<span style="font-style:
+              italic;">yy</span><br>
+          </td>
+          <td style="text-align: center;">ao<br>
+          </td>
+          <td style="text-align: left;">Set the offset current for a
+            single corrector power supply.&nbsp; <span style="font-style: italic;">xx</span> ranges from 00 to 17
+            and <span style="font-style: italic;">yy</span> from 40 to
+            57.&nbsp; Use the <a href="#psOffsets">psOffsets<span style="font-style: italic;"></span></a> record if
+            simultaneous updates are desired.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2>Waveform Records</h2>
+    <h3><a name="SetpointVector"></a>BPM Setpoints</h3>
+    The fast feedback system requires the BPM values as an offset from
+    the desired position.&nbsp; A waveform record
+    (NAME="$(P)$(R)BPMsetpoints") provides the desired positions of the
+    BPMs attached to the cell controller.&nbsp; DTYP=asynInt32ArrayOut
+    and INP="@asyn($(PORT) 0x0f00)", where $(PORT) expands to the port
+    name in the bpmccConfigure command.&nbsp; The waveform record
+    contains 64 LONG data values in units of nanometers.&nbsp; The first
+    array entry is the desired x position of the BPM whose least
+    significant five bits of fast orbit feedback index (the remainder
+    when the fast orbit feedback index is divided by 32) are equal to 0,
+    the second array entry the desired y position of the that BPM, the
+    third array entry the desired x position of the BPM whose least
+    significant five bits of fast orbit feedback index are equal to 1,
+    and so on.&nbsp; The fast orbit feedback index is set by the <a href="https://controls.als.lbl.gov/alscg/beampositionmonitor/Documents/EPICSnotes.html#bpmConfigure">bpmConfigure</a>
+    command in the BPM IOC startup script and can be read by an EPICS
+    client as the <a href="https://controls.als.lbl.gov/alscg/beampositionmonitor/Documents/EPICSnotes.html#FOFBindex">&lt;<span style="font-style: italic;">bpmPrefix&gt;</span>FOFBindex</a>
+    record.<br><br>
+
+    <h3><a name="FOFB_Matrix"></a>Fast Orbit Feedback Conversion Matrix
+      Rows<br>
+    </h3>
+    This waveform record (NAME="$(P)$(R)FOFBrow<span style="font-style:
+      italic;">NN</span>") specifies the coefficients of row <span style="font-style: italic;">NN</span> of the matrix used to
+    compute the fast orbit feedback power supply settings where <span style="font-style: italic;">NN</span> varies from 00 to 23.&nbsp;
+    DTYP=asynFloat64ArrayOut and INP="@asyn($(PORT) 0x9<span style="font-style: italic;">hh</span>)", where $(PORT) expands to
+    the port name in the bpmccConfigure command and <span style="font-style: italic;">hh</span> is the hexadecimal
+    equivalent of the row number <span style="font-style: italic;">NN</span><span style="font-style: italic;"></span>.&nbsp; The waveform record
+    contains 1024 DOUBLE values in the range [-1, 1) in units of Amperes
+    per micrometer.&nbsp; The first 512 elements are applied to the
+    X-plane BPM offsets and the last 512 elements are applied to the
+    Y-plane BPM offsets.<br>
+    <h3><a name="FOFB_FIRnn"></a>Fast Orbit Feedback Filter Coefficients<br>
+    </h3>
+    This waveform record (NAME="$(P)$(R)FOFB_FIR<span style="font-style:
+      italic;">NN</span><span style="font-style: italic;"></span>")
+    specifies the&nbsp; coefficients of the FIR filter corresponding to
+    corrector <span style="font-style: italic;">NN</span>.&nbsp;
+    Corrector numbers begin at 0.&nbsp; DTYP=asynFloat64ArrayOut and
+    INP="@asyn($(PORT) 0xA<span style="font-style: italic;">hh</span>)",
+    where $(PORT) expands to the port name in the bpmccConfigure command
+    and <span style="font-style: italic;">hh</span> is the hexadecimal
+    equivalent of the corrector number <span style="font-style:
+      italic;">NN</span><span style="font-style: italic;"></span>.&nbsp;
+    The waveform record contains 1000 DOUBLE values in the range [-1,
+    1).&nbsp; Note that the FIR firmware block can accept coefficients
+    only when the filter is receiving data from the inverse sensitivity
+    matrix multiplication block and this occurs only after the <a href="#SetpointVector">BPM setpoints</a> have been written.<br>
+    
+<h3><a name="ffbLimits"></a>Fast Orbit Feedback Contribution Limits<br>
+    </h3>
+
+    The waveform record (NAME="$(P)$(R)ffbLimits<span style="font-style:
+      italic;"></span>") specifies the clipping level in Amperes applied
+    to the fast orbit feedback contribution to the corrector
+    power supplies.&nbsp; DTYP=asynFloat64ArrayOut and OUT="@asyn($(PORT)
+    0xD20)", where $(PORT) expands to the port name in the
+    bpmccConfigure command<span style="font-style: italic;"></span><span style="font-style: italic;"></span>.&nbsp; The waveform record
+    contains 24 DOUBLE values with a range of about 131 A.<br>
+
+    <h3><a name="FOFBgains"></a>Fast Orbit Feedback Gains<br>
+    </h3>
+    The waveform record (NAME="$(P)$(R)FOFBgains<span style="font-style:
+      italic;"></span>") specifies the gain factor applied to the
+    results of the FIR filter before adding the product to the offset
+    provided by the slow orbit feedback system.&nbsp;
+    DTYP=asynFloat64ArrayOut and OUT="@asyn($(PORT) 0xC00<span style="font-style: italic;"></span>)", where $(PORT) expands to
+    the port name in the bpmccConfigure command<span style="font-style:
+      italic;"></span><span style="font-style: italic;"></span>.&nbsp;
+    The waveform record contains 24 DOUBLE values in the range [0,16).<br>
+    <h3><a name="psOffsets"></a>Corrector Power Supply Offsets<br>
+    </h3>
+    The waveform record (NAME="$(P)$(R)psOffsets<span style="font-style:
+      italic;"></span>") specifies the offset to add to the results of
+    the FIR filter and integral action computations before sending to
+    the corrector power supplies.&nbsp; DTYP=asynFloat64ArrayOut and
+    OUT="@asyn($(PORT) 0xB00<span style="font-style: italic;"></span>)",
+    where $(PORT) expands to the port name in the bpmccConfigure command<span style="font-style: italic;"></span><span style="font-style:
+      italic;"></span>.&nbsp; The waveform record contains 24 DOUBLE
+    values values with a range of about &#177;131 A.&nbsp; Use the <a href="#psOffsetxx">psOffset<span style="font-style: italic;">xx</span></a>
+    records to update individual supplies.<br>
+    <h3><a name="psLimits"></a>Fast Orbit Feedback Corrector Supply Limits<br>
+    </h3>
+    The waveform record (NAME="$(P)$(R)psLimits<span style="font-style:
+      italic;"></span>") specifies the clipping level in Amperes applied
+    to the sum of the fast orbit feedback contribution and the corrector
+    power supply offset before sending to the corrector power
+    supplies.&nbsp; DTYP=asynFloat64ArrayOut and OUT="@asyn($(PORT)
+    0xD00)", where $(PORT) expands to the port name in the
+    bpmccConfigure command<span style="font-style: italic;"></span><span style="font-style: italic;"></span>.&nbsp; The waveform record
+    contains 24 DOUBLE values with a range of about 131 A.<br>
+    <br>
+    <h2><a name="Sysmon"></a>System Monitors</h2>
+    Set SCAN="I/O Intr", DTYP=asynInt32 and INP="@asyn($(PORT) <span style="font-style: italic;">xxx</span>)", where $(PORT) expands to
+    the port name in the bpmccConfigure command and <span style="font-style: italic;">xxx</span> is a numeric value as
+    described in the following table.&nbsp; <span style="font-weight:
+      bold;"></span>The records process at the rate at which the
+    "$(P)$(R)sysmon:rbkt_" (ASYN subaddress 0x100) longin record
+    processes.&nbsp; An associated sequence record,
+    "$(P)$(R)sysmon:rbkf_", is used to force a system monitor readback
+    when pilot tone PLL values are changed.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Type</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FPGA:temperature<br>
+          </td>
+          <td style="text-align: center;">0x100<br>
+          </td>
+          <td style="text-align: center;">ai<br>
+          </td>
+          <td style="text-align: left;">FPGA core temperature<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FPGA:coreV</td>
+          <td style="text-align: center;">0x101<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">FPGA core voltage<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FPGA:auxV</td>
+          <td style="text-align: center;">0x102<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">ai<br>
+          </td>
+          <td style="text-align: left;">FPGA auxiliary voltage<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FPGA:bramV<br>
+          </td>
+          <td style="text-align: center;">0x103<br>
+          </td>
+          <td style="text-align: center;">ai<br>
+          </td>
+          <td style="text-align: left;">FPGA block ram supply voltage.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP1:volts</td>
+          <td style="text-align: center;">0x104</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">First QSFP module supply voltage<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP1:temperature<br>
+          </td>
+          <td style="text-align: center;">0x105</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">First QSFP module supply
+            temperature<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP1:rx0power<br>
+          </td>
+          <td style="text-align: center;">0x106<br>
+          </td>
+          <td style="text-align: center;">ai<br>
+          </td>
+          <td style="text-align: left;">First QSFP module channel 0
+            received power (Event receiver) </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP1:rx1power</td>
+          <td style="text-align: center;">0x107<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">First QSFP module channel 1
+            received power (CCW BPM link) </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP1:rx2power</td>
+          <td style="text-align: center;">0x108<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">First QSFP module channel 2
+            received power (CW BPM link)</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP2:volts</td>
+          <td style="text-align: center;">0x10A<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Second QSFP module supply
+            voltage</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP2:temperature </td>
+          <td style="text-align: center;">0x10B<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Second QSFP module supply
+            temperature</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP2:rx0power</td>
+          <td style="text-align: center;">0x10C<br>
+          </td>
+          <td style="text-align: center;">ai </td>
+          <td style="text-align: left;">Second QSFP module channel 0
+            received power (CCW cell link)<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">QSFP2:rx1power</td>
+          <td style="text-align: center;">0x10D</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Second QSFP module channel 1
+            received power (CW cell link)</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EVRstatus<br>
+          </td>
+          <td style="text-align: center;">0x111<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Status of event receiver
+            heartbeat events (Bit 2 set when GTX receiver is locked to
+            bit stream, Bit 1 set when SROC generator synchronized to
+            heartbeat, Bit 0 set when heartbeat events are present).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptSupply0V<br>
+          </td>
+          <td style="text-align: center;">0x112<br>
+          </td>
+          <td style="text-align: center;">ai<br>
+          </td>
+          <td style="text-align: left;">Pilot tone board power supply 0
+            voltage<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptSupply0I</td>
+          <td style="text-align: center;">0x113<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Pilot tone board power supply 0
+            current</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptSupply1V</td>
+          <td style="text-align: center;">0x114<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Pilot tone board power supply 1
+            voltage</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptSupply1I</td>
+          <td style="text-align: center;">0x115<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Pilot tone board power supply 1
+            current</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ADC0<br>
+          </td>
+          <td style="text-align: center;">0x116<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Voltage at back panel Analog In
+            connector.&nbsp; Could be used to monitor DCCT reading of
+            beam current.&nbsp; This value is <span style="font-weight:
+              bold;">not</span> (presently) used by the <a href="#EEBI">EEBI</a>
+            firmware.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptTemperature<br>
+          </td>
+          <td style="text-align: center;">0x118<br>
+          </td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Pilot tone board temperature
+            sensor<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">cx</span>OutputRBK</td>
+          <td style="text-align: center;">0x11A..0x125<br>
+            0x128..0x133<br>
+          </td>
+          <td style="text-align: center;">mbbi</td>
+          <td style="text-align: left;">PLL <span style="font-style:
+              italic;">c</span> output <span style="font-style:
+              italic;">x</span> level<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">c</span>:PLLr<span style="font-style: italic;">xxx</span></td>
+          <td style="text-align: center;">0x126,0x134<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">PLL <span style="font-style:
+              italic;">c</span> register <span style="font-style:
+              italic;">x</span>xx.&nbsp; (Currently only register 01F is
+            present, the least significant bit of which is the 'Digital
+            Lock Detect' status).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">c</span>:FrequencyRBK</td>
+          <td style="text-align: center;">0x127,0x135</td>
+          <td style="text-align: center;">mbbi<br>
+          </td>
+          <td style="text-align: left;">PLL <span style="font-style:
+              italic;">c</span><span style="font-style: italic;"> </span>frequency
+
+            selection<span style="font-style: italic;"></span><span style="font-style: italic;"></span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EVRtooFew<br>
+          </td>
+          <td style="text-align: center;">0x136<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of times that there were
+            too few time-of-day events between EVR 'Pulse Per Second'
+            events.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EVRtooMany</td>
+          <td style="text-align: center;">0x137<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of times that there were
+            too many time-of-day events between EVR 'Pulse Per Second'
+            events.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EVRoutOfSeq</td>
+          <td style="text-align: center;">0x138<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of times that
+            non-sequential values of time-of-day events occurred.</td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle; text-align: center;">AWGcsrhi_</td>
+          <td style="text-align: center;">0x13B</td>
+          <td style="text-align: center;">longin</td>
+          <td style="vertical-align: top;">Power supply arbitrary
+            waveform generator CSR, bits 31 through 16.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGenabled<br>
+          </td>
+          <td style="text-align: center;">&#8211;<br>
+          </td>
+          <td style="text-align: center;">mbbi<br>
+          </td>
+          <td style="vertical-align: top;">Bits from AWGcsrhi indicating
+            source of fast power supply setpoints (0/1 FOFB/AWG).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle; text-align: center;">PS:WFRcsrlo_</td>
+          <td style="text-align: center;">0x13C<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="vertical-align: top;">Power supply waveform
+            recorder CSR, bits 15 through 0.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFRcsrhi_</td>
+          <td style="text-align: center;">0x13D<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="vertical-align: top;">Power supply waveform
+            recorder CSR, bits 31 through 16.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:state</td>
+          <td style="text-align: center;">&#8211;<br>
+          </td>
+          <td style="text-align: center;">mbbi<br>
+          </td>
+          <td style="vertical-align: top;">Bits from PS:WFRcsrhi_
+            indicating waveform recorder status (0/1/2/3, Idle/Pre
+            trigger filling/Awaiting trigger/Recording).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:loopTime<br>
+          </td>
+          <td style="text-align: center;">&#8211;<br>
+          </td>
+          <td style="text-align: center;">calc<br>
+          </td>
+          <td style="vertical-align: top;">Bits from PS:WFRcsrhi_ and
+            PS:WFRcsrlo_ to compute propagation time through fast power
+            supply fiber links.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:TxStatus<br>
+          </td>
+          <td style="text-align: center;">0x13E<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="vertical-align: top;">Fast power supply transmit
+            fiber link PCS/PMA status vector.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:RxStatus</td>
+          <td style="text-align: center;">0x13F</td>
+          <td style="text-align: center;">longin</td>
+          <td style="vertical-align: top;">Fast power supply receive
+            fiber link PCS/PMA status vector.</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2>BMB7 Hardware Monitors</h2>
+    This group of analog input (ai) records provides the values of
+    assorted temperature, voltage and current monitors on the BMB7 FPGA
+    card.&nbsp; Set SCAN="I/O Intr", DTYP=asynInt32 and
+    INP="@asyn($(PORT) <span style="font-style: italic;">xxx</span>)",
+    where $(PORT) expands to the port name in the bpmccConfigure command
+    and <span style="font-style: italic;">xxx</span> is a numeric value
+    as described in the following table.&nbsp; <span style="font-weight: bold;"></span>The records process at half the
+    rate at which the "$(P)$(R)monitorCrank_" (ASYN subaddress 0xF000)
+    longin record processes.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">XX</span>:temperature </td>
+          <td style="text-align: center;">0xF0<span style="font-style:
+              italic;">xx</span><br>
+          </td>
+          <td style="text-align: left;">Temperature of LTC2990
+            temperature/voltage monitor chip <span style="font-style:
+              italic;">XX</span>.&nbsp; Corresponding <span style="font-style: italic;">XX</span>:<span style="font-style: italic;">xx</span>&nbsp; values are
+            A0:00, A1:06, A2:0C, B0:10, B1:16, B2:1C, C0:22, C1:28,
+            C2:2E, and C3:33.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">XX</span>:temperature</td>
+          <td style="text-align: center;">0xF0<span style="font-style:
+              italic;">xx</span> </td>
+          <td style="text-align: left;">Supply voltage of LTC2990
+            temperature/voltage monitor chip <span style="font-style:
+              italic;">XX</span>.&nbsp; Corresponding <span style="font-style: italic;">XX</span>:<span style="font-style: italic;">xx</span>&nbsp; values are
+            A0:01, A1:07, A2:0D, B0:11, B1:17, B2:1D, C0:23, C1:29,
+            C2:2F, and C3:3. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">topFMC3_3:V<br>
+            topFMC3_3:I<br>
+          </td>
+          <td style="text-align: center;">0xF002<br>
+            0xF003<br>
+          </td>
+          <td style="text-align: left;">Top FMC connector 3.3V supply
+            voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">topFMCVADJ:V<br>
+            topFMCVADJ:I </td>
+          <td style="text-align: center;">0xF004<br>
+            0xF005 </td>
+          <td style="text-align: left;">Top FMC connector V<sub>ADJ</sub>
+            supply voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">MAIN3_3:V<br>
+            MAIN3_3:I</td>
+          <td style="text-align: center;">0xF008<br>
+            0xF009</td>
+          <td style="text-align: left;">Main 3.3V supply voltage and
+            current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">SBY3_3:V<br>
+            SBY3_3:I </td>
+          <td style="text-align: center;">0xF00A<br>
+            0xF00B</td>
+          <td style="text-align: left;">Standby 3.3V supply voltage and
+            current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">topFMC12:V<br>
+            topFMC12:I </td>
+          <td style="text-align: center;">0xF00E<br>
+            0xF00F </td>
+          <td style="text-align: left;">Top FMC connector 12V supply
+            voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">btmFMCVIOBJ:V<br>
+            btmFMCVIOB:I</td>
+          <td style="text-align: center;">0xF012<br>
+            0xF013</td>
+          <td style="text-align: left;">Bottom FMC connector V<sub>IOB</sub>
+            supply voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">btmFMC12:V<br>
+            btmFMC12:I</td>
+          <td style="text-align: center;">0xF014<br>
+            0xF015</td>
+          <td style="text-align: left;">Bottom FMC connector 12V supply
+            voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">BOOT3_3:V<br>
+            BOOT3_3:I</td>
+          <td style="text-align: center;">0xF018<br>
+            0xF019 </td>
+          <td style="text-align: left;">Bootstrap 3.3V supply voltage
+            and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">S61_2:V<br>
+            S61_2:I</td>
+          <td style="text-align: center;">0xF01A<br>
+            0xF01B </td>
+          <td style="text-align: left;">Spartan6 1.2V supply voltage and
+            current.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">btmFMC3_3:V<br>
+            btmFMC3_3:I</td>
+          <td style="text-align: center;">0xF01E<br>
+            0xF01F </td>
+          <td style="text-align: left;">Bottom FMC connector 3.3V supply
+            voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">btmFMCVADJ:V<br>
+            btmFMCVADJ:I </td>
+          <td style="text-align: center;">0xF020<br>
+            0xF021</td>
+          <td style="text-align: left;">Bottom FMC connector V<sub>ADJ</sub>
+            supply voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">S6GTP1_2:V<br>
+            S6GTP1_2:I </td>
+          <td style="text-align: center;">0xF024<br>
+            0xF025 </td>
+          <td style="text-align: left;">Spartan6 GTP transceivers 1.2V
+            supply voltage and current.&nbsp; The transceivers are
+            unused and powered down. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">K7GTX1_2:V<br>
+            K7GTX1_2:I </td>
+          <td style="text-align: center;">0xF026<br>
+            0xF027 </td>
+          <td style="text-align: left;">Kintex7 GTX transceivers 1.2V
+            supply voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">SBY1_2:V<br>
+            SBY1_2:I </td>
+          <td style="text-align: center;">0xF02A<br>
+            0xF02B </td>
+          <td style="text-align: left;">Standby 1.2V supply voltage and
+            current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">K7GTX1_2:V<br>
+            K7GTX1_2:I </td>
+          <td style="text-align: center;">0xF02C<br>
+            0xF02D </td>
+          <td style="text-align: left;">Kintex7 GTX transceivers 1.0V
+            supply voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">K7INT1_0:V<br>
+            K7INT1_0:I</td>
+          <td style="text-align: center;">0xF030<br>
+            0xF031 </td>
+          <td style="text-align: left;">Kintex7 internal 1.0V supply
+            voltage and current. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">K7:temperature<br>
+          </td>
+          <td style="text-align: center;"> 0xF032 </td>
+          <td style="text-align: left;">Kintex7 internal temperature
+            sensor. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">K71_8:V<br>
+            K71_8:I </td>
+          <td style="text-align: center;">0xF035<br>
+            0xF036 </td>
+          <td style="text-align: left;">Kintex7 1.8V supply voltage and
+            current. </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h2>Fiber Link Status</h2>
+    Unless otherwise noted, SCAN="I/O Intr", DTYP=asynInt32 and
+    INP="@asyn($(PORT) <span style="font-style: italic;">xxx</span>)",
+    where $(PORT) expands to the port name in the bpmccConfigure command
+    and <span style="font-style: italic;">xxx</span> is a numeric value
+    as described in the following table.&nbsp; The values of <span style="font-style: italic;">loop</span> and <span style="font-weight: bold;"></span><span style="font-style:
+      italic;">dir</span><span style="font-style: italic;"></span> are
+    "BPM/CELL" and "CCW/CW", respectively." or "CCW/2"<span style="font-style: italic;"></span>.&nbsp; The ASYN Subaddress
+    column shows the subaddresses for BPM/CCW, BPM/CW, CELL/CCW and
+    CELL/CW, respectively.&nbsp; The records&nbsp; process at the rate
+    at which the "$(P)$(R)Linkstats:readback_" (ASYN subaddress 0x200)
+    longin record processes.&nbsp; Some of the records in the table are
+    not really part of the fiber link statistics but it was not worth
+    creating a complete data packet and readout mechanism to hold these
+    few extra values.&nbsp; The counters are analog-in records with
+    DTYP=asynFloat64 since these can hold greater than 32 bit values.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Ty</span><span style="font-weight: bold;">pe</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:linkIsUp<br>
+          </td>
+          <td style="text-align: center;">0x200,20A,214,21E<br>
+          </td>
+          <td style="text-align: center;">bi<br>
+          </td>
+          <td style="text-align: left;">Is Aurora channel up?<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:nodeCount</td>
+          <td style="text-align: center;">0x201,20B,215,21F</td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of packets received
+            between subsequent assertions of the fast acquisition
+            synchronization marker.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:successes</td>
+          <td style="text-align: center;">0x202,20C,216,220</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Number of packets successfully
+            received.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:badHeader</td>
+          <td style="text-align: center;">0x204,20E,218,222</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Number of packets that have
+            arrived with an invalid packet header word.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:badCount</td>
+          <td style="text-align: center;">0x206,210,21A,224</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Number of packets that have
+            arrived with an invalid size.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;">loop:dir</span>:badCRC</td>
+          <td style="text-align: center;">0x208,212,21C,226</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Number of packets that have
+            arrived with an invalid CRC word.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">CELL:timeouts</td>
+          <td style="text-align: center;">0x228</td>
+          <td style="text-align: center;">ai</td>
+          <td style="text-align: left;">Number of times that the cell
+            readout block failed to receive a full set of beam position
+            deviation values.&nbsp; Note that this value will increment
+            at the fast acquisition rate until beam position <a href="#SetpointVector">setpoints</a> have been received by
+            all cell controllers.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">BPM:Rx:count<br>
+          </td>
+          <td style="text-align: center;">0x22A<br>
+          </td>
+          <td style="vertical-align: middle; text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of distinct BPMs from
+            which cell controller is receiving data.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">rxBPMmap</td>
+          <td style="text-align: center;">0x22B<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Bitmap of local BPMs (LSB is BPM
+            with least significant 5 bits of FOFB index equal to 0, MSB
+            is BPM with least significant 5 bits of FOFB index equal to
+            31) from which cell controller is receiving data.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">rxCELLmap</td>
+          <td style="text-align: center;">0x22C<br>
+          </td>
+          <td style="vertical-align: middle; text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Bitmap of cell controllers (LSB
+            is cell controller 0, MSB is cell controller 31) from which
+            cell controller is receiving data.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;"></span>CELL:updateInterval</td>
+          <td style="text-align: center;">0x22D</td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">Number of microseconds elapsed
+            between the fast acquisition marker and arrival of all beam
+            position deviation values.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">CELL:Index<br>
+          </td>
+          <td style="text-align: center;">0x22E<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">The cell index set by the <a href="file:///Users/wenorum/Documents/CellController/Documents/EPICSnotes.html#bpmccConfigure">bpmccConfigure</a>
+            command. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">CELL:nodeCount<br>
+          </td>
+          <td style="text-align: center;">0x22F<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">The number of cells as set by
+            the <a href="file:///Users/wenorum/Documents/CellController/Documents/EPICSnotes.html#bpmccConfigure">bpmccConfigure</a>
+            command. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">BPM:nodeCount</td>
+          <td style="text-align: center;">0x230</td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The number of locally-connected
+            BPMs as set by the <a href="file:///Users/wenorum/Documents/CellController/Documents/EPICSnotes.html#bpmccConfigure">bpmccConfigure</a>
+            command. </td>
+        </tr>
+        
+        
+        <tr>
+          <td style="text-align: center;"><span style="font-style:
+              italic;"></span>FFB:goodRead</td>
+          <td style="text-align: center;">0x231<br>
+          </td>
+          <td style="text-align: center;">bi<br>
+          </td>
+          <td style="vertical-align: middle; text-align: left;">All cell
+            controllers heard from.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FOFBstatus_<br>
+          </td>
+          <td style="text-align: center;">0x232<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Status of fast orbit feedback
+            control.&nbsp; Bit 0 is status (0/1, disabled/enabled) of
+            this cell controller's local fast orbit feedback control.&nbsp;
+ Bit 1 is no longer used and will always be 0.&nbsp; Bit 2 is status (0/1,
+            disabled/enabled) of overall fast feedback control.&nbsp;
+            The latter bit is set only when all cell controllers have
+            locally enabled fast feedback and BPM offset data have been
+            received from all cell controllers.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FOFBstatus<br>
+          </td>
+          <td style="text-align: center;">&#8211;<br>
+          </td>
+          <td style="text-align: center;">mbbiDirect<br>
+          </td>
+          <td style="text-align: left;">Bit-addressable version of
+            above.&nbsp; Required since this record type does not
+            support DTYP=asynInt32.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">FOFBenMap<br>
+          </td>
+          <td style="text-align: center;">0x233<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Bitmap of cell controllers (LSB
+            is cell controller 0, MSB is cell controller 31) from which
+            cell controller has received data and which have fast orbit
+            feedback locally enabled.</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Two calc records (NAME="$(P)$(R)BPMnodeNchk_" and
+    NAME="$(P)$(R)CELLnodeNchk_") verify that the number of packets read
+    from the counterclockwise and clockwise loops correspond to the
+    expected values as set by the by the startup script <a href="file:///Users/wenorum/Documents/CellController/Documents/EPICSnotes.html#bpmccConfigure">bpmccConfigure</a>
+    command.&nbsp; A pair of multi-bit binary input records
+    (NAME="$(P)$(R)BPMnodeNchk" and NAME="$(P)$(R)CELLnodeNchk) converts
+    the the calc record values to alarm severities and descriptive
+    strings.&nbsp; Note that the latter may indicate "Bad Links" when
+    the one or more cell controllers is not receiving data from all
+    local BPMs since the effect is the same &#8211; packets are not received
+    from all cell controllers since a cell controller transmits only
+    when it has received data from all local BPMs.<br>
+    <br>
+    The packet error counters reflect problems from all BPMs in the
+    local loop so if the counts begin to rise it is useful to check the
+    packet error counters in each of the BPMs in the loop, too.<br>
+    <h2>Statistics</h2>
+    Set SCAN="10 second", DTYP=asynInt32 and INP="@asyn($(PORT) <span style="font-style: italic;">xxx</span>)", where $(PORT) expands to
+    the port name in the bpmccConfigure command and <span style="font-style: italic;">xxx</span> is a numeric value as
+    described in the following table.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">ASYN<br>
+              Subaddress<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record<br>
+              Type<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Description</span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">Cmd<span style="font-style:
+              italic;">x</span>RetryCount<br>
+          </td>
+          <td style="text-align: center;">0xE0<span style="font-style:
+              italic;">x</span><br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of commands accepted
+            after <span style="font-style: italic;">x</span> retries (<span style="font-style: italic;">x</span> ranges from 0 to 4).<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">CmdFailedCount<br>
+          </td>
+          <td style="text-align: center;">0xE05<br>
+          </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">Number of commands that were
+            abandoned because of too many retry attempts.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2>Pilot Tone Control<br>
+    </h2>
+    These are output records with DTYP=asynInt32 and OUT="@asyn($(PORT)
+    <span style="font-style: italic;">xxx</span>)", where $(PORT)
+    expands to the port name in the bpmccConfigure command and <span style="font-style: italic;">xxx</span> is a numeric value as
+    described in the following table.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">ASYN<br>
+              Subaddress<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record<br>
+              Type<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Description</span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">x</span>Atten<br>
+          </td>
+          <td style="text-align: center;">0x30<span style="font-style:
+              italic;">h</span><br>
+          </td>
+          <td style="text-align: center;">ao<br>
+          </td>
+          <td style="text-align: left;">Pilot tone <span style="font-style: italic;">x</span> (<span style="font-style: italic;">x</span>=0..11,<span style="font-style: italic;">h</span>=0..B) attenuation
+            (dB) in steps of 0.25 dB.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">Cx</span>Output </td>
+          <td style="text-align: center;">0x4<span style="font-style:
+              italic;">ch</span> </td>
+          <td style="text-align: center;">mbbo<br>
+          </td>
+          <td style="text-align: left;">Pilot tone <span style="font-style: italic;">C</span> (<span style="font-style: italic;">C</span>=A/B, <span style="font-style: italic;">c</span>=0/2) output <span style="font-style: italic;">x</span> (<span style="font-style: italic;">x</span>=0..11,<span style="font-style: italic;">h</span>=0..B) output level
+            selection.&nbsp; Note that because of PCB routing issues the
+            decimal <span style="font-style: italic;">x</span> does not
+            always equal the hexadecimal <span style="font-style:
+              italic;">h</span>.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center; vertical-align: middle;">pt<span style="font-style: italic;">Cx</span>OutputRBK</td>
+          <td style="text-align: center; vertical-align: middle;">0x1<span style="font-style: italic;">rr</span></td>
+          <td style="text-align: center; vertical-align: middle;">mbbi</td>
+          <td style="vertical-align: top;">Pilot tone <span style="font-style: italic;">C</span> (<span style="font-style: italic;">C</span>=A/B<span style="font-style: italic;"></span>) output <span style="font-style: italic;">x</span> (<span style="font-style: italic;">x</span>=0..11<span style="font-style: italic;"></span>) output level
+            selection readback (raw value is that of the output level
+            selection register). </td>
+        </tr>
+        <tr>
+          <td style="text-align: center; vertical-align: middle;">pt<span style="font-style: italic;">C</span>:Frequency</td>
+          <td style="text-align: center;">0x30<span style="font-style:
+              italic;">c</span></td>
+          <td style="text-align: center;">mbbo</td>
+          <td style="text-align: left;">Pilot tone <span style="font-style: italic;">C</span> (<span style="font-style: italic;">C</span>=A..B, <span style="font-style: italic;">c</span>=0..1) PLL frequency
+            selection.&nbsp; Processing this record overrides the effect
+            of any explicit changes to PLL registers.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">pt<span style="font-style:
+              italic;">C</span>:FrequencyRBK</td>
+          <td style="text-align: center;">0x1<span style="font-style:
+              italic;">rr</span></td>
+          <td style="text-align: center;">mbbi</td>
+          <td style="vertical-align: top;">Pilot tone <span style="font-style: italic;">C</span> (<span style="font-style: italic;">C</span>=A/B, <span style="font-style: italic;">rr</span>=27/35) PLL frequency
+            selection readback.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2>Pilot Tone PLL Low-Level Control<br>
+    </h2>
+    The pilot tone generator PLL registers can be read or written
+    explicitly using these records.&nbsp; DTYP=asynInt32 and
+    INP/OUT="@asyn($(PORT) <span style="font-style: italic;">xxx</span>)",
+
+    where $(PORT) expands to the port name in the bpmccConfigure command
+    and <span style="font-style: italic;">xxx</span> is a numeric value
+    as described in the following table.<br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">ASYN<br>
+              Subaddress<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record<br>
+              Type<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Description</span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptPLLregSelect<br>
+          </td>
+          <td style="text-align: center;">0x600<br>
+          </td>
+          <td style="text-align: center;">longout<br>
+          </td>
+          <td style="text-align: left;">Writing to this record selects a
+            PLL (bit 12) and register (bits 11 through 0) and reads and
+            stores the value for subsequent retrieval.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">ptPLLregGet </td>
+          <td style="text-align: center;">0x600 </td>
+          <td style="text-align: center;">longin<br>
+          </td>
+          <td style="text-align: left;">The value read by the most
+            recent ptPLLregSelect transaction.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; vertical-align: middle;">ptPLLregSet</td>
+          <td style="text-align: center;">0x601</td>
+          <td style="text-align: center;">longout</td>
+          <td style="text-align: left;">Writes the value to the selected
+            PLL and register.&nbsp; Note that most register changes do
+            not actually affect the operation of the PLL until the
+            buffered values are transferred to the active registers.<span style="font-style: italic;"></span><span style="font-style: italic;"></span><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <h2><a name="EEBI"></a>Errant Electron Beam Interlock<br>
+    </h2>
+    <h3> EEBI configuration/control</h3>
+    There are two EEBI modules per cell controller.&nbsp; In the
+    following table <span style="font-style: italic;">x</span> is 0 or
+    1 and <span style="font-style: italic;">y</span> is 0 or 2.&nbsp;
+    The longin and bi records are set at IOC startup time from values
+    present in the <a href="#bpmccConfigure">bpmccConfigure</a>
+    command.&nbsp; The EEBI:BEAMI longout record gets its value from the record
+    monitoring the storage ring beam current.&nbsp; In all cases
+    DTYP=asynInt32.<br>
+    <br>
+    <table style=" text-align: left; width: 800px; margin-left: auto; margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">ASYN<br>
+              Subaddress<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record<br>
+              Type<br>
+            </span> </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Des</span><span style="font-weight: bold;">cription</span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI<span style="font-style:
+              italic;">x</span>:BPMA<br>
+            EEBI<span style="font-style: italic;">x</span>:BPMB</td>
+          <td style="text-align: center;">0x7<span style="font-style:
+              italic;">y</span><span style="font-style: italic;"></span>0<br>
+            0x7<span style="font-style: italic;">y</span>1<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The BPMs to be used in the
+            interlock computation.&nbsp; The value is the least
+            significant five bits of the BPM fast orbit feedback index.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI<span style="font-style:
+              italic;">x</span>:PLANEA<br>
+            EEBI<span style="font-style: italic;">x</span>:PLANEB</td>
+          <td style="text-align: center;">0x7<span style="font-style:
+              italic;">y</span>2<br>
+            0x7<span style="font-style: italic;">y</span>3<br>
+          </td>
+          <td style="text-align: center;">bi</td>
+          <td style="text-align: left;">The BPM plane (0:X, 1:Y) to be
+            used in the interlock computation.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI<span style="font-style:
+              italic;">x</span>:OFFSETA<br>
+            EEBI<span style="font-style: italic;">x</span>:OFFSETB</td>
+          <td style="text-align: center;">0x7<span style="font-style:
+              italic;">y</span>4<br>
+            0x7<span style="font-style: italic;">y</span>5<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The offset in nm to be
+            subtracted from the beam positions before using them in the
+            interlock computation. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI<span style="font-style:
+              italic;">x</span>:LIMITA<br>
+            EEBI<span style="font-style: italic;">x</span>:LIMITB</td>
+          <td style="text-align: center;">0x7<span style="font-style:
+              italic;">y</span>6<br>
+            0x7<span style="font-style: italic;">y</span>7<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The limit in nm of the value of
+            the beam positions minus offsets beyond which the interlock
+            will trip.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI<span style="font-style:
+              italic;">x</span>:SKEWLIMIT</td>
+          <td style="text-align: center;">0x7<span style="font-style:
+              italic;">y</span>8<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The limit in nm of the different
+            between the beam positions minus offsets beyond which the
+            interlock will trip.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;"><a name="EEBIthresh"></a>EEBI:ITHRESH</td>
+          <td style="text-align: center;">0x7E0<br>
+          </td>
+          <td style="text-align: center;">longin</td>
+          <td style="text-align: left;">The beam current above which the
+            interlock will be armed.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI:BEAMI</td>
+          <td style="text-align: center;">0x7E1<br>
+          </td>
+          <td style="text-align: center;">longout</td>
+          <td style="text-align: left;">Beam current value obtained from
+            $(IOC):beamCurrentMon and sent to the FPGA where it is
+            compared with EEBI:ITHRESH.&nbsp; SCAN="10 second".<br>
+          </td>
+        </tr><tr>
+  <td style="text-align: center;"><a name="EEBIreset"></a>EEBI:reset<br>
+  </td>
+  <td style="text-align: center;">0x1209<br>
+  </td>
+  <td style="vertical-align: middle; text-align: center;">longout<br>
+  </td>
+  <td style="vertical-align: middle; text-align: left;">Write 1, 100, 10000 in that order to reset an EEBI trip condition (simulates push and release of front panel RESET button).<br>
+  </td>
+</tr>
+
+      </tbody>
+    </table>
+    <br>
+    <h3> EEBI status<br>
+    </h3>
+    For mbbi records, set SCAN="I/O Intr", DTYP=asynUInt32Digital and
+    INP="@asynMask($(PORT) <span style="font-style: italic;">xxx</span>,
+    7 0)", where $(PORT) expands to the port name in the bpmccConfigure
+    command and <span style="font-style: italic;">xxx</span> is a
+    numeric value as described in the following table.&nbsp; <span style="font-weight: bold;"></span>The records process at the rate
+    at which the "$(P)$(R)eebi:rbkt_" (ASYN subaddress 0x800) longin
+    record processes.<br>
+    <br>
+    <table style=" text-align: left; width: 800px; margin-left: auto; margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">ASYN<br>
+              Subaddress<br>
+            </span></td>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record<br>
+              Type<br>
+            </span> </td>
+          <td style=" text-align: center;"><span style="font-weight:
+              bold;">Des</span><span style="font-weight: bold;">cription</span><br>
+          </td>
+        </tr>
+        <tr>
+          <td style=" text-align: center;">EEBI:STATE</td>
+          <td style="text-align: center;">0x800<br>
+          </td>
+          <td style="text-align: center;">mbbi</td>
+          <td style="vertical-align: top;">Current EEBI state:<br>
+            <table style=" text-align: left; width: 100%;" cellspacing="2" cellpadding="2" border="1">
+              <tbody>
+                <tr>
+                  <td style="text-align: center;"><span style="font-weight: bold;">Value</span><br>
+                  </td>
+                  <td style="text-align: center;"><span style="font-weight: bold;">Description</span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">UNCONFIGURED<br>
+                  </td>
+                  <td style="vertical-align: top;">One or more of the
+                    EEBI configuration values has yet to be obtained
+                    from the cell controller soft IOC.&nbsp; Interlock
+                    relay open.<br>
+                  </td>
+                </tr>
+                <tr>
+  <td style=" width: 140px; text-align: center;">IOC TIMEOUT</td>
+  <td style="vertical-align: top;">More than 20
+                    seconds has elapsed from the previous beam current
+                    update from the soft IOC.&nbsp; Interlock relay open.</td>
+</tr>
+<tr>
+                  <td style="text-align: center;">BPM TIMEOUT<br>
+                  </td>
+                  <td style="vertical-align: top;">FA trigger occurred before previous beam position update has completed.&nbsp; Interlock relay open.<br>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">CLIPPING<br>
+                  </td>
+                  <td style=" vertical-align: top;">ADC of one or both BPMs is clipping.&nbsp; Interlock relay open.<br>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">TRIPPED</td>
+                  <td style="vertical-align: top;">Beam position limit
+                    was exceeded while beam current was above
+                    EEBI:ITHRESH and BPM sum signals were greater than
+                    20,000.&nbsp; The latter requirement ensures that
+                    beam positions are credible.&nbsp; Interlock relay 
+open.&nbsp; The cell controller remains in this state until the front 
+panel RESET button is pushed or the <a moz-do-not-send="true" href="#EEBIreset">EEBI:reset</a> record is written with the correct sequence of values.<br>
+</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">UNDERCURRENT </td>
+                  <td style="text-align: left;">Beam current is less
+                    than EEBI:ITHRESH.&nbsp; Interlock relay closed.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">ARMED<br>
+                  </td>
+                  <td style="vertical-align: top;">Beam current is above
+                    EEBI:ITHRESH and limit conditions are met.&nbsp;
+                    Interlock relay closed.</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI:LastFault</td>
+          <td style="text-align: center;">0x801<br>
+          </td>
+          <td style="text-align: center;">mbbi<br>
+          </td>
+          <td style="text-align: left; vertical-align: middle;">The
+            EEBI:STATE that most recently caused the EEBI interlock
+            relay to make a transition from closed to open.&nbsp; The
+            time stamp of this record is provided by the FPGA event
+            receiver and accurately reflects the time at which the
+            transition occurred.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">EEBI:LastFaultTime_SI</td>
+          <td style="text-align: center;"><br>
+          </td>
+          <td style="text-align: center;">stringin</td>
+          <td style="text-align: left; vertical-align: middle;">Human-readable
+
+            version of EEBI:LastFault time stamp. </td>
+        </tr><tr>
+  <td style="text-align: center;">EEBI:Faults</td>
+  <td style="text-align: center;">0x801</td>
+  <td style="text-align: center;">mbbiDirect</td>
+  <td style="vertical-align: middle; text-align: left;">Bitmap of 
+beam position faults.&nbsp; Three bits per EEBI channel (2:Skew excursion, 1:BPM B
+ excursion, 0:BPM A excursion), with EEBI 0 in the three 
+least-signficant bits and EEBI 1 in the next three.</td>
+</tr>
+<tr>
+  <td style="text-align: center;">EEBI:LatchedFaults</td>
+  <td style="text-align: center;">0x801</td>
+  <td style="text-align: center;">mbbiDirect<br>
+  </td>
+  <td style="vertical-align: middle; text-align: left;">Bitmap of the 
+beam position faults that first made a zero-to-one 
+transition.&nbsp; Three bits per EEBI channel (2:Skew excursion, 1:BPM B
+ excursion, 0:BPM A excursion), with EEBI 0 in the three 
+least-signficant bits and EEBI 1 in the next three.<br>
+  </td>
+</tr>
+
+      </tbody>
+    </table>
+    <br>
+    <br>
+    <h2>Arbitrary Waveform Generator<br>
+    </h2>
+    The cell controller can be set to provide an arbitrary waveform of
+    setpoint values to all the the fast orbit feedback power supplies
+    driven by the cell controller.&nbsp; For all records except the
+    pattern waveform DTYP=asynInt32.<br>
+    <br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center; vertical-align: middle;"><span style="font-weight: bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Type</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGpattern<br>
+          </td>
+          <td style="text-align: center;">0x1100<br>
+          </td>
+          <td style="text-align: center;">waveform<br>
+          </td>
+          <td style="text-align: left;">The waveform of setpoint
+            values.&nbsp; FTVL=FLOAT in units of Amperes.&nbsp;
+            NELM=8192.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGenable</td>
+          <td style="text-align: center;">0x1260<br>
+          </td>
+          <td style="text-align: center;">bo</td>
+          <td style="text-align: left;">Values sent to power supply come
+            from orbit feedback computation (0) or arbitrary waveform
+            generator (1). <br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGsoftTrig<br>
+          </td>
+          <td style="text-align: center;">0x1261<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">bo<br>
+          </td>
+          <td style="text-align: left;">Triggers waveform generator when
+            processed.&nbsp; The value written is immaterial.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGmode</td>
+          <td style="text-align: center;">0x1262<span style="font-style:
+              italic;"></span> </td>
+          <td style="text-align: center;">mbbo<br>
+          </td>
+          <td style="text-align: left;">Controls waveform generator mode
+            of operation. 0/Disable &#8211; waveform generation is
+            disabled.&nbsp; 1/Retrigger &#8211; one cycle emitted each
+            trigger.&nbsp; 2/Continuous &#8211; waveform cycles are emitted
+            continuously until one of the other modes is selected.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGinterval</td>
+          <td style="text-align: center;">0x1263<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">ao</td>
+          <td style="text-align: left;">Interval, in units of
+            microseconds, between values sent to supplies.&nbsp; Range
+            is 10 &#181;s to 1 ms.&nbsp; A value of 0 synchronizes waveform
+            generator updates to the BPM fast acquisition (FA) interval.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGevent</td>
+          <td style="text-align: center;">0x1264<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">longout</td>
+          <td style="text-align: left;">Event code which will trigger
+            the AWG.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">AWGenabled<br>
+          </td>
+          <td style="text-align: center;">&#8211;<br>
+          </td>
+          <td style="text-align: center;">mbbi<br>
+          </td>
+          <td style="text-align: left;">Is AWG enabled? 0=power supplies
+            driven from&nbsp; orbit feedback computations, 1=power
+            supplies driven from arbitrary waveform generator.&nbsp; Raw
+            value obtained from AWGcsrhi_.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: middle; text-align: center;">AWGstate</td>
+          <td style="text-align: center;">&#8211;</td>
+          <td style="text-align: center;">mbbi</td>
+          <td style="text-align: left;">AWG state, 0/idle, 1/awaiting
+            trigger, 2/waveform being emitted.&nbsp; Raw value obtained
+            from AWGcsrhi_. </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    Setting the AWGmode to 'Idle' while the generator is active will
+    immediately stop the generator and leave the power supply outputs at
+    their present value.&nbsp; To allow the currently active continuous
+    mode pattern to complete set the AWGmode to 'Retrigger' instead.<br>
+    <h2>Fast Orbit Feedback Waveform Recorder<br>
+    </h2>
+    The cell controller can record setpoint and readback waveforms of
+    values of one or more of the fast orbit feedback power
+    supplies.&nbsp; All records are DTYP=asynInt32 except the waveforms
+    which are&nbsp; DTYP=asynInt32ArrayIn (FTVL=FLOAT), in units of
+    Amperes.&nbsp; The recorder is triggered by arrival of an event
+    code, processing of the PS:WFR:soft record, or arbitrary waveform
+    generator activity.<br>
+    <br>
+    <table style=" text-align: left; width: 80%; margin-left: auto;
+      margin-right: auto;" cellspacing="2" cellpadding="2" border="1">
+      <tbody>
+        <tr>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Name</span><br>
+          </td>
+          <th style="text-align: center;">ASYN<br>
+            Subaddress<br>
+          </th>
+          <td style="text-align: center;"><span style="font-weight:
+              bold;">Record</span><span style="font-weight: bold;"><br>
+            </span><span style="font-weight: bold;">Type</span><br>
+          </td>
+          <th style="vertical-align: middle; text-align: center;">Description<br>
+          </th>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:setpoints</td>
+          <td style="text-align: center;">0x2000<br>
+          </td>
+          <td style="text-align: center;">waveform<br>
+          </td>
+          <td style="text-align: left;">The waveform of setpoint
+            values.&nbsp; NELM=32768.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:readbacks</td>
+          <td style="text-align: center;">0x2001<br>
+          </td>
+          <td style="text-align: center;">waveform<br>
+          </td>
+          <td style="vertical-align: top;">The waveform of readback
+            values.&nbsp; NELM=32768.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:bitmap<br>
+          </td>
+          <td style="text-align: center;">0x1203<br>
+          </td>
+          <td style="text-align: center;">longout<br>
+          </td>
+          <td style="text-align: left;">Bitmap specifying supplies to
+            record.&nbsp; Least significant bit corresponds to fast
+            feedback supply 0.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:pretrig</td>
+          <td style="text-align: center;">0x1204<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">longout<br>
+          </td>
+          <td style="text-align: left;">Number of pre-trigger
+            samples.&nbsp; Minimum value is 1, maximum is (32768 / number of ones in PS:WFR:bitmap) minus
+            the number of post-trigger samples.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:posttrig</td>
+          <td style="text-align: center;">0x1205<span style="font-style:
+              italic;"></span> </td>
+          <td style="text-align: center;">longout<br>
+          </td>
+          <td style="text-align: left;">Number of post-trigger
+            samples.&nbsp; Minimum value is 1, maximum&nbsp; is&nbsp; (32768 / number of ones in PS:WFR:bitmap)
+            minus the number of pre-trigger samples. </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:event</td>
+          <td style="text-align: center;">0x1206<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">longout<br>
+          </td>
+          <td style="text-align: left;">The event code which will
+            trigger waveform acquisition.&nbsp; A value of 0 disables
+            event triggers.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:arm</td>
+          <td style="text-align: center;">0x1207<span style="font-style:
+              italic;"></span></td>
+          <td style="text-align: center;">bo<br>
+          </td>
+          <td style="text-align: left;">Arm/disarm (1/0) the recorder.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:soft</td>
+          <td style="text-align: center;">0x120<span style="font-style:
+              italic;">8</span><span style="font-style: italic;"></span>
+          </td>
+          <td style="text-align: center;">bo<br>
+          </td>
+          <td style="text-align: left;">Triggers the recorder when
+            processed.&nbsp; The value written is immaterial.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:state</td>
+          <td style="text-align: center;">&#8211;</td>
+          <td style="text-align: center;">mbbi</td>
+          <td style="text-align: left;">Waveform recorder state, 0/idle,
+            1/pre-trigger filling, 2/awaiting trigger, 3/post-trigger
+            filling. This record is updated as part of the <a href="#Sysmon">system monitor </a>updates and since these
+            are performed at a relatively slow rate there may be
+            noticeable latency in its value.<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center;">PS:WFR:rbchan</td>
+          <td style="text-align: center;">0x1220<br>
+          </td>
+          <td style="text-align: center;">mbbo<br>
+          </td>
+          <td style="vertical-align: middle; text-align: left;">Set
+            channel from which readbacks will be taken, 0/setpoint,
+            1/current, 2/voltage.<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    If the constraints mentioned above on the number of pre- and 
+post-trigger samples are not met when the the recorder is armed the 
+recorder will force the number of pre- and post-trigger samples to one 
+half their maximum value (i.e. both values will be set to (32768 / 
+number of ones in PS:WFR:bitmap) / 2).&nbsp; The first N values in the 
+acquired waveforms, where N is the number of ones in the readout control
+ bitmap, will be the N values acquired at the first sampling 
+interval.&nbsp; The first sample in the waveforms will be from the 
+supply with fast feedback index corresponding to the least significant 1
+ in the bitmap.&nbsp; The Nth sample in the waveforms will be from the 
+supply with&nbsp; fast feedback index corresponding to the most 
+significant 1 in the bitmap.<br>
+<br>
+If the recorder is to
+    acquire data from a single arbitrary waveform generator cycle, the
+    number of pre-trigger samples should be set to one and the number of
+    post-trigger samples to one less than the number of arbitrary
+    waveform generator values.<br>
+<br>
+The recorder status is
+    checked as part of the system monitor readbacks so increasing the
+    scan rate of $(P)$(R)sysmon:rbkt_ can shorten the detection of acquisition completion.<br>
+    <br>
+    <h2>FPGA update on reconnect<br>
+    </h2>
+    The IOC attempts to automatically restore FPGA settings following an
+    FPGA restart.&nbsp; This is achieved through a calcout record
+    ($(P)$(R)connCheck_) that monitors the STAT field of a
+    periodically-scanned readback record ($(P)$(R)eebi:rbkt_) and causes
+    a number of event, fanout and sequence records ($(P)$(R)reconn<span style="font-style: italic;">X</span>_)to process when that status
+    returns to 0.&nbsp; The fanout and sequence records in turn cause
+    the various output records to process and send their values to the
+    FPGA.<br>
+    <br>
+<h2>
+    Beam current watchdog</h2>
+The <span style="font-weight: bold;">beamCurrentCheck</span> state 
+notation program monitors a PV holding the value of the storage ring 
+beam current and puts a 0 to the SR01:CC:FOFBenable record when the 
+reading is below some threshold.&nbsp; The program accepts two values on
+ startup:<br>
+<ul>
+  <li>Imin &#8211; the threshold beam current value, in mA.&nbsp; Default is 30.0.</li>
+  <li>DCCT &#8211; the name of the record from which to obtain the beam current reading.&nbsp; Default is "SR:DCCT:MDEL02".<br>
+  </li>
+</ul>
+<br>
+    <h1>Using BPM cell controller support in an application</h1>
+    <p>Several files need minor modifications to use BPM cell controller
+      support in an application.</p>
+    <ol>
+      <li>Add the full path to the BPM cell controller support directory
+        to the application <tt>configure/RELEASE</tt> file:<br>
+        <tt>BPM=</tt><em>xxxx</em><tt>/modules/instrument/BPM_CC/</tt><tt>&lt;release&gt;</tt><br>
+        Where <tt>&lt;release&gt;</tt> is the release number of of the
+        BPM cell controller support. You'll need to provide a similar
+        line for the ASYN support module.</li>
+      <li>Add instrument support to application database definition file<br>
+        The application database definition file must include the
+        database definition files for the BPM cell controller. There are
+        two ways that this can be done:
+        <ul>
+          <li>If you are building your application database definition
+            file the old-fashioned way from an <em>xxx</em><tt>Include.dbd</tt>
+            file you include the additional database definitions in that
+            file:<br>
+            <tt>include "base.dbd"</tt><br>
+            <tt>include "bpmccSup.dbd"</tt><br>
+          </li>
+          <li>If you are building your application database definition
+            file from the application Makefile you specify the
+            additional database definitions there:<br>
+            <em>xxx</em><tt>_DBD += base.dbd</tt><br>
+            <em>xxx</em><tt>_DBD += bpmccSup.dbd</tt><br>
+          </li>
+        </ul>
+      </li>
+      <li>Add the bpmccSup support libraries to the application<br>
+        You must link the bpmccSup support library and the ASYN support
+        library with the application. Add the following lines to the
+        application Makefile: <br>
+        <em>xxx</em><tt>_LIBS += bpmccSup</tt><br>
+        <em>xxx</em><tt>_LIBS += asyn</tt><br>
+        before the <br>
+        <em>xxx</em><tt>_LIBS += $(EPICS_BASE_IOC_LIBS)</tt></li>
+      <li><a name="bpmccConfigure"></a>Add one <tt>bpmccConfigure</tt>
+        command for each cell controler.&nbsp; The arguments are:<br>
+        <ol>
+          <li>The ASYN port name.</li>
+          <li>The IPv4 address of the cell controller.</li>
+          <li>The index of this cell controller, a number in the range
+            [0..31].&nbsp; The cell controllers connected in a loop must
+            have unique indices but there are no restrictions beyond
+            that.&nbsp; No externally-visible values are affected by the
+            setting of this value.</li>
+          <li>The number of cell controllers in the system.</li>
+          <li>The number of BPMs with valid fast orbit feedback index
+            values attached to this cell controller.&nbsp; BPMs with
+            invalid (outside the range [0..511]) fast orbit feedback
+            indices do not send their data to the cell controller and
+            should not be included in this count. <br>
+          </li>
+          <li>The priority at which the port thread will run.&nbsp; A
+            missing value or a value of 0 confirms the default medium
+            priority.</li>
+          <li>The beam current, in mA, below which EEBI operation will
+            be inhibited and the interlock will be on. This, and the
+            remaining arguments, are optional.</li>
+          <li>The fast orbit feedback index of the first BPM to be used
+            in the errant electron beam interlock (EEBI) check.&nbsp;
+            Use 0 to 511 for the X plane, 1000 to 1511 for Y. <br>
+          </li>
+          <li>The fast orbit feedback index of the second BPM to be used
+            in the errant electron beam interlock check.&nbsp; Use 0 to
+            511 for the X plane, 1000 to 1511 for Y.&nbsp; <br>
+          </li>
+          <li>The offset, in nm,&nbsp; to be applied to the reading from
+            the first EEBI BPM before comparing it against the limit.</li>
+          <li>The offset, in nm, to be applied to the reading from the
+            second EEBI BPM before comparing it against the limit.</li>
+          <li>The limit, in nm, of difference from offset of the first
+            EEBI BPM above which the interlock will trip.</li>
+          <li>The limit, in nm, of difference from offset of the second
+            EEBI BPM above which the interlock will trip.</li>
+          <li>The skew, in nm, of between the differences from offsets
+            of the first and second EEBI BPMs above which the interlock
+            will trip.</li>
+          <li>The fast orbit feedback index of the third BPM to be used
+            in the errant electron beam interlock (EEBI) check.&nbsp;
+            Use 0 to 511 for the X plane, 1000 to 1511 for Y.&nbsp;
+            This, and the remaining arguments, are optional.</li>
+          <li>The fast orbit feedback index of the fourth BPM to be used
+            in the errant electron beam interlock check.&nbsp; Use 0 to
+            511 for the X plane, 1000 to 1511 for Y.&nbsp; <br>
+          </li>
+          <li>The offset, in nm,&nbsp; to be applied to the reading from
+            the third EEBI BPM before comparing it against the limit.</li>
+          <li>The offset, in nm, to be applied to the reading from the
+            fourth EEBI BPM before comparing it against the limit.</li>
+          <li>The limit, in nm, of difference from offset of the third
+            EEBI BPM above which the interlock will trip.</li>
+          <li>The limit, in nm, of difference from offset of the fourth
+            EEBI BPM above which the interlock will trip.</li>
+          <li>The skew, in nm, of between the differences from offsets
+            of the third and fourth EEBI BPMs above which the interlock
+            will trip.</li>
+        </ol>
+        Both pairs of EEBI BPM value/plane arguments must differ for
+        EEBI operation to be enabled.&nbsp; If only one EEBI check is
+        specified the other will be configured with the same values.<br>
+        Each bpmccConfigure command results in the creation of a worker
+        thread for the BPM cell controller ASYN port.&nbsp; Changes to
+        the cell controller index, the number of cell controllers in the
+        system, and the number of locally-attached BPMs take effect only
+        when the <a href="#SetpointVector">BPM setpoints</a> are
+        updated.<br>
+      </li>
+      <li> Load a database file or files describing the records
+        associated with each BPM cell controller. The example
+        application distributed with this support module illustrates how
+        this is done.<br>
+      </li>
+    </ol>
+    <br>
+    <h1><a name="Console_Commands_and_Messages_"></a>Console Commands
+      and Messages<br>
+    </h1>
+    <p>The cell controller FPGA sends startup and diagnostic messages to
+      the console UDP port of the BMB7 module.&nbsp; A <a href="#consoleScript">script</a> is provided to interact with
+      the console serial port.&nbsp; A simple command line interpreter
+      is provided. &nbsp; There is no command history and the only
+      editing available is the backspace or delete key which erases the
+      character currently at the end of the line.&nbsp; A
+      carriage-return or line-feed character marks the end of a
+      line.&nbsp; Only enough of a command to make it unique is
+      required.&nbsp; Since no existing commands share a common single
+      letter this means that only the first character of the command is
+      needed.&nbsp; The commands are:</p>
+    <dl>
+    </dl>
+    <dl>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;"><span style="font-weight:
+            bold;">ad9520<span style="font-style: italic;"></span></span><br>
+        </span></dt>
+      <dd>Show the pilot tone generator AD9520 PLL register contents.</dd>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">bpmInhibit [bitmap]<br>
+        </span></dt>
+      <dd>Inhibit packet reception on [bitmap=0/no, 1/CCW, 2/CW, 3/both]
+        BPM links.&nbsp; If no <span style="font-weight: bold;">bitmap</span>
+        argument is present the current inhibit/active state of the BPM
+        links is printed.<br>
+      </dd>
+    </dl>
+    <dl>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">cellInhibit [bitmap]<br>
+        </span></dt>
+      <dd>Inhibit packet reception on [bitmap=0/no, 1/CCW, 2/CW, 3/both]
+        cell controller links.&nbsp; If no <span style="font-weight:
+          bold;">bitmap</span> argument is present the current
+        inhibit/active state of the cell controller links is printed.</dd>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">debug [<span style="font-style: italic;">n</span>]</span></dt>
+      <dd>The diagnostic message flags are set to the specified value
+        (in hexadecimal), if one is given.&nbsp; If no value is
+        specified the current value of the flags is printed.&nbsp; The
+        bits are:</dd>
+    </dl>
+    <ul style="margin-left: 40px;">
+      <li>Bit 0 &nbsp; &#8212; Enable messages related to the EPICS UDP port.</li>
+      <li>Bit 1 &nbsp; &#8212; Show transactions related to the arbitrary
+        waveform generator.</li>
+      <li>Bit 2 &nbsp; &#8212; Show transactions related to the power supply waveform recorder.</li>
+      
+      <li>Bit 4&nbsp;&nbsp; &#8212; Show transactions related to the power supply offset updates.<br>
+</li>
+      <li>Bit 12 &#8212; Show the values acquired by the on-board frequency counters.</li>
+<li>Bit 14 &#8212; Show snapshot of power supply setpoints.</li>
+
+      
+<li>Bit 15 &#8212; Restart the fast power supply ethernet links.</li>
+
+      <li>Bit 16 &#8212; Display QSFP data.</li>
+      <li>Bit 23 &#8212; Reset EEBI interlock.</li></ul>
+    <dl>
+      <dt><span style="font-weight: bold;">evr</span></dt>
+      <dd>Show the embedded event receiver settings.</dd>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">fofb [<span style="font-style: italic;">i</span> [<span style="font-style: italic;">n</span>]]</span><span style="font-weight: bold;"><br>
+        </span></dt>
+      <dd>Show <span style="font-style: italic;">n</span> (default 1)<span style="font-style: italic;"></span> fast orbit feedback
+        deviation vector values starting at index <span style="font-style: italic;">i</span> (default 0).&nbsp; If <span style="font-style: italic;">n</span> is 0 the multicast
+        reception statistics are shown instead.<br>
+      </dd>
+      <dt><br>
+      </dt>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">gtx [<span style="font-style:
+            italic;">n</span>]<br>
+        </span></dt>
+      <dd>Show the eye diagram for the lane <span style="font-style:
+          italic;"><span style="font-weight: bold;">n</span></span>
+        (default 0) of the Aurora GTX receivers.&nbsp; A full scan takes
+        several seconds to perform.&nbsp; EPICS communication and fast
+        feedback operations remain active while the scan is in progress.<br>
+      </dd>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">loophist</span></dt>
+      <dd>Show and then reset the histogram of times (in microseconds)
+        between checks for fast feedback requests.<br>
+      </dd>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">log</span></dt>
+      <dd>Replay the startup console messages.</dd>
+      <dt><br>
+        <span style="font-weight: bold;">reg [<span style="font-style:
+            italic;">r</span> [<span style="font-style: italic;">n</span>]]</span></dt>
+      <dd><span style="font-weight: bold;"></span>Show the contents of <span style="font-style: italic;"><span style="font-weight: bold;">n</span></span>
+        (default 1) general-purpose I/O registers starting at register <span style="font-style: italic;"><span style="font-weight: bold;">r</span></span>.</dd>
+      <dt><br>
+      </dt>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">pslink<span style="font-style: italic;"></span><span style="font-style:
+            italic;"></span></span></dt>
+      <dd><span style="font-weight: bold;"></span>Show status of fiber
+        gigabit ethernet link to power supplies.<br>
+      </dd>
+      <dt><br>
+        <span style="font-weight: bold;">stats [0]<br>
+        </span></dt>
+      <dd>Show the Aurora link readout statistics.&nbsp; The statistics
+        are cleared after printing if the optional '0' argument is
+        present.</dd>
+      <dd><br>
+      </dd>
+      <dt><span style="font-weight: bold;">tlog</span></dt>
+      <dd>Log arrival of timing system events until an EVR time-of-day
+        error occurs or a character is typed at the console.&nbsp; Then
+        dump a table of events and their arrival times.</dd>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">wAurora [reg]<br>
+        </span></dt>
+      <dd>Write to the Aurora/GTX reset control register [bit 0=GTX
+        reset, bit 1=Aurora reset].&nbsp; If no reg argument is present
+        the current state of the Aurora links is printed.</dd>
+    </dl>
+    <dl>
+    </dl>
+    <p> </p>
+    <br>
+    <h2>Useful Scripts<br>
+    </h2>
+    The cell controller support module scripts directory contains a
+    number of useful diagnostic scripts.<br>
+    <br>
+<dl>
+<dt><span style="font-weight: bold;">beamCurrentSource.sh</span></dt><dd>Allows the cell controller beam current value to be set to a static value for EEBI/FOFB testing when the beam is off.<br>
+</dd>
+</dl>
+
+    <dl>
+      <dt><span style="font-weight: bold;"><a name="consoleScript"></a>console.py</span></dt>
+      <dd>Connect to the FPGA interactive <a href="#Console_Commands_and_Messages_">console</a>.&nbsp; Type
+        a control-C to terminate the script.<br>
+      </dd>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">ffb.py<span style="font-style: italic;"></span><span style="font-style:
+            italic;"></span></span><span style="font-weight: bold;"><br>
+        </span></dt>
+      <dd>Display or generate old network-based fast feedback system
+        multicast packets.&nbsp; This script works only if run from a
+        machine attached to the fast feedback system network.<br>
+      </dd>
+    </dl>
+    <dl>
+      <dt><span style="font-weight: bold;">prbs.py<br>
+        </span></dt>
+      <dd>Use the arbitrary waveform generator to apply a filtered PRBS
+        signal to the supply, then use the waveform recorder to read
+        back the results, then compute the supply frequency response.<br>
+      </dd>
+      <dt><br>
+      </dt>
+      <dt><span style="font-weight: bold;">setAWG.py<br>
+        </span></dt>
+      Manipulate the diagnostic arbitrary waveform generator pattern.
+    </dl>
+  
+
+
+</body></html>
