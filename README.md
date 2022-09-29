@@ -37,8 +37,8 @@ A suggestion in running the `make` command is to measure the time
 and redirect stdout/stderr to a file so you can inspect it later:
 
 ```bash
-ARM_TOOLCHAIN_LOCATION=/media/Xilinx/Vivado/2020.2.2/Vitis/2020.2/gnu/microblaze/lin
-(time make CROSS_COMPILE=${ARM_TOOLCHAIN_LOCATION}/bin/mb- APP=cctrl PLATFORM=marble && notify-send 'Compilation SUCCESS' || notify-send 'Compilation ERROR'; date) 2>&1 | tee make_output
+MB_TOOLCHAIN_LOCATION=/media/Xilinx/Vivado/2020.2.2/Vitis/2020.2/gnu/microblaze/lin
+(time make CROSS_COMPILE=${MB_TOOLCHAIN_LOCATION}/bin/mb- APP=cctrl PLATFORM=marble && notify-send 'Compilation SUCCESS' || notify-send 'Compilation ERROR'; date) 2>&1 | tee make_output
 ```
 
 ### Deploying
