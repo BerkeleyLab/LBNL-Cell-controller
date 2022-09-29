@@ -46,7 +46,7 @@ assign awgTDATA = dpramQ;
 
 localparam SETPOINT_COUNTER_WIDTH = $clog2(SETPOINT_COUNT);
 reg [SETPOINT_COUNTER_WIDTH:0] setpointCounter;
-assign setpointCounterDone = setpointCounter[SETPOINT_COUNTER_WIDTH];
+wire setpointCounterDone = setpointCounter[SETPOINT_COUNTER_WIDTH];
 assign awgTLAST = setpointCounterDone;
 
 (*mark_debug=DEBUG*) reg trigger = 0;
