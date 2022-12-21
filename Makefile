@@ -15,6 +15,7 @@ all: bit sw
 
 bit:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.bit
+	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.mmi
 
 sw:
 	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) all
