@@ -18,6 +18,10 @@
 #include "qsfp.h"
 #include "util.h"
 
+#ifdef SIMULATION
+#include "simplatform.h"
+#endif
+
 #define UART_CSR_TX_FULL    0x80000000
 #define UART_CSR_RX_READY   0x100
 
@@ -409,6 +413,8 @@ handleLine(char *line)
     int argc;
     char *tokArg, *tokSave;
 
+    // DEBUG
+    xil_printf("Handle line\r\n");
     argc = 0;
     tokArg = line;
     while ((argc < (sizeof argv / sizeof argv[0]) - 1)) {
@@ -434,6 +440,9 @@ consoleCheck(void)
     int c;
     static char line[200];
     static int idx = 0;
+#ifdef SIMULATION
+    simService();
+#endif
 
     if (eyescanCrank()) return;
     c = GPIO_READ(GPIO_IDX_UART_CSR);

@@ -4,7 +4,11 @@
 #include "platform.h"
 #include "console.h"
 #include "aurora.h"
+#ifdef SIMULATION
+#include "simplatform.h"
+#else
 #include "bmb7_udp.h"
+#endif
 #include "epics.h"
 #include "evr.h"
 #include "eyescan.h"

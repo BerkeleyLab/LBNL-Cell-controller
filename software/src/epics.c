@@ -4,7 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "aurora.h"
+#ifdef SIMULATION
+#include "simplatform.h"
+#else
 #include "bmb7_udp.h"
+#endif
 #include "cellControllerProtocol.h"
 #include "eebi.h"
 #include "epics.h"
