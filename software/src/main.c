@@ -7,8 +7,10 @@
 #ifdef SIMULATION
 #include "simplatform.h"
 #else
-#include "bmb7_udp.h"
-#endif
+  #ifndef MARBLE
+    #include "bmb7_udp.h"
+  #endif
+#endif  // SIMULATION
 #include "epics.h"
 #include "evr.h"
 #include "eyescan.h"
@@ -23,6 +25,8 @@
 #include "xadc.h"
 
 int udpEPICS;
+
+#define MARBLE
 
 void rx8chk(void) {
     static unsigned char buf[1600];
@@ -76,12 +80,13 @@ int main()
     xadcInit();
     setPilotToneReference(328 * 2); // SROC/2 for now
     ptInit();
-    udpEPICS = udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");
+    udpEPICS = epicsInit(); // udpEPICS unused in marble build
 
     /*
      * Toss any junk present in UDP receive buffers
      */
     lastPacket = MICROSECONDS_SINCE_BOOT();
+#ifndef MARBLE
     for (pass = 0 ; pass < 1000000 ; pass++) {
         if (udpRxCheck32(udpEPICS, NULL, 0) > 0) {
             lastPacket = MICROSECONDS_SINCE_BOOT();
@@ -90,6 +95,7 @@ int main()
             break;
         }
     }
+#endif
 
     /*
      * Main processing loop
@@ -101,7 +107,7 @@ int main()
             lastDiagnostic = now;
             xadcUpdate();
         }
-        pollEPICS();
+        epicsService();
         consoleCheck();
         ptCrank();
     }

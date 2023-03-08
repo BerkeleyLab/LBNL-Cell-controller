@@ -10,8 +10,6 @@ extern "C" {
 #include <ctype.h> // for isprint()
 #include "xil_io.h"
 
-//udpEPICS??
-
 int simService(void);
 
 int udpInit(uint32_t csrAddress, const char *name);

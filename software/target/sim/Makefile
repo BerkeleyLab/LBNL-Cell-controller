@@ -6,14 +6,18 @@ PROJECT_NAME=ccsim
 PARENT_DIR=$(lastword $(subst /, ,$(dir $(abspath $(lastword $(MAKEFILE_LIST))))))
 
 CFLAGS += -Wpointer-arith -Wredundant-decls -Wunreachable-code -Wno-unused-parameter
-DEFINES=-DSIMULATION
+
+# TODO - allow switch between BMB7 and MARBLE builds
+DEFINES=-DSIMULATION -DBWUDP_USE_REAL_GPIO_H -DMARBLE
 
 BUILD_DIR=bin
 
 TOP_DIR=../..
 SRC_DIR=src
 BMB7_DIR=target/cctrl_bmb7
+MARBLE_DIR=target/cctrl_marble
 SIM_DIR=target/sim
+BWUDP_DIR=$(SRC_DIR)/bwudp
 
 SOURCES :=  $(SRC_DIR)/aurora.c \
 						$(SRC_DIR)/console.c \
@@ -32,11 +36,14 @@ SOURCES :=  $(SRC_DIR)/aurora.c \
 						$(SRC_DIR)/util.c \
 						$(SRC_DIR)/xadc.c \
 						$(SIM_DIR)/simplatform.c \
-						$(SIM_DIR)/uart_fifo.c
+						$(SIM_DIR)/uart_fifo.c \
+						$(BWUDP_DIR)/badger.c \
+						$(BWUDP_DIR)/bwudp.c
 
 INCLUDES= . \
 					$(TOP_DIR)/$(SRC_DIR) \
-					$(TOP_DIR)/$(BMB7_DIR)
+					$(TOP_DIR)/$(MARBLE_DIR) \
+					$(TOP_DIR)/$(BWUDP_DIR)
 
 $(info "SOURCES =" $(SOURCES))
 

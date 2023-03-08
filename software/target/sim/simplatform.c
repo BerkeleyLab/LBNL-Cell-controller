@@ -14,7 +14,8 @@
 
 //#define TRAPEXIT
 
-#define GPIO_ADDR(index) (XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(index)))
+#define UDP_ADDR(index)     (XPAR_EPICS_UDP_BASEADDR+(4*(index)))
+#define GPIO_ADDR(index)    (XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(index)))
 
 // Redundant defines in console.c
 #define UART_CSR_TX_FULL    0x80000000
@@ -228,6 +229,10 @@ uint32_t Xil_In32(uint32_t addr) {
     rval = evr_ram_b[EVR_RAM_INDEX_B(addr)];
   } else {
     switch (addr) {
+      case UDP_ADDR(0): // bmb7_udp (csr)
+        break;
+      case UDP_ADDR(1): // bmb7_udp (data)
+        break;
       case GPIO_ADDR(GPIO_IDX_UART_CSR):
         if (nextChar == 0) {
           if (UARTQUEUE_Read(&nextChar) != UART_QUEUE_OK) {
@@ -265,6 +270,18 @@ uint32_t Xil_In32(uint32_t addr) {
         break;
       case GPIO_ADDR(35):
         break;
+#ifdef MARBLE
+      case GPIO_ADDR(GPIO_IDX_NET_CONFIG_CSR):      // Marble bwudp
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_RX_CSR):
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_RX_DATA):
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_TX_CSR):
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_TX_DATA):
+        break;
+#endif // MARBLE
       case EVR_REG(0):
         break;
       case EVR_REG(1):
