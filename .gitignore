@@ -166,6 +166,12 @@ drp_bridge
 *aggregate.v
 
 ######################
+# Generated native binaries
+######################
+software/target/sim/bin
+software/tests/bin
+
+######################
 # Vivado files
 ######################
 

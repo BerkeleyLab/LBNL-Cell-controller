@@ -11,6 +11,8 @@
 #include "simplatform.h"
 #include "gpio.h"
 #include "uart_fifo.h"
+#include "udp_simple.h"
+#include "cellControllerProtocol.h"
 
 //#define TRAPEXIT
 
@@ -83,6 +85,50 @@
 #define CSR_AURORA_RESET    0x2
 #define CSR_FA_ENABLE       0x4
 
+// Badger
+#define CONFIG_CSR_ENABLE_RX_ENABLE 0x80000000
+#define CONFIG_CSR_RX_ENABLE        0x40000000
+#define CONFIG_CSR_ADDRESS_MASK     (0xF << CONFIG_CSR_ADDRESS_SHIFT)
+#define CONFIG_CSR_ADDRESS_SHIFT    8
+#define CONFIG_CSR_DATA_MASK        0xFF
+
+#define TX_CSR_W_START          0x80000000
+#define TX_CSR_R_BUSY           0x80000000
+#define TX_CSR_R_TOGGLE_A       0x40000000
+#define TX_CSR_R_TOGGLE_B       0x20000000
+#define TX_CSR_ADDRESS_MASK     (0x7FF << TX_CSR_ADDRESS_SHIFT)
+#define TX_CSR_ADDRESS_SHIFT    16
+#define TX_CSR_DATA_MASK        0xFFFF
+
+#define RX_CSR_R_MAC_BANK           0x1
+#define RX_CSR_R_MAC_HBANK          0x2
+#define RX_CSR_W_MAC_HBANK_TOGGLE   0x2
+
+#define ETH_MAXWORDS            ((ETH_MAXLEN + 3) >> 2)
+#define BADGER_LENGTH_STATUS(length, status)    (((((length+46) & 0x780) << 1) | ((length+46) & 0x7F)) | (0x80 & (status << 7)))
+        //    length = (((length_status & 0xF00) >> 1) | (length_status & 0x7F)) - 4;
+#define BADGER_TX_ADDR(bus)   ((int)((bus >> 16) & 0x7FF))
+#define BADGER_TX_DATA(bus)   ((uint32_t)(bus & 0xFFFF))
+
+
+typedef struct {
+  int length_status;
+  int index;  // in words
+  int fill;   // in bytes, not words!
+  int pending;  // Message waiting
+  eth_union_t pkt;
+} eth_inbox_t;
+
+typedef struct {
+  int pending;  // Message currently sending
+  int ready;    // Message ready to send
+  int frameLength;
+  eth_union_t pkt;
+} eth_outbox_t;
+
+static eth_inbox_t eth_inbox;
+static eth_outbox_t eth_outbox;
+
 static uint32_t auroraStatus = 0;
 
 // This is strange.  I arrived at this proportionality constant imperically.
@@ -105,6 +151,7 @@ uint8_t nextChar = 0;
 
 // GLOBALS
 static sim_console_state_t sim_console_state;
+unsigned short udp_port;  /* Global */
 
 #ifdef TRAPEXIT
 static void _sigHandler(int c);
@@ -113,6 +160,7 @@ static void _sigHandler(int c);
 // Static function prototypes
 static unsigned int getQSFPDescChar(void);
 static void setQSFPDescChar(int n);
+static void udpService(void);
 
 int simService(void) {
   fd_set rset;        // A file-descriptor set for read mode
@@ -136,6 +184,7 @@ int simService(void) {
       UARTQUEUE_Add((uint8_t *)&rc);
     }
   }
+  udpService();
   return 0;
 }
 
@@ -147,6 +196,46 @@ void init_platform() {
   fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
   sim_console_state.toExit = 0;
   sim_console_state.msgReady = 0;
+  udp_port = CC_PROTOCOL_UDP_PORT;
+  int rc = udp_init(udp_port);
+  if (rc != 0) {
+    printf("Error in UDP initialization\r\n");
+    return;
+  } else {
+    printf("Listening on port %d\r\n", udp_port);
+  }
+  eth_inbox.length_status = BADGER_LENGTH_STATUS(0, 0);
+  eth_inbox.index = 0;
+  eth_inbox.pending = 0;
+  eth_inbox.fill = 0;
+
+  eth_outbox.ready = 0;
+  eth_outbox.pending = 0;
+  eth_outbox.frameLength = 0;
+  return;
+}
+
+static void udpService(void) {
+  // INBOX
+  int rc = udp_receive_meta(&eth_inbox.pkt.pkt);
+  // NOTE: clobbers any existing data
+  if (rc > 0) {
+    eth_inbox.fill = rc;
+    eth_inbox.length_status = BADGER_LENGTH_STATUS(rc, 0);  // What is status bit?
+    printf("Got packet len %d\r\n", rc);
+    eth_inbox.pending = 1;
+  } else if (rc < 0) {
+    printf("Receive error\r\n");
+    sim_console_state.toExit = 1;
+    eth_inbox.pending = 0;
+  }
+  // OUTBOX
+  if (eth_outbox.ready) {
+    printf("Reply with frameLength = %d\r\n", eth_outbox.frameLength);
+    printf("payload length = %d\r\n", ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
+    rc = udp_reply((const void *)&(eth_outbox.pkt.pkt.payload), (int)ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
+    eth_outbox.ready = 0;
+  }
   return;
 }
 
@@ -274,12 +363,30 @@ uint32_t Xil_In32(uint32_t addr) {
       case GPIO_ADDR(GPIO_IDX_NET_CONFIG_CSR):      // Marble bwudp
         break;
       case GPIO_ADDR(GPIO_IDX_NET_RX_CSR):
+        // RX_CSR should return RX_CSR_R_MAC_BANK bit equal to RX_CSR_R_MAC_HBANK bit
+        if (eth_inbox.pending == 0) {
+          rval = RX_CSR_R_MAC_BANK; // Let's try just this for now.
+        } else {
+          printf("csr is 0\r\n");
+        }
         break;
       case GPIO_ADDR(GPIO_IDX_NET_RX_DATA):
+        // index 0 is 'length_status' where
+        //    length = (((length_status & 0xF00) >> 1) | (length_status & 0x7F)) - 4;
+        if (eth_inbox.index == 0) {
+          rval = eth_inbox.length_status;
+        } else if (eth_inbox.index < ETH_MAXWORDS) {
+          rval = eth_inbox.pkt.words[eth_inbox.index-1];
+        }
         break;
       case GPIO_ADDR(GPIO_IDX_NET_TX_CSR):
+        // Return TX_CSR_R_BUSY when busy
+        if (eth_outbox.pending) {
+          rval = TX_CSR_R_BUSY;
+        }
         break;
       case GPIO_ADDR(GPIO_IDX_NET_TX_DATA):
+        // UNUSED ?!?!?!?
         break;
 #endif // MARBLE
       case EVR_REG(0):
@@ -549,6 +656,44 @@ void Xil_Out32(uint32_t addr, uint32_t val) {
     evr_ram_b[EVR_RAM_INDEX_B(addr)] = val;
   } else {
     switch (addr) {
+#ifdef MARBLE
+      case GPIO_ADDR(GPIO_IDX_NET_CONFIG_CSR):      // Marble bwudp
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_RX_CSR):
+        // RX_CSR should return RX_CSR_R_MAC_BANK bit equal to RX_CSR_R_MAC_HBANK bit
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_RX_DATA):
+        // badger.c writes 'index' to this address
+        eth_inbox.index = (int)val;
+        if (val > 0) {
+          eth_inbox.pending = 0;
+        }
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_TX_CSR):
+        // Data is output here... for some reason
+        //GPIO_WRITE(GPIO_IDX_NET_TX_CSR, (index << TX_CSR_ADDRESS_SHIFT) | *p16);
+        //wire [PK_TXBUF_DATA_WIDTH-1:0] sysTxData = sysGPIO_OUT[0+:PK_TXBUF_DATA_WIDTH];
+        // wire [PK_TXBUF_ADDR_WIDTH-1:0] sysTxAddress = sysGPIO_OUT[PK_TXBUF_DATA_WIDTH+:PK_TXBUF_ADDR_WIDTH];
+        // Data is bits 0-15, address is bits 16-25
+        if (val == TX_CSR_W_START) {
+          // Send the packet
+          eth_outbox.ready = 1;
+        } else {
+          int addr = BADGER_TX_ADDR(val);
+          uint32_t data = BADGER_TX_DATA(val);
+          if (addr == 0) {
+            // data is interpreted as frameLength
+            eth_outbox.frameLength = data;
+          } else {
+            // data is packet data
+            eth_outbox.pkt.shorts[addr-1] = data;
+          }
+        }
+        break;
+      case GPIO_ADDR(GPIO_IDX_NET_TX_DATA):
+        // UNUSED ?!?!?!?
+        break;
+#endif // MARBLE
       case GPIO_ADDR(GPIO_IDX_UART_CSR):
         if (val == UART_CSR_RX_READY) {
           if (nextChar) {
@@ -581,6 +726,7 @@ void Xil_Out32(uint32_t addr, uint32_t val) {
   return;
 }
 
+#ifndef MARBLE
 int udpInit(uint32_t csrAddress, const char *name) {
   return 0;
 }
@@ -604,6 +750,6 @@ int udpRxCheck8(unsigned int udpIndex, uint8_t *dest, int capacity) {
 int udpTx8(unsigned int udpIndex, const uint8_t *src, int count) {
   return 0;
 }
-
+#endif
 
 

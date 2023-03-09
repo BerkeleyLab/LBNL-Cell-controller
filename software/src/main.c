@@ -26,8 +26,7 @@
 
 int udpEPICS;
 
-#define MARBLE
-
+#ifndef MARBLE
 void rx8chk(void) {
     static unsigned char buf[1600];
     int i, n;
@@ -53,6 +52,7 @@ void rx8chk(void) {
         }
     }
 }
+#endif
 
 int main()
 {

@@ -37,6 +37,7 @@ SOURCES :=  $(SRC_DIR)/aurora.c \
 						$(SRC_DIR)/xadc.c \
 						$(SIM_DIR)/simplatform.c \
 						$(SIM_DIR)/uart_fifo.c \
+						$(SIM_DIR)/udp_simple.c \
 						$(BWUDP_DIR)/badger.c \
 						$(BWUDP_DIR)/bwudp.c
 
