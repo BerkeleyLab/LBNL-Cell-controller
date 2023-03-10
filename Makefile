@@ -9,15 +9,18 @@ GW_TGT_DIR   = $(GW_SYN_DIR)/$(TARGET)
 BIT          = $(GW_TGT_DIR)/$(TARGET)_top.bit
 SW_TGT_DIR   = $(SW_APP_DIR)/$(APP)
 
-.PHONY: all bit sw
+.PHONY: all bit sw download
 
-all: bit sw
+all: bit sw bundle
 
 bit:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.bit
 
 sw:
 	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) all
+
+bundle:
+	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) bundle
 
 clean:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) clean

@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "bwudp.h"
+#include "dbg.h"
 
 #define ETHERNET_PAYLOAD_CAPACITY   1500
 
@@ -191,7 +192,6 @@ bwudpRegisterInterface(BWUDP_INTERFACE_INDEX
 #endif
     struct bwudpInterface *ip = &interfaces[interfaceIndex];
     if (ip->txFrame.protocol[0] != 0) {
-        printf("yikes\r\n");
         return -1;
     }
     ip->myEthernetMAC = *eMAC;
@@ -234,7 +234,7 @@ bwudpCrank(void)
     if (length > 0) {
         int protocol = (ip->rxFrame.protocol[0] << 8) | ip->rxFrame.protocol[1];
         if (protocol == 0x0800) {   // IPv4
-            printf("IPv4 PROTOCOL\r\n");
+            printd("IPv4 PROTOCOL\r\n");
             struct bwudpEndpoint *ep;
             for (ep = ip->endpoints ; ep != NULL ; ep = ep->next) {
                 if (ip->rxFrame.udp.destinationPort == ep->nearPort) {
@@ -244,11 +244,11 @@ bwudpCrank(void)
                                                     sizeof(struct udpHeader);
                     if ((payloadLength < 0)
                      || (payloadLength > framePayloadCapacity)) {
-                        printf("payloadLength = %d, framePayloadCapacity = %d\r\n", payloadLength, framePayloadCapacity);
+                        printd("payloadLength = %d, framePayloadCapacity = %d\r\n", payloadLength, framePayloadCapacity);
                         ip->statistics.mangled++;
                     }
                     else {
-                        printf("Solid\r\n");
+                        printd("Solid\r\n");
                         memcpy(&ep->farMAC, &ip->rxFrame.sourceMAC,
                                                            sizeof(ethernetMAC));
                         memcpy(&ep->farAddress, &ip->rxFrame.ipv4.source,
@@ -259,7 +259,7 @@ bwudpCrank(void)
                     }
                     break;
                 } else {
-                  printf("incorrect destination; dest = %d, near = %d\r\n", ip->rxFrame.udp.destinationPort, ep->nearPort);
+                  printd("incorrect destination; dest = %d, near = %d\r\n", ip->rxFrame.udp.destinationPort, ep->nearPort);
                 }
             }
             if (ep == NULL) {
@@ -287,7 +287,7 @@ bwudpCrank(void)
         }
 #endif
         else {
-            printf("bad protocol = 0x%x\r\n", protocol);
+            printd("bad protocol = 0x%x\r\n", protocol);
             ip->statistics.badProtocol++;
         }
     }
@@ -309,7 +309,7 @@ bwudpStatistics(void) { return &interfaces[0].statistics; }
 void
 bwudpSend(bwudpHandle handle, const char *payload, int length)
 {
-  printf("bwudpSend. Payload length = %d\r\n", length);
+    printd("bwudpSend. Payload length = %d\r\n", length);
     struct bwudpEndpoint *ep = handle;
     struct bwudpInterface *ip = ep->interface;
     int l = sizeof(struct ipv4Header) + sizeof(struct udpHeader) + length;

@@ -63,7 +63,6 @@ void
 bwudpInitializeInterface(const uint8_t *ethernetAddress,
                          const uint8_t *ipv4Addr)
 {
-  printf("bwudpInitializeInterface\r\n");
     int i;
     int a = 0;
 
@@ -87,7 +86,6 @@ bwudpInitializeInterface(const uint8_t *ethernetAddress,
 void
 bwudpSendFrame(const void *frame, int length)
 {
-  printf("bwudpSendFrame\r\n");
     const uint16_t *p16 = frame;
     /* Minimum is 60 since value doesn't include final four FCS octets */
     int frameLength = length < 60 ? 60 : length;
@@ -127,7 +125,6 @@ bwudpFetchFrame(void *frame)
     length -= 4;
     /* Minimum is ARP or 0-payload UDP.  Maximum is full ethernet payload. */
     if ((length < (14 + 20 + 8)) || (length > (14 + 1500))) {
-        printf("[bwudpFetchFrame] length = %d\r\n", length);
         return 0;
     }
     limit = dst + ((length + 1) >> 1);

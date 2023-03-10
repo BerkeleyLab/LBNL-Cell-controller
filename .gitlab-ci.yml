@@ -42,7 +42,7 @@ sw_cctrl_bmb7:
     - cd software/app/cctrl
   stage: software
   script:
-    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH time make TARGET=cctrl_bmb7
+    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH time make TARGET=cctrl_bmb7 all bundle
   # Get artifacts from this job, needed to compile the sofware
   needs:
     - job: gw_cctrl_bmb7

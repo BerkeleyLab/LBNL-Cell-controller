@@ -35,27 +35,19 @@ static struct ccProtocolPacket reply;
 static int replyCount;
 
 static void parseCmd(struct ccProtocolPacket *cmd, int length);
-static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
 #ifndef MARBLE
 static void pollEPICS(void);
+#else
+static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
 #endif
 
-/*
-struct ccProtocolPacket {
-    uint32_t        magic;
-    uint32_t        identifier;
-    uint32_t        command;
-    uint32_t        cellInfo; // Cell BPM count, Cell count, Cell index
-    uint32_t        args[CC_PROTOCOL_ARG_CAPACITY];
-};
-*/
-
+#ifdef MARBLE
 static const ethernetMAC defaultMAC = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
 static const ipv4Address defaultIP = {192, 168, 20, 20};
 static const ipv4Address defaultNetmask = {255, 255, 255, 0};   // Ignored when no client support
 static const ipv4Address defaultGateway = {0, 0, 0, 0};         // Ignored when no client support
-
 static bwudpHandle handleNonce;
+#endif
 
 int epicsInit(void) {
 #ifdef MARBLE
@@ -67,6 +59,7 @@ int epicsInit(void) {
 #endif
 }
 
+#ifdef MARBLE
 static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
     // Handle the packet
     handleNonce = handle; // I don't know what this is
@@ -74,6 +67,7 @@ static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
     parseCmd((struct ccProtocolPacket *)payload, length);
     return;
 }
+#endif
 
 
 static void sendReply(void) {

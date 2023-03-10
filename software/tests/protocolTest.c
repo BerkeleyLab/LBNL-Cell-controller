@@ -30,7 +30,8 @@
 
 const uint8_t defaultIP[] = {127, 0, 0, 1};
 #define DEFAULT_PORT        CC_PROTOCOL_UDP_PORT
-#define PACK_IP32(ip)       (uint32_t)((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3])
+//#define PACK_IP32(ip)       (uint32_t)((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3])
+#define PACK_IP32(ip)       (uint32_t)((ip[3] << 24) | (ip[2] << 16) | (ip[1] << 8) | ip[0])
 #define PRINT_IP32(ip32)    printf("%d.%d.%d.%d", ((ip32 >> 24) & 0xff), ((ip32 >> 16) & 0xff), ((ip32 >> 8) & 0xff), ip32 & 0xff);
 
 #define CCPACKET_SIZE     (sizeof(struct ccProtocolPacket)/sizeof(char))
@@ -231,15 +232,24 @@ static int argValidatorSYSMON(struct ccProtocolPacket *cpkt, int nargs) {
   int m = 0;
   int narg = 0;
   uint32_t arg;
+  uint16_t halfarg;
   // XADC value (ignore for now)
 #undef INDENT
 #define INDENT  "    "
   for (n = 0; n < XADC_CHANNEL_COUNT; n++) {
     // TODO - Not all of these are temperature.  Which are voltage?  What's the conversion?
-    arg = cpkt->args[narg++];
-    PRINTOK("XADC[%d] = %.2f degC\r\n", n, XADC_TO_DEGC_DOUBLE((arg & 0xFFFF)));
-    if (++n < XADC_CHANNEL_COUNT) { // NOTE! Incrementing n again here!
-      PRINTOK("XADC[%d] = %.2f degC\r\n", n, XADC_TO_DEGC_DOUBLE(arg >> 16));
+    if (n % 2 == 0) { // two args packed into 1
+      arg = cpkt->args[narg++];
+    }
+    halfarg = (arg >> (n%2)*16) & 0xFFFF;
+    switch (n) {
+      case 0: // Temperature
+        PRINTOK("XADC[%d] = %.2f degC\r\n", n, XADC_TO_DEGC_DOUBLE((arg & 0xFFFF)));
+        break;
+      case 1:
+      case 2:
+      case 3:
+        break;
     }
   }
   // QSFP

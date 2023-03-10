@@ -8,7 +8,7 @@ PARENT_DIR=$(lastword $(subst /, ,$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 CFLAGS += -Wpointer-arith -Wredundant-decls -Wunreachable-code -Wno-unused-parameter
 
 # TODO - allow switch between BMB7 and MARBLE builds
-DEFINES=-DSIMULATION -DBWUDP_USE_REAL_GPIO_H -DMARBLE
+DEFINES=-DSIMULATION -DBWUDP_USE_REAL_GPIO_H -DMARBLE -DDEBUG_PRINT
 
 BUILD_DIR=bin
 
