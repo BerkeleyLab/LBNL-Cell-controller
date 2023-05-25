@@ -109,8 +109,12 @@ work/
 !/gateware/platform/xilinx/*/*/udpFIFO/udpFIFO.xci
 /gateware/platform/xilinx/*/*/system/
 !/gateware/platform/xilinx/*/*/system/*.bd
+/gateware/platform/xilinx/*/*/system_marble/
+!/gateware/platform/xilinx/*/*/system_marble/*.bd
 /gateware/platform/xilinx/*/*/ila_td256_s4096_cap/
 !/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/ila_td256_s4096_cap.xci
+
+gateware/top/*/gpioIDX.vh
 
 # NCO tables
 *csv

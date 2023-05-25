@@ -35,7 +35,7 @@ localparam PRODUCT_WIDEN       = FOFB_MATRIX_ADDR_WIDTH;
 localparam ACCUMULATOR_WIDTH   = PRODUCT_WIDTH + PRODUCT_WIDEN;
 localparam MULTIPLIER_LATENCY  = 4;
 
-`include "gpioIDX.v"
+`include "gpioIDX.vh"
 wire [3:0] csrAction = GPIO_OUT[GPIO_DSP_CMD_SHIFT+:4];
 
 // Status register

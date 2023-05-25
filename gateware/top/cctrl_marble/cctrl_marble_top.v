@@ -1,72 +1,223 @@
 module cctrl_marble_top #(
   parameter PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE = "false"
   ) (
-  input  wire        S6_TO_K7_CLK_1,  // TODO - What is this?
+  input              MGT_CLK_0_P, // 125 MHz
+  input              MGT_CLK_0_N, // 125 MHz (complement)
+  output             VCXO_EN,
+  output             PHY_RSTN,
 
-  output wire  [5:0] kintexLEDs,      // TODO - Will this exist on marble port?
+  input  wire        FPGA_TxD,
+  output wire        FPGA_RxD,
 
-  input  wire        Uart_RxD,        // DONE
-  output wire        Uart_TxD,        // DONE
+// TODO: Gateware currently expects MGT_CLK_1_P/N = 312.5 MHz? Formerly 
+  input wire         MGT_CLK_1_N, MGT_CLK_1_P,
+// TODO: Gateware currently expects MGT_CLK_2_P/N = 125 MHz
+  input wire         MGT_CLK_2_N, MGT_CLK_2_P,
+  //input wire         MGT_CLK_3_N, MGT_CLK_3_P,
 
-  input  wire        GTX_REF_312_3_N, GTX_REF_312_3_P,  // TODO - What is this?
-  input  wire        GTX_REF_125_N, GTX_REF_125_P,  // TODO - What is this?
-  output wire        SIT9122_ENABLE,  // TODO - Clock generator enable.
-                                      // Gates clock to GTX_REF0_P/N (MGTREFCLK0P/N_116)
-                                      // On marble U2A (ADN4600ACPZ) output is not gated, but has a nRST (CLKMUX_RST)
-                                      // which comes from I2C I/O expander P1_7 (U39 pin 17)
-                                      // There's also SI570_OE from the same expander P0_0
+  input              RGMII_RX_CLK,
+  input              RGMII_RX_CTRL,
+  input        [3:0] RGMII_RXD,
+  output wire        RGMII_TX_CLK,
+  output wire        RGMII_TX_CTRL,
+  output wire  [3:0] RGMII_TXD,
 
-  inout  wire        QSFP_SCL,        // TODO - Marble not directly connected to QSFP I2C bus. Goes through TCA9517 mux now.
-  inout  wire        QSFP_SDA,        // TODO - Marble not directly connected to QSFP I2C bus. Goes through TCA9517 mux now.
-  input  wire        QSFP1_PRESENT_N, // TODO - Marble connects to QSFP config via PCA9555 I2C I/O expander (U34)
-  output wire        QSFP1_LPMODE, QSFP1_RESET_N, QSFP1_MODSEL_N,// TODO - Marble connects to QSFP config via PCA9555 I2C I/O expander (U34)
-  input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // DONE (will need to comment unused out of XDC)
-  output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // DONE (will need to comment unused out of XDC)
-  input  wire        QSFP2_PRESENT_N, // TODO - Marble connects to QSFP config via PCA9555 I2C I/O expander (U34)
-  output wire        QSFP2_LPMODE, QSFP2_RESET_N, QSFP2_MODSEL_N, // TODO - Marble connects to QSFP config via PCA9555 I2C I/O expander (U34)
-  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // DONE (will need to comment unused out of XDC)
-  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // DONE (will need to comment unused out of XDC)
+/*
+  Transceiver Assignments (Kintex-7):
+  -----------------------------------
+    This is copied directly from
+      https://controls.als.lbl.gov/alscg/beampositionmonitor/BPM_CC/Documents/HardwareNotes.html
 
-  input  wire        epicsUDPrxData,  // TODO - No longer at top level (does not leave FPGA)
-  output wire        epicsUDPtxData,  // TODO - No longer at top level (does not leave FPGA)
+    RX N/P  TX N/P  Tile  MGT           Fiber Pair  QSFP (BMB7) QSFP (Marble)  Desc.
+    --------------------------------------------------------------------------------
+    C3/C4   B1/B2   X0Y6  MGT2 Bank 116 1:12        1-0         1-1             EVR
+    B5/B6   A3/A4   X0Y7  MGT3 Bank 116 2:11        1-1         1-3             BPM CCW
+    E3/E4   D1/D2   X0Y5  MGT1 Bank 116 3:10        1-2         1-0             BPM CW
+    G3/G4   F1/F2   X0Y4  MGT0 Bank 116 4:9         1-3         1-2             (Unused)
+    L3/L4   K1/K2   X0Y2  MGT2 Bank 115 1:12        2-0         2-1             Cell CCW
+    J3/J4   H1/H2   X0Y3  MGT3 Bank 115 2:11        2-1         2-3             Cell CW
+    N3/N4   M1/M2   X0Y1  MGT1 Bank 115 3:10        2-2         2-0             FOFB power supply chain head (Tx)
+    R3/R4   P1/P2   X0Y0  MGT0 Bank 115 4:9         2-3         2-2             FOFB power supply chain tail (Rx)
+*/
 
-  //output wire  [9:0] K7_EXT_IO,       // DONE - Removed (unused in application)
+//  inout  wire        QSFP_SCL,
+//  inout  wire        QSFP_SDA,
+//  input  wire        QSFP1_PRESENT_N,
+//  output wire        QSFP1_LPMODE, QSFP1_RESET_N, QSFP1_MODSEL_N,
+  input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
+  output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
+//  input  wire        QSFP2_PRESENT_N,
+//  output wire        QSFP2_LPMODE, QSFP2_RESET_N, QSFP2_MODSEL_N,
+  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
   //inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA, // DONE - Not implemented in marble
   //output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
-  input  wire        INTLK_RELAY_NO,    // TOP FMC LA 31P (FMC G33) (Zest P1:HDMI_CEC, P2:P2_ADC_CSB_0)
-  output wire        INTLK_RELAY_CTL,   // TOP FMC LA 31N (FMC G34) (Zest P1:HDMI_SCL, P2:P2_ADC_CSB_1)
-  input  wire        INTLK_RESET_BUTTON_N,  // TOP FMC LA 22P (FMC G24) (Zest P1:ADC_D0A_N_1, P2:P2_AD7794_FCLK)
-
+/* FIXME (begin)
   output wire        FP_LED0_RED, FP_LED0_GRN,  // TODO - Will these exist on marble port?
   output wire        FP_LED1_RED, FP_LED1_GRN,  // TODO - Will these exist on marble port?
   output wire        FP_LED2_RED, FP_LED2_GRN,  // TODO - Will these exist on marble port?
-  //output wire        FP_TEST_POINT, // DONE - Unused in application
+*/
+  output wire        MARBLE_LD16,
+  output wire        MARBLE_LD17
+);
 
-  input  wire        ffbUDPrxData,  // TODO - No longer at top level (does not leave FPGA)
-  output wire        ffbUDPtxData,  // TODO - No longer at top level (does not leave FPGA)
+wire gtReset = 1'b0;
+wire INTLK_RELAY_NO = 1'b0;
+wire INTLK_RELAY_CTL;
+wire INTLK_RESET_BUTTON_N = 1'b0;
 
-  input  wire        spareUDPrxData,// TODO - No longer at top level (does not leave FPGA)
-  output wire        spareUDPtxData // TODO - No longer at top level (does not leave FPGA)
-  );
+wire FP_LED0_RED, FP_LED0_GRN;  // TODO - Will these exist on marble port?
+wire FP_LED1_RED, FP_LED1_GRN;  // TODO - Will these exist on marble port?
+wire FP_LED2_RED, FP_LED2_GRN;  // TODO - Will these exist on marble port?
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Static outputs
-assign SIT9122_ENABLE = 1'b1;
-assign ffbUDPtxData = 1'b1;
-assign spareUDPtxData = 1'b1;
 
 //////////////////////////////////////////////////////////////////////////////
 // The clock domains
 // Net names starting with 'evr' are in the event receiver clock domain.
 // Net names starting with 'aurora' are in the Aurora user clock domain.
+
+wire evrClk;    // Recovered Rx clock from EVR MGT block
+wire auroraUserClk; // ?? MHz (generated by Aurora block in 'system' BD)
+
 parameter SYSCLK_RATE = 100000000;
-wire sysClk, evrClk, auroraUserClk, clk200, ethRefClk125;
+parameter FREQ_CLKIN_HZ  = 125_000_000;
+wire clkIn125;  // Input clock (125 MHz) from U20
+wire sysClk;    // 100 MHz sysclk
+wire clk200;    // 200 MHz clock
+wire clk50;     // 50 MHz clock
+wire ethRefClk125;
+wire badgerRefClk125, badgerRefClk125d90; // 125 MHz ethernet clock (and 90-deg shifted copy)
 wire sysReset_n;
+//assign clkIn125 = ethRefClk125;
+
+/*
+ * 600MHz <= F_VCO <= 1200 MHz
+ * F_VCO  = F_CLKIN * CLKFBOUT_MULT_F/DIVCLK_DIVIDE
+ * F_OUTx = F_VCO/CLKOUTx_DIVIDE
+ *
+ * Cell-controller bmb7 port wants 3 output frequencies:
+ *   50 MHz, 100 MHz, 200 MHz
+ * Ethernet RGMII wants 125 MHz
+ * Input is 125MHz
+ *
+ * Least Common Multiple (LCM) = 1000 MHz
+ * F_CLKIN = 125MHz
+ *  F_VCO = LCM = 1000 MHz
+ *  CLKFBOUT_MULT_F = 8
+ *
+ * CLKOUT0 = 125 MHz 0deg     => badgerRefClk125
+ *  CLKOUT0_DIVIDE = 8
+ * CLKOUT1 = 125 MHz 90deg    => badgerRefClk125d90
+ *  CLKOUT1_DIVIDE = 8
+ * CLKOUT2 = 200 MHz 0deg     => clk200
+ *  CLKOUT2_DIVIDE = 5
+ * CLKOUT3 = 100 MHz 0deg     => sysClk
+ *  CLKOUT3_DIVIDE = 10
+ * CLKOUT4 =  50 MHz 0deg     => clk50
+ *  CLKOUT4_DIVIDE = 20
+ */
+
+/*
+IBUFGDS ibufgds_i (
+  .O  (clkIn125),
+  .I  (MGT_CLK_0_P),
+  .IB (MGT_CLK_0_N)
+);
+*/
+
+/*
+IBUFDS_GTE2 #(
+   .CLKCM_CFG("TRUE"),   // Reserved
+   .CLKRCV_TRST("TRUE"), // Reserved
+   .CLKSWING_CFG(2'b11)  // Reserved
+)
+IBUFDS_GTE2_inst (
+   .O(clkIn125),        // 1-bit output: @ f_in
+   .ODIV2(),            // 1-bit output: @ f_in/2
+   .CEB(1'b0),          // 1-bit input: Low-True clock enable (asynch)
+   .I(MGT_CLK_0_P),     // 1-bit input: Clk_p
+   .IB(MGT_CLK_0_N)     // 1-bit input: Clk_n
+);
+*/
+IBUFDS_GTE2
+IBUFDS_GTE2_inst (
+   .O(clkIn125),        // 1-bit output: @ f_in
+   .CEB(1'b0),          // 1-bit input: Low-True clock enable (asynch)
+   .I(MGT_CLK_0_P),     // 1-bit input: Clk_p
+   .IB(MGT_CLK_0_N)     // 1-bit input: Clk_n
+);
+
+wire mmcme_clkfb;
+wire mmcme_locked;
+MMCME2_BASE #(
+  .BANDWIDTH("OPTIMIZED"),   // Jitter programming (OPTIMIZED, HIGH, LOW)
+  .CLKFBOUT_MULT_F(8.0),     // Multiply value for all CLKOUT (2.000-64.000).
+  .CLKFBOUT_PHASE(0.0),      // Phase offset in degrees of CLKFB (-360.000-360.000).
+  .CLKIN1_PERIOD(1000_000_000/FREQ_CLKIN_HZ),     // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
+  // CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for each CLKOUT (1-128)
+  .CLKOUT1_DIVIDE(8),   // 125 MHz 90deg
+  .CLKOUT2_DIVIDE(5),   // 200 MHz
+  .CLKOUT3_DIVIDE(10),  // 100 MHz
+  .CLKOUT4_DIVIDE(20),  //  50 MHz
+  .CLKOUT5_DIVIDE(1),   // Unused
+  .CLKOUT6_DIVIDE(1),   // Unused
+  .CLKOUT0_DIVIDE_F(8.0),    // Divide amount for CLKOUT0 (1.000-128.000).
+  // CLKOUT0_DUTY_CYCLE - CLKOUT6_DUTY_CYCLE: Duty cycle for each CLKOUT (0.01-0.99).
+  .CLKOUT0_DUTY_CYCLE(0.5),
+  .CLKOUT1_DUTY_CYCLE(0.5),
+  .CLKOUT2_DUTY_CYCLE(0.5),
+  .CLKOUT3_DUTY_CYCLE(0.5),
+  .CLKOUT4_DUTY_CYCLE(0.5),
+  .CLKOUT5_DUTY_CYCLE(0.5),
+  .CLKOUT6_DUTY_CYCLE(0.5),
+  // CLKOUT0_PHASE - CLKOUT6_PHASE: Phase offset for each CLKOUT (-360.000-360.000).
+  .CLKOUT0_PHASE(0.0),
+  .CLKOUT1_PHASE(90.0), // 90deg shift from CLKOUT0
+  .CLKOUT2_PHASE(0.0),
+  .CLKOUT3_PHASE(0.0),
+  .CLKOUT4_PHASE(0.0),
+  .CLKOUT5_PHASE(0.0),  // Unused
+  .CLKOUT6_PHASE(0.0),  // Unused
+  .CLKOUT4_CASCADE("FALSE"), // Cascade CLKOUT4 counter with CLKOUT6 (FALSE, TRUE)
+  .DIVCLK_DIVIDE(1),         // Master division value (1-106)
+  .REF_JITTER1(0.0),         // Reference input jitter in UI (0.000-0.999).
+  .STARTUP_WAIT("FALSE")     // Delays DONE until MMCM is locked (FALSE, TRUE)
+  ) MMCME2_BASE_inst (
+  // Clock Outputs: 1-bit (each) output: User configurable clock outputs
+  .CLKOUT0(badgerRefClk125),
+  .CLKOUT0B(),
+  .CLKOUT1(badgerRefClk125d90),
+  .CLKOUT1B(),
+  .CLKOUT2(clk200),
+  .CLKOUT2B(),
+  .CLKOUT3(sysClk),
+  .CLKOUT3B(),
+  .CLKOUT4(clk50),
+  .CLKOUT5(), // Unused
+  .CLKOUT6(), // Unused
+  // Feedback Clocks: 1-bit (each) output: Clock feedback ports
+  .CLKFBOUT(mmcme_clkfb),
+  .CLKFBOUTB(),
+  // Status Ports: 1-bit (each) output: MMCM status ports
+  .LOCKED(mmcme_locked),  // 1-bit output: LOCK
+  // Clock Inputs: 1-bit (each) input: Clock input
+  .CLKIN1(clkIn125),      // 1-bit input: Clock
+  // Control Ports: 1-bit (each) input: MMCM control ports
+  .PWRDWN(1'b0),          // 1-bit input: Power-down
+  .RST(1'b0),             // 1-bit input: Reset
+  // Feedback Clocks: 1-bit (each) input: Clock feedback ports
+  .CLKFBIN(mmcme_clkfb)   // 1-bit input: Feedback clock
+);
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 // General-purpose I/O block
-`include "gpioIDX.v"
+`include "gpioIDX.vh"
 wire                    [31:0] GPIO_IN[0:GPIO_IDX_COUNT-1];
 wire                    [31:0] GPIO_OUT;
 wire      [GPIO_IDX_COUNT-1:0] GPIO_STROBES;
@@ -123,6 +274,7 @@ forwardData #(.DATA_WIDTH(64))
 
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
+/*
 parameter QSFP_COUNT = 2;
 reg [$clog2(QSFP_COUNT)+6:0] qsfpReadAddress;
 wire [15:0] qsfpReadData;
@@ -147,6 +299,7 @@ qsfpReadout #(.QSFP_COUNT(QSFP_COUNT),
                              .LPMODE({QSFP2_LPMODE, QSFP1_LPMODE}),
                              .SCL(QSFP_SCL),
                              .SDA(QSFP_SDA));
+*/
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver
@@ -220,7 +373,7 @@ wire  [8:0] evr_mgt_drp_daddr;
 
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
-         .ref_clk(ethRefClk125),
+         .ref_clk(ethRefClk125),  // Comes from bank 115
          .drp_clk(sysClk),
          .drp_den(evr_mgt_drp_den),
          .drp_dwe(evr_mgt_drp_dwe),
@@ -228,8 +381,8 @@ evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .drp_di(evr_mgt_drp_di),
          .drp_drdy(evr_mgt_drp_drdy),
          .drp_do(evr_mgt_drp_do),
-         .rx_in_n(QSFP1_RX_N[0]),
-         .rx_in_p(QSFP1_RX_P[0]),
+         .rx_in_n(QSFP1_RX_N[0]), // Bank 116!
+         .rx_in_p(QSFP1_RX_P[0]), // Bank 116!
          .rec_clk_out(evrClk),
          .rx_par_data_out(evr_mgt_par_data),
          .chariscomma(evr_mgt_chariscomma),
@@ -624,12 +777,12 @@ fofbEthernet #(
     .pcs_pma_shared(pcs_pma_shared),
     .ethNonce(ethNonce),
     .clk200(clk200),
-    .ETH_REF_N(GTX_REF_125_N),
-    .ETH_REF_P(GTX_REF_125_P),
-    .ETH_RX_N(QSFP2_RX_N[2]),
-    .ETH_RX_P(QSFP2_RX_P[2]),
-    .ETH_TX_N(QSFP2_TX_N[2]),
-    .ETH_TX_P(QSFP2_TX_P[2]));
+    .ETH_REF_N(MGT_CLK_2_N),  // D5 Bank 116
+    .ETH_REF_P(MGT_CLK_2_P),  // D6 Bank 116
+    .ETH_RX_N(QSFP2_RX_N[2]), // R3  MGT_RX_4_N  MGT_RX_4_QSFP_N   QSFP2_RX_3_N Bank 115
+    .ETH_RX_P(QSFP2_RX_P[2]), // R4  MGT_RX_4_P  MGT_RX_4_QSFP_P   QSFP2_RX_3_P Bank 115
+    .ETH_TX_N(QSFP2_TX_N[2]), // P1  MGT_TX_4_N  MGT_TX_4_QSFP_N   QSFP2_TX_3_N Bank 115
+    .ETH_TX_P(QSFP2_TX_P[2]));// P2  MGT_TX_4_P  MGT_TX_4_QSFP_P   QSFP2_TX_3_P Bank 115
 
 fofbEthernet #(
     .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
@@ -653,12 +806,12 @@ fofbEthernet #(
     .pcs_pma_shared(pcs_pma_shared),
     .ethNonce(ethNonce),
     .clk200(clk200),
-    .ETH_REF_N(GTX_REF_125_N),
-    .ETH_REF_P(GTX_REF_125_P),
-    .ETH_RX_N(QSFP2_RX_N[3]),
-    .ETH_RX_P(QSFP2_RX_P[3]),
-    .ETH_TX_N(QSFP2_TX_N[3]),
-    .ETH_TX_P(QSFP2_TX_P[3]));
+    .ETH_REF_N(1'b0),  // NOTE! UNUSED when PCS_PMA_SHARED_LOGIC_IN_CORE == "false"
+    .ETH_REF_P(1'b0),  // NOTE! UNUSED when PCS_PMA_SHARED_LOGIC_IN_CORE == "false"
+    .ETH_RX_N(QSFP2_RX_N[3]), // J3  MGT_RX_7_N  MGT_RX_7_QSFP_N   QSFP2_RX_4_N Bank 115
+    .ETH_RX_P(QSFP2_RX_P[3]), // J4  MGT_RX_7_P  MGT_RX_7_QSFP_P   QSFP2_RX_4_P Bank 115
+    .ETH_TX_N(QSFP2_TX_N[3]), // H1  MGT_TX_7_N  MGT_TX_7_QSFP_N   QSFP2_TX_4_N Bank 115
+    .ETH_TX_P(QSFP2_TX_P[3]));// H2  MGT_TX_7_P  MGT_TX_7_QSFP_P   QSFP2_TX_4_P Bank 115
 
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
@@ -719,6 +872,7 @@ errorConvert errorConvert (
 
 /////////////////////////////////////////////////////////////////////////////
 // Pilot tone reference
+/*
 wire pilotToneReference;
 OBUFDS pilotToneRefBuf(.I(pilotToneReference),
                     .O(PILOT_TONE_REFCLK_P), .OB(PILOT_TONE_REFCLK_N));
@@ -733,7 +887,6 @@ pilotToneReference # (
     .csr(GPIO_IN[GPIO_IDX_PILOT_TONE_REFERENCE]),
     .evrClk(evrClk),
     .pilotToneReference(pilotToneReference));
-
 /////////////////////////////////////////////////////////////////////////////
 // Pilot tone generator (and errant electron beam interlock)
 wire PILOT_TONE_I2C_SCL_o, PILOT_TONE_I2C_SCL_t;
@@ -760,6 +913,7 @@ IOBUF IOBUF_PILOT_TONE_SDA(.O(PILOT_TONE_I2C_SDA_o),
 assign GPIO_IN[GPIO_IDX_PILOT_TONE_CSR] = { 16'b0,
                                 ~INTLK_RELAY_NO,
                                 {16-1{1'b0}} };
+*/
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
@@ -770,7 +924,7 @@ always @(posedge sysClk) begin
                                         frequencyMonitorSelect <= GPIO_OUT[2:0];
 end
 assign GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR] = { 2'b0, measuredFrequency };
-wire auRefClk;
+wire auRefClk;  // TODO FIXME
 freq_multi_count #(
         .NF(5),  // number of frequency counters in a block
         .NG(1),  // number of frequency counter blocks
@@ -789,7 +943,7 @@ freq_multi_count #(
 // Front panel
 assign FP_LED0_GRN = evrTriggerBus[0];
 assign FP_LED0_RED = 1'b0;
-wire FP_LED1_STATE_RED, FP_LED1_STATE_YELLOW, FP_LED1_STATE_GREEN;
+wire   FP_LED1_STATE_RED, FP_LED1_STATE_YELLOW, FP_LED1_STATE_GREEN;
 assign FP_LED1_STATE_RED = !CELL_CCW_AuroraCoreStatus_channel_up
                         && !CELL_CW_AuroraCoreStatus_channel_up;
 assign FP_LED1_STATE_GREEN = CELL_CCW_AuroraCoreStatus_channel_up
@@ -797,7 +951,8 @@ assign FP_LED1_STATE_GREEN = CELL_CCW_AuroraCoreStatus_channel_up
 assign FP_LED1_STATE_YELLOW = !FP_LED1_STATE_RED && !FP_LED1_STATE_GREEN;
 assign FP_LED1_GRN = FP_LED1_STATE_YELLOW || FP_LED1_STATE_GREEN;
 assign FP_LED1_RED = FP_LED1_STATE_YELLOW || FP_LED1_STATE_RED;
-wire FP_LED2_STATE_RED, FP_LED2_STATE_YELLOW, FP_LED2_STATE_GREEN;
+
+wire   FP_LED2_STATE_RED, FP_LED2_STATE_YELLOW, FP_LED2_STATE_GREEN;
 assign FP_LED2_STATE_RED = !BPM_CCW_AuroraCoreStatus_channel_up
                         && !BPM_CW_AuroraCoreStatus_channel_up;
 assign FP_LED2_STATE_GREEN = BPM_CCW_AuroraCoreStatus_channel_up
@@ -807,14 +962,9 @@ assign FP_LED2_GRN = FP_LED2_STATE_YELLOW || FP_LED2_STATE_GREEN;
 assign FP_LED2_RED = FP_LED2_STATE_YELLOW || FP_LED2_STATE_RED;
 
 /////////////////////////////////////////////////////////////////////////////
-// BMB7 Kintex indicator LEDs
-// { 1_Blue, 1_Green, 1_Red, 0_Blue, 0_Green, 0_Red }
-assign kintexLEDs = ~{ 1'b0,
-                       1'b0,
-                       1'b0,
-                       evrTriggerBus[0],
-                       1'b0,
-                       1'b0 };
+// Marble LEDs
+assign MARBLE_LD16 = evrTriggerBus[0];
+assign MARBLE_LD17 = 1'b0;
 
 /////////////////////////////////////////////////////////////////////////////
 // Miscellaneous
@@ -829,19 +979,50 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .strobe(GPIO_STROBES[GPIO_IDX_UART_CSR]),
                    .control(GPIO_OUT),
                    .status(GPIO_IN[GPIO_IDX_UART_CSR]),
-                   .TxData(Uart_TxD),
-                   .RxData(Uart_RxD));
+                   .TxData(FPGA_RxD),
+                   .RxData(FPGA_TxD));
 
 `ifndef SIMULATE
+
+//////////////////////////////////////////////////////////////////////////////
+// Badger Ethernet MAC Interface
+badger badger_i (
+  .sysClk         (sysClk),  // TODO correct?
+  .sysGPIO_OUT    (GPIO_OUT), // [31:0]
+  .sysConfigStrobe(GPIO_STROBES[GPIO_IDX_NET_CONFIG_CSR]),
+  .sysTxStrobe    (GPIO_STROBES[GPIO_IDX_NET_TX_CSR]),
+  .sysRxStrobe    (GPIO_STROBES[GPIO_IDX_NET_RX_CSR]),
+  .sysRxDataStrobe(GPIO_STROBES[GPIO_IDX_NET_RX_DATA]),
+  .sysTxStatus    (GPIO_IN[GPIO_IDX_NET_TX_CSR]), // [31:0]
+  .sysRxStatus    (GPIO_IN[GPIO_IDX_NET_RX_CSR]), // [31:0]
+  .sysRxData      (GPIO_IN[GPIO_IDX_NET_RX_DATA]), // [31:0]
+
+  // Two phases of 125 MHz clock, created by on-board reference
+  .refClk125      (badgerRefClk125),
+  .refClk125d90   (badgerRefClk125d90),
+
+  // Diagnostic outputs (e.g. to frequency counters)
+  .rx_clk         (),
+  .tx_clk         (),
+
+  // RGMII pins
+  .RGMII_RX_CLK   (RGMII_RX_CLK),
+  .RGMII_RX_CTRL  (RGMII_RX_CTRL),
+  .RGMII_RXD      (RGMII_RXD), // [3:0] 
+  .RGMII_TX_CLK   (RGMII_TX_CLK),
+  .RGMII_TX_CTRL  (RGMII_TX_CTRL),
+  .RGMII_TXD      (RGMII_TXD) // [3:0]
+);
+
 //////////////////////////////////////////////////////////////////////////////
 // Block design (MicroBlaze)
 
 wire DUMMY_UART_LOOPBACK;
 
-  system system_i (
-        .S6_TO_K7_CLK_1(S6_TO_K7_CLK_1),
-        .sysClk(sysClk),
-        .clk200(clk200),
+  system_marble system_i (
+        .clkIn100(sysClk), // input
+        .clkIn50(clk50), // input
+        .clkInLocked(mmcme_locked), // input
         .sysReset_n(sysReset_n),
 
         .auroraUserClk(auroraUserClk),
@@ -849,12 +1030,12 @@ wire DUMMY_UART_LOOPBACK;
         .gt0_qpllrefclklost_out(gt0_qpllrefclklost_out),
         .pll_not_locked_out(pll_not_locked_out),
         .auroraReset(auroraReset),
+        .auroraRefClk(auRefClk),
         .gtxReset(sysGTXreset),
         .gtxResetOut(gtxResetOut),
 
-        .GT_DIFF_REFCLK_312_3_clk_n(GTX_REF_312_3_N),
-        .GT_DIFF_REFCLK_312_3_clk_p(GTX_REF_312_3_P),
-        .auroraRefClk(auRefClk),
+        .GT_DIFF_REFCLK_312_3_clk_n(MGT_CLK_1_N),
+        .GT_DIFF_REFCLK_312_3_clk_p(MGT_CLK_1_P),
 
         .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata),
         .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast),
@@ -950,9 +1131,6 @@ wire DUMMY_UART_LOOPBACK;
         .evr_mgt_drp_do(evr_mgt_drp_do),
         .evr_mgt_drp_drdy(evr_mgt_drp_drdy),
         .evr_mgt_drp_dwe(evr_mgt_drp_dwe),
-
-        .epicsUDPrxData(epicsUDPrxData),
-        .epicsUDPtxData(epicsUDPtxData),
 
         .BRAM_BPM_SETPOINTS_ADDR(BRAM_BPM_SETPOINTS_ADDR),
         .BRAM_BPM_SETPOINTS_WDATA(BRAM_BPM_SETPOINTS_WDATA),

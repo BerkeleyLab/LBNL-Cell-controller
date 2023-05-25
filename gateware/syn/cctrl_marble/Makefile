@@ -1,4 +1,4 @@
-HARDWARE = bmb7
+HARDWARE = marble
 PROJECT_PART = xc7k160tffg676-2
 PROJECT_BOARD = none
 XILINX_TOOL := VIVADO
@@ -47,7 +47,7 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 # custom ip_cores that requires packaging
 include $(MODULES_DIR)/evr_axi_rules.mk
 include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
-include $(MODULES_DIR)/bmb7_udp_rules.mk
+include $(MODULES_DIR)/badger_rules.mk
 include $(MODULES_DIR)/drp_bridge_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply ila_td256_s4096_cap
@@ -112,12 +112,12 @@ IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /hdl, $(IP_CORES_DIRS))
 
-BD += system
-system_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system
-system_TOP = $(system_DIR)/synth/system.v
+BD += system_marble
+system_marble_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system_marble
+system_marble_TOP = $(system_marble_DIR)/synth/system_marble.v
 
 BD_TOP_LVL_SRCS += $(system_TOP)
-BD_DIRS += $(system_DIR)
+BD_DIRS += $(system_marble_DIR)
 
 BD_SRCS_DIRS = $(BD_DIRS)
 BD_SRCS_DIRS += $(addsuffix /synth, $(BD_DIRS))
@@ -230,6 +230,7 @@ VFLAGS_DEP += -DSIMULATE
 
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
+vpath %.v $(BWUDP_DIR)
 vpath %.vh $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.vhd $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.xdc $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
@@ -240,7 +241,7 @@ vpath %.sh $(GW_SCRIPTS_DIR)
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
 $(info IP_CORES_CUSTOM=$(IP_CORES_CUSTOM))
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS)
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit

@@ -1,13 +1,16 @@
 include dir_list.mk
 
 CROSS_COMPILE    ?=
-PLATFORM         ?= bmb7
+PLATFORM         ?= marble
 APP              ?= cctrl
 
 TARGET       = $(APP)_$(PLATFORM)
 GW_TGT_DIR   = $(GW_SYN_DIR)/$(TARGET)
 BIT          = $(GW_TGT_DIR)/$(TARGET)_top.bit
-SW_TGT_DIR   = $(SW_APP_DIR)/$(APP)
+# WRONG! Clobbers SW_TGT_DIR from dir_list.mk
+#SW_TGT_DIR   = $(SW_APP_DIR)/$(APP)
+# Instead, let's clobber this which is identity if APP==cctrl
+SW_CCTRL_APP_DIR     = $(SW_APP_DIR)/$(APP)
 
 .PHONY: all bit sw download
 

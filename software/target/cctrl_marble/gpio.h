@@ -12,13 +12,6 @@
 
 #define GPIO_IDX_COUNT 64
 
-// TODO - What are the real values of these for a Marble build (with badger/bwudp)?
-#define GPIO_IDX_NET_CONFIG_CSR           47
-#define GPIO_IDX_NET_RX_CSR               48
-#define GPIO_IDX_NET_RX_DATA              49
-#define GPIO_IDX_NET_TX_CSR               50
-#define GPIO_IDX_NET_TX_DATA              51
-
 #define GPIO_IDX_FIRMWARE_BUILD_DATE       0 // Firmware build POSIX seconds(R)
 #define GPIO_IDX_MICROSECONDS              1 // 1 MHz counter(R)
 #define GPIO_IDX_SECONDS                   2 // 1 Hz counter(R)
@@ -67,6 +60,10 @@
 #define GPIO_IDX_WFR_W_POSTTRIGGER        45 // Recorder posttrigger 'count'(W)
 #define GPIO_IDX_WFR_R_SECONDS            45 // Recorder timestamp seconds(R)
 #define GPIO_IDX_WFR_R_TICKS              46 // Recorder timestamp ticks(R)
+#define GPIO_IDX_NET_CONFIG_CSR           47 // BantamweightUDP config CSR
+#define GPIO_IDX_NET_RX_CSR               48 // BantamweightUDP RX CSR
+#define GPIO_IDX_NET_RX_DATA              49 // BantamweightUDP RX DATA
+#define GPIO_IDX_NET_TX_CSR               50 // BantamweightUDP TX CSR & DATA
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1

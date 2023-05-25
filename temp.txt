@@ -1,0 +1,339 @@
+
+VIVADO_CMD = vivado -mode batch -nojou -nolog
+VIVADO_SYNTH = $(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/project_proc.tcl $(VIVADO_SYNTH_EXTRA_TCL) $(BUILD_DIR)/vivado_tcl/vivado_project.tcl -tclargs
+
+# vivado synth
+%.bit: system_top.xdc $(wildcard %.sv) $(wildcard %.v)
+	$(VIVADO_SYNTH) $(HARDWARE) $* "$(SYNTH_OPT)" $^
+
+# orig (truncated)
+vivado -mode batch -nojou -nolog -source .../project_proc.tcl prop.tcl ipcores_repos.tcl prio_xci_files.tcl .../vivado_project.tcl -tclargs marble cctrl_marble_top "" system_top.xdc prop.tcl ipcores_repos.tcl prio_xci_files.tcl ../../top/cctrl_marble/cctrl_marble_top.v
+
+VIVADO_SYNTH_EXTRA_TCL = prop.tcl ipcores_repos.tcl prio_xci_files.tcl
+
+# parsed
+$(VIVADO_SYNTH) marble cctrl_marble_top "" system_top.xdc prop.tcl ipcores_repos.tcl prio_xci_files.tcl ../../top/cctrl_marble/cctrl_marble_top.v
+
+
+
+==============================================
+KEEF - system_top.xdc prop.tcl ipcores_repos.tcl prio_xci_files.tcl ../../top/cctrl_marble/cctrl_marble_top.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble/system_marble.bd /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/fixToFloat.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/floatToDouble.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/floatMultiply.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/floatResultFIFO.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/fofbPCS_PMA_with_shared_logic.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/fofbPCS_PMA_without_shared_logic.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/fofbCoefficientMul.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/fofbSupplyFilter.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/fofbReadLinksMux.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/forwardCellLinkMux.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/linkStatisticsMux.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/readBPMlinksMux.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/psSetpointCalcFixToFloat.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/psSetpointCalcConvertToAmps.xci /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/ila_td256_s4096_cap.xci /home/kpenney/repos/cell-controller/gateware/modules/eebi.v /home/kpenney/repos/cell-controller/gateware/modules/errorConvert.v /home/kpenney/repos/cell-controller/gateware/modules/evrLogger.v /home/kpenney/repos/cell-controller/gateware/modules/evr_mgt_top.v /home/kpenney/repos/cell-controller/gateware/modules/evrSync.v /home/kpenney/repos/cell-controller/gateware/modules/fifoUART.v /home/kpenney/repos/cell-controller/gateware/modules/fofbCalc.v /home/kpenney/repos/cell-controller/gateware/modules/fofbDataDPRAM.v /home/kpenney/repos/cell-controller/gateware/modules/fofbDSP.v /home/kpenney/repos/cell-controller/gateware/modules/fofbEthernet.v /home/kpenney/repos/cell-controller/gateware/modules/fofbReadLinks.v /home/kpenney/repos/cell-controller/gateware/modules/fofbReadLink.v /home/kpenney/repos/cell-controller/gateware/modules/fofbRecorder.v /home/kpenney/repos/cell-controller/gateware/modules/forwardCellLink.v /home/kpenney/repos/cell-controller/gateware/modules/forwardData.v /home/kpenney/repos/cell-controller/gateware/modules/freq_multi_count.v /home/kpenney/repos/cell-controller/gateware/modules/gtp_bitslide.v /home/kpenney/repos/cell-controller/gateware/modules/gtx_byteisaligned.v /home/kpenney/repos/cell-controller/gateware/modules/gtx_rx_phase_force.v /home/kpenney/repos/cell-controller/gateware/modules/linkStatistics.v /home/kpenney/repos/cell-controller/gateware/modules/lowpass.v /home/kpenney/repos/cell-controller/gateware/modules/psAWG.v /home/kpenney/repos/cell-controller/gateware/modules/psMUX.v /home/kpenney/repos/cell-controller/gateware/modules/psSetpointCalc.v /home/kpenney/repos/cell-controller/gateware/modules/psSetpointMonitor.v /home/kpenney/repos/cell-controller/gateware/modules/readBPMlinks.v /home/kpenney/repos/cell-controller/gateware/modules/readBPMlink.v /home/kpenney/repos/cell-controller/gateware/modules/reduceWidth.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx_cpll_railing.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/evr_mgt_gtx_auto_phase_align.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/evr_mgt_gtx_rx_startup_fsm.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/evr_mgt_gtx_sync_block.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx_gt.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx_init.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx_multi_gt.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/synth/fofbFIRplusIntegral.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/synth/fofbFixToFloat.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/synth/fofbGainMultiplier.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/synth/fofbIntegralFixToFloat.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/synth/fofbIntegralMultiplier.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/synth/readOldBPMs_DoubleToFloat.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/synth/readOldBPMs_FIFO.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/synth/readOldBPMs_Fix.v /home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/synth/readOldBPMs_Multiply.v /home/kpenney/repos/cell-controller/gateware/submodules/bedrock//badger/crc8e_guts.v /home/kpenney/repos/cell-controller/gateware/submodules/bedrock//homeless/activity.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/arp_rx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/arp_tx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/assemble_eth.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/dpram_pkheader.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/emux_rx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/emux_tx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/head_rx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/head_tx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/icmp_rx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/icmp_tx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/macip_config.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/pri_en16.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/pri_en4.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/tail_tx.v /home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core/udpip_rx.v ../../top/cctrl_marble/aggregate.v ../../top/cctrl_marble/firmwareBuildDate.v ../../top/cctrl_marble/gpioIDX.vh
+
+
+// ============= ethRefClk125 is gtrefclk_i from IBUFDS_GTE2
+[cctrl_marble_top.v]
+  assign  ethRefClk125 = pcs_pma_shared[9];   // output gtrefclk_i
+
+  fofbEthernet #(
+    //...
+    .PCS_PMA_SHARED_LOGIC_IN_CORE("true"),
+    //...
+  psTx (
+    .sysClk(sysClk),
+    //...
+    .clk200(clk200),
+    .ETH_REF_N(MGT_CLK_3_N),  // K5
+    .ETH_REF_P(MGT_CLK_3_P),  // K6
+    .ETH_RX_N(QSFP2_RX_N[2]), // R3  MGT_RX_4_N  MGT_RX_4_QSFP_N   QSFP2_RX_3_N Bank 115
+    .ETH_RX_P(QSFP2_RX_P[2]), // R4  MGT_RX_4_P  MGT_RX_4_QSFP_P   QSFP2_RX_3_P Bank 115
+    .ETH_TX_N(QSFP2_TX_N[2]), // P1  MGT_TX_4_N  MGT_TX_4_QSFP_N   QSFP2_TX_3_N Bank 115
+    .ETH_TX_P(QSFP2_TX_P[2]));// P2  MGT_TX_4_P  MGT_TX_4_QSFP_P   QSFP2_TX_3_P Bank 115
+
+[fofbEthernet.v]
+  if (PCS_PMA_SHARED_LOGIC_IN_CORE == "true") begin
+    //...
+    wire gtrefclk_out;
+    wire gtrefclk_bufg_out;
+    //...
+   `ifndef SIMULATE
+    fofbPCS_PMA_with_shared_logic PCS_PMA (
+    .gtrefclk_p(ETH_REF_P),                 // input MGT_CLK_3_P
+    .gtrefclk_n(ETH_REF_N),                 // input MGT_CLK_3_N
+    .gtrefclk_out(gtrefclk_out),            // output gtrefclk_i
+    .gtrefclk_bufg_out(gtrefclk_bufg_out),  // output gtrefclk_bufg
+    //...
+    );
+    assign ethClk = userclk2_out;
+    assign pcs_pma_shared = { gtrefclk_out,           // [9]
+                              gtrefclk_bufg_out,      // [8]
+                              userclk_out,            // [7]
+                              userclk2_out,           // [6]
+                              rxuserclk_out,          // [5]
+                              rxuserclk2_out,         // [4]
+                              pma_reset_out,          // [3]
+                              mmcm_locked_out,        // [2]
+                              gt0_qplloutclk_out,     // [1]
+                              gt0_qplloutrefclk_out}; // [0]
+  //...
+  end
+
+[fofbPCS_PMA_with_shared_logic.v]
+  fofbpcs_pma_with_shared_logic_support # (...)  inst
+   (
+      .gtrefclk_p(gtrefclk_p),                // input MGT_CLK_3_P
+      .gtrefclk_n(gtrefclk_n),                // input MGT_CLK_3_N
+      .gtrefclk_out(gtrefclk_out),            // output gtrefclk_i
+      .gtrefclk_bufg_out(gtrefclk_bufg_out),  // output gtrefclk_bufg
+   //...
+   );
+
+[fofbPCS_PMA_with_shared_logic_support.v]
+   assign gtrefclk_out = gtrefclk;
+   assign gtrefclk_bufg_out = gtrefclk_bufg;
+   fofbpcs_pma_with_shared_logic_clocking core_clocking_i
+   (
+      .gtrefclk_p(gtrefclk_p),                // input MGT_CLK_3_P
+      .gtrefclk_n(gtrefclk_n),                // input MGT_CLK_3_N
+      .txoutclk(txoutclk),
+      .rxoutclk(rxoutclk),
+      .mmcm_reset(mmcm_reset),
+      .gtrefclk(gtrefclk),                    // output gtrefclk_i
+      .gtrefclk_bufg(gtrefclk_bufg),          // output gtrefclk_bufg
+      .mmcm_locked(mmcm_locked), 
+      .userclk(userclk),
+      .userclk2(userclk2),
+      .rxuserclk(rxuserclk),
+      .rxuserclk2(rxuserclk2)
+   );
+
+[fofbPCS_PMA_with_shared_logic_clocking.v]
+   // Clock circuitry for the Transceiver uses a differential input clock.
+   // gtrefclk is routed to the tranceiver.
+   IBUFDS_GTE2 ibufds_gtrefclk (
+      .I(gtrefclk_p),                         // input MGT_CLK_3_P
+      .IB(gtrefclk_n),                        // input MGT_CLK_3_N
+      .CEB(1'b0),
+      .O(gtrefclk_i),                         // output gtrefclk_i
+      .ODIV2()
+   );
+
+   assign gtrefclk = gtrefclk_i;
+
+   BUFG  bufg_gtrefclk (
+      .I(gtrefclk_i),                         // input gtrefclk_i
+      .O(gtrefclk_bufg)                       // output gtrefclk_bufg
+   );
+
+// ============= GTGREFCLK is 1'b0 and GTREFCLK0 is gtrefclk_i
+[cctrl_marble_top.v]
+  evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
+    .reset(gtReset),
+    .ref_clk(ethRefClk125),                   // input gtrefclk_i
+    .drp_clk(sysClk),
+    //...
+    .rx_in_n(QSFP1_RX_N[0]),                  // input E3  MGT_RX_1_N  --  QSFP1_RX_1_N
+    .rx_in_p(QSFP1_RX_P[0]),                  // input E4  MGT_RX_1_P  --  QSFP1_RX_1_P
+    //...
+    );
+
+[evr_mgt_top.v]
+   evr_mgt_gtx  evr_mgt_gtx_i (
+          .sysclk_in(drp_clk),                   // input  sysClk
+      //...
+      //_________________________________________________________________________
+      //GT0  (X0Y0) #### IS IT A PROBLEM THAT THIS IS NOT GT0 ON MARBLE???
+      //____________________________CHANNEL PORTS________________________________
+      //------------------------------- CPLL Ports -------------------------------
+          .gt0_cpllfbclklost_out(cpllfbclklost_out),  // output
+          .gt0_cplllock_out(cplllock_out),            // output
+          .gt0_cplllockdetclk_in(drp_clk),            // input sysClk
+          .gt0_cpllreset_in(tied_to_ground_i),        // input
+      //------------------------ Channel - Clocking Ports ------------------------
+          .gt0_gtrefclk0_in(ref_clk),                 // input gtrefclk_i
+          .gt0_gtrefclk1_in(1'b0),                    // input 0
+      //...
+      );
+
+[evr_mgt_gtx.v]
+  module evr_mgt_gtx (
+    input           sysclk_in,
+    //...
+    //_________________________________________________________________________
+    //GT0  (X1Y6) #### INTERESTING THAT IT SAYS X1Y6 HERE
+    //____________________________CHANNEL PORTS________________________________
+    //...
+    //------------------------------- CPLL Ports -------------------------------
+    //------------------------ Channel - Clocking Ports ------------------------
+    input           gt0_gtrefclk0_in,
+    input           gt0_gtrefclk1_in,
+    //...
+    );
+
+  evr_mgt_gtx_init #(.USE_BUFG(0) ) inst (
+         .sysclk_in(sysclk_in),             // input sysClk
+    //...
+    //_________________________________________________________________________
+    //GT0  (X1Y6)
+    //____________________________CHANNEL PORTS________________________________
+    //------------------------------- CPLL Ports -------------------------------
+    //...
+    //------------------------ Channel - Clocking Ports ------------------------
+        .gt0_gtrefclk0_in(gt0_gtrefclk0_in), // input gtrefclk_i
+        .gt0_gtrefclk1_in(gt0_gtrefclk1_in), // input 0
+    //...
+    );
+
+[evr_mgt_gtx_init.v]
+  evr_mgt_gtx_multi_gt # (.USE_BUFG(USE_BUFG)) evr_mgt_gtx_i (
+    //_____________________________________________________________________
+    //GT0  (X1Y6)
+    //_____________________________________________________________________
+    //------------------------------- CPLL Ports -------------------------------
+    //...
+    //------------------------ Channel - Clocking Ports ------------------------
+        .gt0_gtrefclk0_in(gt0_gtrefclk0_in), // input gtrefclk_i
+        .gt0_gtrefclk1_in(gt0_gtrefclk1_in), // input 0
+    //...
+    );
+
+[evr_mgt_gtx_multi_gt.v]
+  evr_mgt_gtx_gt gt0_evr_mgt_gtx_i (
+    //...
+    //------------------------------- CPLL Ports -------------------------------
+    //...
+    //------------------------ Channel - Clocking Ports ------------------------
+        .gtrefclk0_in(gt0_gtrefclk0_in), // input gtrefclk_i
+        .gtrefclk1_in(gt0_gtrefclk1_in), // input 0
+    //...
+    );
+
+[evr_mgt_gtx_gt.v]
+  GTXE2_CHANNEL #() gtxe2_i (
+        //------------------------------- CPLL Ports -------------------------------
+        .CPLLFBCLKLOST                  (cpllfbclklost_out),
+        .CPLLLOCK                       (cplllock_out),
+        .CPLLLOCKDETCLK                 (cplllockdetclk_in),
+        .CPLLLOCKEN                     (tied_to_vcc_i),
+        .CPLLPD                         (cpllpd_in),
+        .CPLLREFCLKLOST                 (cpllrefclklost_out),
+        .CPLLREFCLKSEL                  (cpllrefclksel_in),
+        .CPLLRESET                      (cpllreset_in),
+        .GTRSVD                         (16'b0000000000000000),
+        .PCSRSVDIN                      (16'b0000000000000000),
+        .PCSRSVDIN2                     (5'b00000),
+        .PMARSVDIN                      (5'b00000),
+        .PMARSVDIN2                     (5'b00000),
+        .TSTIN                          (20'b11111111111111111111),
+        .TSTOUT                         (),
+        //-------------------------------- Channel ---------------------------------
+        .CLKRSVD                        (tied_to_ground_vec_i[3:0]),
+        //------------------------ Channel - Clocking Ports ------------------------
+        .GTGREFCLK                      (tied_to_ground_i),         // input 0
+        .GTNORTHREFCLK0                 (tied_to_ground_i),
+        .GTNORTHREFCLK1                 (tied_to_ground_i),
+        .GTREFCLK0                      (gtrefclk0_in),             // input gtrefclk_i
+        .GTREFCLK1                      (gtrefclk1_in),             // input 0
+        .GTSOUTHREFCLK0                 (tied_to_ground_i),
+        .GTSOUTHREFCLK1                 (tied_to_ground_i),
+    //...
+    );
+
+// ======================= Conclusions
+EVR GTGREFCLK is 1'b0
+EVR refclk is comes from K6/K5 MGT_CLK_3_P/N (from IBUFDS_GTE2) Bank 115
+EVR RX_N is  E3  MGT_RX_1_N  --  QSFP1_RX_1_N Bank 116
+EVR RX_P is  E4  MGT_RX_1_P  --  QSFP1_RX_1_P Bank 116
+
+This seems wrong (different banks), but it's how the BMB7 build was done as well.
+
+
+// ================================================= 220515 ===============================
+Let's figure out this error now
+
+ERROR: [DRC PDCN-2721] IBUFDS_GT_loads_clock_region: IBUFDS_GTE2 IBUFDS_GTE2_inst drives MMCME2_ADV MMCME2_BASE_inst in a different clock region and must do so using local routing resources which may negatively affect clock performance. Use CLOCK_DEDICATED_ROUTE set to FALSE to indicate this is intended.
+
+[cctrl_marble_top.v]
+  IBUFDS_GTE2 IBUFDS_GTE2_inst (
+  //...
+  );
+
+  MMCME2_BASE #(
+  //...
+  ) MMCME2_BASE_inst (
+  // Clock Outputs: 1-bit (each) output: User configurable clock outputs
+  .CLKOUT0(badgerRefClk125),
+  .CLKOUT0B(),
+  .CLKOUT1(badgerRefClk125d90),
+  .CLKOUT1B(),
+  .CLKOUT2(clk200),
+  .CLKOUT2B(),
+  .CLKOUT3(sysClk),
+  .CLKOUT3B(),
+  .CLKOUT4(clk50),
+  .CLKOUT5(), // Unused
+  .CLKOUT6(), // Unused
+  // Feedback Clocks: 1-bit (each) output: Clock feedback ports
+  .CLKFBOUT(mmcme_clkfb),
+  .CLKFBOUTB(),
+  // Status Ports: 1-bit (each) output: MMCM status ports
+  .LOCKED(mmcme_locked),  // 1-bit output: LOCK
+  // Clock Inputs: 1-bit (each) input: Clock input
+  .CLKIN1(clkIn125),      // 1-bit input: Clock
+  // Control Ports: 1-bit (each) input: MMCM control ports
+  .PWRDWN(1'b0),          // 1-bit input: Power-down
+  .RST(1'b0),             // 1-bit input: Reset
+  // Feedback Clocks: 1-bit (each) input: Clock feedback ports
+  .CLKFBIN(mmcme_clkfb)   // 1-bit input: Feedback clock
+  );
+
+
+// ================================================= 220522 ===============================
+All the 'set_false_path' commands in the cctrl_marble_top_tim.xdc timing constraints file
+are not matching.  Let's check the paths.
+
+// First:
+set_false_path -from [get_clocks MGT_CLK_0_P] -to [get_clocks -of_objects [get_pins MMCME2_BASE_inst/CLKOUT0]]
+Ah, MGT_CLK_2_P is not declared as a clock with create_clock
+Moving create_clock commands to pins xdc to align with bmb7 design
+
+// Second:
+set_false_path -from [get_clocks -of_objects [get_pins MMCME2_BASE_inst/CLKOUT0]] -to [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/RXOUTCLK]
+Looks good.
+
+// Third:
+set_false_path -from [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/RXOUTCLK] -to [get_clocks system_i/Aurora/aurora_8b10b_0/inst/system_aurora_8b10b_0_0_core_i/gt_wrapper_i/system_aurora_8b10b_0_0_multi_gt_i/gt0_system_aurora_8b10b_0_0_i/gtxe2_i/TXOUTCLK]
+Probably ok?  Don't know about the instance names deep within Aurora
+
+// Fourth:
+set_false_path -from [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/RXOUTCLK] -to [get_clocks -of_objects [get_pins MMCME2_BASE_inst/CLKOUT0]]
+This seems redundant with First (but backward).  Do we need this?  It seems like this is common practice.
+
+// Fifth:
+set_false_path -from [get_clocks -of_objects [get_pins psTx/PCS_PMA/inst/core_clocking_i/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins MMCME2_BASE_inst/CLKOUT0]]
+
+The TXOUTCLK port of GTXE2_CHANNEL instance gtxe2_i (fofbpcs_pma_with_shared_logic_gtwizard_gt.v) exits as 'txoutclk_out'
+which exits 'gtwizard_i' (fofbpcs_pma_with_shared_logic_gtwizard_multi_gt) as 'gt0_txoutclk_out'
+which exits 'inst' (fofbpcs_pma_with_shared_logic_gtwizard_init) as 'gt0_txoutclk_out'
+which exits 'gtwizard_inst' (fofbpcs_pma_with_shared_logic_gtwizard) as 'gt0_txoutclk_out'
+which exits 'transceiver_inst' (fofbpcs_pma_with_shared_logic_transceiver) as 'txoutclk'
+which then enters 'core_clocking_i' as 'txoutclk'
+which is input clock to 'mmcm_adv_inst'
+mmcm_adv_inst 'CLKOUT0' is buffered (BUFG) then sent out of core_clocking_i as 'userclk2'
+which then exits inst as 'userclk2_out'
+which then exits 'PCS_PMA' as 'userclk2_out'
+which then exits 'psTx' (fofbEthernet.v) as 'pcs_pma_shared[6]'
+  assign pcs_pma_shared = { gtrefclk_out,
+                            gtrefclk_bufg_out,
+                            userclk_out,
+                            userclk2_out,
+                            rxuserclk_out,
+                            rxuserclk2_out,
+                            pma_reset_out,
+                            mmcm_locked_out,
+                            gt0_qplloutclk_out,
+                            gt0_qplloutrefclk_out };
+
+So this constraint says ignore paths between MMCM CLKOUT0 based on TXOUTCLK of GTX transceiver and MMCM CLKOUT0 at top level based on MGT_CLK_0_P/N
+Sounds fine.
+
+// Sixth:
+set_false_path -from [get_clocks -of_objects [get_pins MMCME2_BASE_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins psTx/PCS_PMA/inst/core_clocking_i/mmcm_adv_inst/CLKOUT0]]
+This is the reverse path of Fifth. Ok
+
+// Seventh:
+create_clock -period 16.000 system_i/Aurora/aurora_8b10b_0/inst/system_aurora_8b10b_0_0_core_i/gt_wrapper_i/system_aurora_8b10b_0_0_multi_gt_i/gt0_system_aurora_8b10b_0_0_i/gtxe2_i/TXOUTCLK
+Note: this warning shows that this line failed to match.  Let's find out why.
+WARNING: [Vivado 12-663] port, pin or net 'system_i/Aurora/aurora_8b10b_0/inst/system_aurora_8b10b_0_0_core_i/gt_wrapper_i/system_aurora_8b10b_0_0_multi_gt_i/gt0_system_aurora_8b10b_0_0_i/gtxe2_i/TXOUTCLK' not found
+
+[cctrl_marble_top.v]
+  system_i (system_marble)
