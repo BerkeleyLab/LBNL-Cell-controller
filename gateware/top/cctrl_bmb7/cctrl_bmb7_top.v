@@ -62,7 +62,7 @@ wire sysReset_n;
 
 //////////////////////////////////////////////////////////////////////////////
 // General-purpose I/O block
-`include "gpioIDX.v"
+`include "gpioIDX.vh"
 wire                    [31:0] GPIO_IN[0:GPIO_IDX_COUNT-1];
 wire                    [31:0] GPIO_OUT;
 wire      [GPIO_IDX_COUNT-1:0] GPIO_STROBES;

@@ -63,6 +63,7 @@ set_property -dict {PACKAGE_PIN W9 IOSTANDARD LVCMOS15} [get_ports PMOD2_7]
 # 125 MHz from U20  # TODO - Are these compatible with LVCMOS15?
 set_property -dict {PACKAGE_PIN AC9 IOSTANDARD DIFF_SSTL15} [get_ports DDR_REF_CLK_P]
 set_property -dict {PACKAGE_PIN AD9 IOSTANDARD DIFF_SSTL15} [get_ports DDR_REF_CLK_N]
+create_clock -name clkSys -period 8.000 -waveform {0.000 4.000} [get_ports DDR_REF_CLK_P]
 
 # VCXO
 set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
@@ -75,19 +76,19 @@ set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS25} [get_ports FPGA_RxD]
 set_property -dict {PACKAGE_PIN B9 IOSTANDARD LVCMOS25} [get_ports PHY_RSTN]
 
 # MGTREFCLK0_116 (schematic MGT_CLK_0), U2 output 0
-set_property -dict {PACKAGE_PIN D6} [get_ports MGT_CLK_0_P]
-set_property -dict {PACKAGE_PIN D5} [get_ports MGT_CLK_0_N]
-create_clock -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_0_P]
+#set_property -dict {PACKAGE_PIN D6} [get_ports MGT_CLK_0_P]
+#set_property -dict {PACKAGE_PIN D5} [get_ports MGT_CLK_0_N]
+#create_clock -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_0_P]
 
 # MGTREFCLK1_116 (schematic MGT_CLK_1), U2 output 1
 set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
 set_property -dict {PACKAGE_PIN F5} [get_ports MGT_CLK_1_N]
-create_clock -period 3.200 -waveform {0.000 1.600} [get_ports MGT_CLK_1_P]
+create_clock -name clk312 -period 3.200 -waveform {0.000 1.600} [get_ports MGT_CLK_1_P]
 
 # MGTREFCLK0_115 (schematic MGT_CLK_2), U2 output 4
 set_property -dict {PACKAGE_PIN H6} [get_ports MGT_CLK_2_P]
 set_property -dict {PACKAGE_PIN H5} [get_ports MGT_CLK_2_N]
-create_clock -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_2_P]
+create_clock -name clk125 -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_2_P]
 
 # MGTREFCLK1_115 (schematic MGT_CLK_3), U2 output 5
 #set_property -dict {PACKAGE_PIN K6} [get_ports MGT_CLK_3_P]

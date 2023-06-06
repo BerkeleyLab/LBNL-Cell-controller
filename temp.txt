@@ -1,3 +1,8 @@
+TODO:
+  * Generate new block diagram (fix clock frequencies?)
+  CHECK * Use 125 MHz DDR clk for top-level MMCME
+  * Figure out ILA (chipscope) interface
+  * What badger/ethernet protocol can be used for MGT link diagnostics?
 
 VIVADO_CMD = vivado -mode batch -nojou -nolog
 VIVADO_SYNTH = $(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/project_proc.tcl $(VIVADO_SYNTH_EXTRA_TCL) $(BUILD_DIR)/vivado_tcl/vivado_project.tcl -tclargs
