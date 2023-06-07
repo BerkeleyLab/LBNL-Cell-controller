@@ -17,7 +17,11 @@ ELF 	 ?= $(THIS_DIR)/$(TARGET).elf
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
+ifeq ($(TARGET), cctrl_bmb7)
 BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+else
+BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+endif
 
 all: $(TARGET) $(TARGET).elf $(TARGET).elf.size
 
@@ -73,7 +77,16 @@ __SRC_BMB7UDP_FILES = \
 	bmb7_udp.c
 SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
 
+__SRC_BWUDP_FILES = \
+	badger.c \
+	bwudp.c
+SRC_BWUDP_FILES = $(addprefix $(SW_SRC_DIR)/bwudp/, $(__SRC_BWUDP_FILES))
+
+ifeq ($(PLATFORM),marble)
+SRC_FILES += $(SRC_BWUDP_FILES)
+else
 SRC_FILES += $(SRC_BMB7UDP_FILES)
+endif
 
 __HDR_BMB7UDP_FILES = \
 	bmb7_udp.h
@@ -103,17 +116,23 @@ LIB_DIRS = $(BSP_DIR)/lib
 LIB_FLAGS = $(addprefix -L, $(LIB_DIRS))
 LIBS = -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
 
-ifeq ($(TARGET),cctrl_bmb7)
-	USER_FLAGS += -D__TARGET_CCTRL_BMB7__
-else
-	USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
-endif
-
 INCLUDE_DIRS = \
 	$(SW_SRC_DIR) \
 	$(TARGET_DIR) \
-	$(BMB7UDP_DIR) \
 	$(BSP_DIR)/include
+
+ifeq ($(TARGET),cctrl_bmb7)
+USER_FLAGS += -D__TARGET_CCTRL_BMB7__
+INCLUDE_DIRS += $(BMB7UDP_DIR)
+else ($(TARGET),cctrl_marble)
+USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
+USER_FLAGS += -DMARBLE
+USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H
+INCLUDE_DIRS += $(SW_SRC_DIR)/bwudp
+else
+USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
+endif
+
 INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 
 .PHONY: all clean bsp

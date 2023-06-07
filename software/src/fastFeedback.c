@@ -14,8 +14,10 @@
 #ifdef SIMULATION
 #include "simplatform.h"
 #else
+#ifndef MARBLE
 #include "bmb7_udp.h"
-#endif
+#endif // ndef MARBLE
+#endif // ndef SIMULATION
 #include "util.h"
 
 #define BPMLINKS_CSR_W_SWAP_BANKS               0x80000000

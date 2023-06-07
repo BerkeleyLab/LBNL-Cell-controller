@@ -57,7 +57,6 @@ void rx8chk(void) {
 int main()
 {
     uint32_t lastDiagnostic, lastPacket, now;
-    int pass;
 
     /*
      * Announce our presence
@@ -87,6 +86,7 @@ int main()
      */
     lastPacket = MICROSECONDS_SINCE_BOOT();
 #ifndef MARBLE
+    int pass;
     for (pass = 0 ; pass < 1000000 ; pass++) {
         if (udpRxCheck32(udpEPICS, NULL, 0) > 0) {
             lastPacket = MICROSECONDS_SINCE_BOOT();

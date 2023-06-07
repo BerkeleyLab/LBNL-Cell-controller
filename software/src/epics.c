@@ -42,10 +42,10 @@ static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
 #endif
 
 #ifdef MARBLE
-static const ethernetMAC defaultMAC = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55};
-static const ipv4Address defaultIP = {192, 168, 20, 20};
-static const ipv4Address defaultNetmask = {255, 255, 255, 0};   // Ignored when no client support
-static const ipv4Address defaultGateway = {0, 0, 0, 0};         // Ignored when no client support
+static const ethernetMAC defaultMAC = {{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}};
+static const ipv4Address defaultIP = {{192, 168, 20, 20}};
+static const ipv4Address defaultNetmask = {{255, 255, 255, 0}};   // Ignored when no client support
+static const ipv4Address defaultGateway = {{0, 0, 0, 0}};         // Ignored when no client support
 static bwudpHandle handleNonce;
 #endif
 
