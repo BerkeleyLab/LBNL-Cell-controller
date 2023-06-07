@@ -85,6 +85,8 @@ set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
 set_property -dict {PACKAGE_PIN F5} [get_ports MGT_CLK_1_N]
 create_clock -name clk312 -period 3.200 -waveform {0.000 1.600} [get_ports MGT_CLK_1_P]
 
+#Problem ports: QSFP2_TX_N[3], QSFP2_TX_N[2], QSFP2_TX_P[3], and QSFP2_TX_P[2]
+
 # MGTREFCLK0_115 (schematic MGT_CLK_2), U2 output 4
 set_property -dict {PACKAGE_PIN H6} [get_ports MGT_CLK_2_P]
 set_property -dict {PACKAGE_PIN H5} [get_ports MGT_CLK_2_N]
@@ -120,7 +122,7 @@ set_property PACKAGE_PIN A4 [get_ports {QSFP1_TX_P[3]}]
 # ------------------------------- QSFP2 --------------------------------
 # ----------------------------------------------------------------------
 # Corrected on 220315
-set_property PACKAGE_PIN N3 [get_ports {QSFP2_RX_N[0]}]
+set_property -dict {PACKAGE_PIN N3 IOSTANDARD LVCMOS15} [get_ports {QSFP2_RX_N[0]}]
 set_property PACKAGE_PIN N4 [get_ports {QSFP2_RX_P[0]}]
 set_property PACKAGE_PIN M1 [get_ports {QSFP2_TX_N[0]}]
 set_property PACKAGE_PIN M2 [get_ports {QSFP2_TX_P[0]}]

@@ -29,3 +29,12 @@ clean:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) clean
 	make -C $(SW_TGT_DIR) TARGET=$(TARGET) clean
 	rm -f *.log *.jou
+
+# Download bitstream to FPGA
+download: $(BIT)
+	openocd -f $(GW_SCRIPTS_DIR)marble_openocd.cfg -c "init; pld load 0 $<; exit;"
+#	xsct $(GW_SCRIPTS_DIR)/download_bit.tcl $(BIT)
+
+# Run microblaze software from RAM
+run:
+	echo TODO

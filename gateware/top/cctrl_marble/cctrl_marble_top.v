@@ -50,8 +50,10 @@ module cctrl_marble_top #(
   output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
 //  input  wire        QSFP2_PRESENT_N,
 //  output wire        QSFP2_LPMODE, QSFP2_RESET_N, QSFP2_MODSEL_N,
-  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
-  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
+//  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+//  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
+  input  wire  [1:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+  output wire  [1:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
 //  inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA, // DONE - Not implemented in marble
 //  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
@@ -86,7 +88,6 @@ parameter FREQ_CLKIN_HZ = 125_000_000;
 wire clkIn125;  // Input clock (125 MHz) from U20
 wire sysClk, sysClk_ubuf;    // 100 MHz sysclk
 wire clk200;    // 200 MHz clock
-wire clk50;     // 50 MHz clock
 wire ethRefClk125;
 wire badgerRefClk125, badgerRefClk125d90; // 125 MHz ethernet clock (and 90-deg shifted copy)
 wire sysReset_n;
@@ -125,12 +126,14 @@ IBUFGDS ibufgds_i (
   .IB (DDR_REF_CLK_N)
 );
 
+/*
 wire clkIn125_buf;
 
 BUFG bufg_i_clkin125 (
   .I  (clkIn125),
   .O  (clkIn125_buf)
 );
+*/
 
 /*
 IBUFDS_GTE2 #(
@@ -156,6 +159,7 @@ IBUFDS_GTE2_inst (
 );
 */
 
+/*
 wire mmcme_clkfb, mmcme_clkfb_buf;
 
 BUFG bufg_i_clkfb (
@@ -228,6 +232,7 @@ BUFG bufmr_i_sysclk (
   .I  (sysClk_ubuf),
   .O  (sysClk)
 );
+*/
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -385,6 +390,16 @@ wire  [8:0] evr_mgt_drp_daddr;
 (* mark_debug=EVR_DEBUG *) wire  [1:0] evr_notintable;
 (* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
 (* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
+
+`ifndef INCLUDE_FOFB
+  // Need to provide refclk for evr_mgt_top since not shared with fofb
+  IBUFDS_GTE2 ibufds_gtrefclk_top_i (
+    .I(MGT_CLK_2_P),                         // input MGT_CLK_3_P
+    .IB(MGT_CLK_2_N),                        // input MGT_CLK_3_N
+    .CEB(1'b0),
+    .O(ethRefClk125)                          // output gtrefclk_i
+  );
+`endif
 
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
@@ -1036,10 +1051,20 @@ badger badger_i (
 
 wire DUMMY_UART_LOOPBACK;
 
+/*
+in clkIn125
+out badgerRefClk125
+out badgerRefClk125d90
+out clk200
+out sysClk_ubuf
+*/
+
   system_marble system_i (
-        .clkIn100(sysClk), // input
-        .clkIn50(clk50), // input
-        .clkInLocked(mmcme_locked), // input
+        .clkIn125(clkIn125), // input
+        .badgerClk125(badgerRefClk125), // output
+        .badgerClk125d90(badgerRefClk125d90), // output
+        .clk200(clk200),  // output
+        .sysClk(sysClk_ubuf), // output
         .sysReset_n(sysReset_n),
 
         .auroraUserClk(auroraUserClk),

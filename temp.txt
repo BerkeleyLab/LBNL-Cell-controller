@@ -342,3 +342,8 @@ WARNING: [Vivado 12-663] port, pin or net 'system_i/Aurora/aurora_8b10b_0/inst/s
 
 [cctrl_marble_top.v]
   system_i (system_marble)
+
+========================================== 220606 ========================
+Let's track down this error:
+ERROR: [DRC REQP-51] must_use_ref_clock: GTXE2_CHANNEL cell evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i: An input reference clock pin (GTREFCLK0, GTREFCLK1, GTNORTHREFCLK0, GTNORTHREFCLK1, GTSOUTHREFCLK0, GTSOUTHREFCLK1 and set CPLLREFCLKSEL[2:0] appropriately) or GTXE2_COMMON clock input (QPLLCLK) must be used.
+

@@ -113,6 +113,7 @@ work/
 !/gateware/platform/xilinx/*/*/system_marble/*.bd
 /gateware/platform/xilinx/*/*/ila_td256_s4096_cap/
 !/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/ila_td256_s4096_cap.xci
+/gateware/platform/xilinx/*/*/system_marble_old/
 
 gateware/top/*/gpioIDX.vh
 
