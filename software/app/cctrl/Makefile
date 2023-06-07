@@ -131,8 +131,16 @@ vpath *.mmi $(GW_CCTRL_TGT_DIR)
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
+ifeq ($(PLATFORM),marble)
+XSA_FILE=$(GW_CCTRL_TGT_DIR)/system_marble.xsa
+else
+XSA_FILE=$(GW_CCTRL_TGT_DIR)/system.xsa
+endif
+
 $(TARGET):
-	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_CCTRL_TGT_DIR)/system.xsa $(CPU_NAME)
+	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(XSA_FILE) $(CPU_NAME)
+
+#	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_CCTRL_TGT_DIR)/system.xsa $(CPU_NAME)
 
 $(TARGET).elf: $(HDR_FILES) $(HDR_GEN_FILES) $(OBJ_FILES) $(LINKER_FILES)
 	$(CC) $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) $(LIB_FLAGS) $(LD_FLAGS) -o $@ $(filter %.o, $^) $(LIBS)

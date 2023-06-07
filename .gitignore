@@ -191,6 +191,7 @@ software/tests/bin
 
 # Vivado/Vitis-generated
 *system.xsa
+*system_marble.xsa
 *psu_init*
 *.bif
 *init.tcl

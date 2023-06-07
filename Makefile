@@ -20,14 +20,19 @@ bit:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.bit
 
 sw:
-	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) all
+	make -C $(SW_CCTRL_APP_DIR) TARGET=$(TARGET) BIT=$(BIT) all
+#	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) all
 
 bundle:
 	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) bundle
 
-clean:
+swclean:
+	make -C $(SW_CCTRL_APP_DIR) TARGET=$(TARGET) clean
+
+gwclean:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) clean
-	make -C $(SW_TGT_DIR) TARGET=$(TARGET) clean
+
+clean: swclean gwclean
 	rm -f *.log *.jou
 
 # Download bitstream to FPGA
@@ -37,4 +42,4 @@ download: $(BIT)
 
 # Run microblaze software from RAM
 run:
-	echo TODO
+	xsct load_mb.tcl $$(hostname) <fw.elf>
