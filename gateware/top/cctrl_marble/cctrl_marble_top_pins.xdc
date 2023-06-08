@@ -68,7 +68,7 @@ create_clock -name clkSys -period 8.000 -waveform {0.000 4.000} [get_ports DDR_R
 # VCXO
 set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
 
-# UART to USB
+# UART to USB (marble schematic: FPGA_RxD is FPGA-to-host, FPGA_TxD is host-to-FPGA)
 set_property -dict {PACKAGE_PIN C16 IOSTANDARD LVCMOS25} [get_ports FPGA_TxD]
 set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS25} [get_ports FPGA_RxD]
 

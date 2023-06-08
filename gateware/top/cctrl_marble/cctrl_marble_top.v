@@ -1064,7 +1064,7 @@ out sysClk_ubuf
         .badgerClk125(badgerRefClk125), // output
         .badgerClk125d90(badgerRefClk125d90), // output
         .clk200(clk200),  // output
-        .sysClk(sysClk_ubuf), // output
+        .sysClk(sysClk), // output
         .sysReset_n(sysReset_n),
 
         .auroraUserClk(auroraUserClk),

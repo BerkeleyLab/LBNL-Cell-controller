@@ -18,13 +18,17 @@ all: bit sw bundle
 
 bit:
 	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.bit
+	#make -C $(GW_TGT_DIR) TARGET=$(TARGET) all
+
+foo:
+	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.mmi
 
 sw:
 	make -C $(SW_CCTRL_APP_DIR) TARGET=$(TARGET) BIT=$(BIT) all
 #	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) all
 
 bundle:
-	make -C $(SW_TGT_DIR) TARGET=$(TARGET) BIT=$(BIT) bundle
+	make -C $(SW_CCTRL_APP_DIR) TARGET=$(TARGET) BIT=$(BIT) DEPLOY_BIT=$(SW_CCTRL_APP_DIR)/download_$(PLATFORM).bit bundle
 
 swclean:
 	make -C $(SW_CCTRL_APP_DIR) TARGET=$(TARGET) clean
@@ -36,10 +40,10 @@ clean: swclean gwclean
 	rm -f *.log *.jou
 
 # Download bitstream to FPGA
-download: $(BIT)
-	openocd -f $(GW_SCRIPTS_DIR)marble_openocd.cfg -c "init; pld load 0 $<; exit;"
+download: $(SW_CCTRL_APP_DIR)/download_$(PLATFORM).bit
+	openocd -f $(GW_SCRIPTS_DIR)/marble_openocd.cfg -c "init; pld load 0 $<; exit;"
 #	xsct $(GW_SCRIPTS_DIR)/download_bit.tcl $(BIT)
 
-# Run microblaze software from RAM
+# Run microblaze software from RAM (TODO)
 run:
-	xsct load_mb.tcl $$(hostname) <fw.elf>
+	xsct $(SW_SCRIPTS_DIR)/download_elf.tcl <psu_init_tcl> <elf>"

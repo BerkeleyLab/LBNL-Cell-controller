@@ -124,7 +124,7 @@ INCLUDE_DIRS = \
 ifeq ($(TARGET),cctrl_bmb7)
 USER_FLAGS += -D__TARGET_CCTRL_BMB7__
 INCLUDE_DIRS += $(BMB7UDP_DIR)
-else ($(TARGET),cctrl_marble)
+else ifeq ($(TARGET),cctrl_marble)
 USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
 USER_FLAGS += -DMARBLE
 USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H

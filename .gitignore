@@ -164,6 +164,8 @@ bwUDP
 *ipcores_repos.tcl
 *.mmi
 *download.bit
+*download_marble.bit
+*download_bmb7.bit
 
 # Script-generated
 *softwareBuildDate.h
