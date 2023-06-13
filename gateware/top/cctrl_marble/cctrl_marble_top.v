@@ -70,6 +70,7 @@ wire INTLK_RESET_BUTTON_N = 1'b0;
 wire FP_LED0_RED, FP_LED0_GRN;  // TODO - Will these exist on marble port?
 wire FP_LED1_RED, FP_LED1_GRN;  // TODO - Will these exist on marble port?
 wire FP_LED2_RED, FP_LED2_GRN;  // TODO - Will these exist on marble port?
+assign PHY_RSTN = 1'b1; // Release the ethernet PHY from reset
 
 
 //////////////////////////////////////////////////////////////////////////////

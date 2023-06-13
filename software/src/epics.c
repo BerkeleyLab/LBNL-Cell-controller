@@ -52,7 +52,7 @@ static bwudpHandle handleNonce;
 int epicsInit(void) {
 #ifdef MARBLE
     int rval = bwudpRegisterInterface(&defaultMAC, &defaultIP, &defaultNetmask, &defaultGateway);
-    rval |= bwudpRegisterServer(CC_PROTOCOL_UDP_PORT, (bwudpCallback)rxPacketCallback);
+    rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
     return rval;
 #else
     return udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");

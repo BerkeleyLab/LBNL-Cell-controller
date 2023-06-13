@@ -41,7 +41,9 @@ clean: swclean gwclean
 
 # Download bitstream to FPGA
 download: $(SW_CCTRL_APP_DIR)/download_$(PLATFORM).bit
-	openocd -f $(GW_SCRIPTS_DIR)/marble_openocd.cfg -c "init; pld load 0 $<; exit;"
+	cd $(PROJECTS_DIR)/test_marble_family
+	BITFILE=$< ./mutil usb
+#	openocd -f $(GW_SCRIPTS_DIR)/marble_openocd.cfg -c "init; pld load 0 $<; exit;"
 #	xsct $(GW_SCRIPTS_DIR)/download_bit.tcl $(BIT)
 
 # Run microblaze software from RAM (TODO)

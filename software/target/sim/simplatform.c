@@ -151,7 +151,8 @@ uint8_t nextChar = 0;
 
 // GLOBALS
 static sim_console_state_t sim_console_state;
-unsigned short udp_port;  /* Global */
+
+static unsigned short udp_port;
 
 #ifdef TRAPEXIT
 static void _sigHandler(int c);
@@ -384,9 +385,6 @@ uint32_t Xil_In32(uint32_t addr) {
         if (eth_outbox.pending) {
           rval = TX_CSR_R_BUSY;
         }
-        break;
-      case GPIO_ADDR(GPIO_IDX_NET_TX_DATA):
-        // UNUSED ?!?!?!?
         break;
 #endif // MARBLE
       case EVR_REG(0):
@@ -689,9 +687,6 @@ void Xil_Out32(uint32_t addr, uint32_t val) {
             eth_outbox.pkt.shorts[addr-1] = data;
           }
         }
-        break;
-      case GPIO_ADDR(GPIO_IDX_NET_TX_DATA):
-        // UNUSED ?!?!?!?
         break;
 #endif // MARBLE
       case GPIO_ADDR(GPIO_IDX_UART_CSR):

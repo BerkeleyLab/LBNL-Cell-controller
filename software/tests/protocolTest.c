@@ -30,9 +30,8 @@
 
 const uint8_t defaultIP[] = {127, 0, 0, 1};
 #define DEFAULT_PORT        CC_PROTOCOL_UDP_PORT
-//#define PACK_IP32(ip)       (uint32_t)((ip[0] << 24) | (ip[1] << 16) | (ip[2] << 8) | ip[3])
 #define PACK_IP32(ip)       (uint32_t)((ip[3] << 24) | (ip[2] << 16) | (ip[1] << 8) | ip[0])
-#define PRINT_IP32(ip32)    printf("%d.%d.%d.%d", ((ip32 >> 24) & 0xff), ((ip32 >> 16) & 0xff), ((ip32 >> 8) & 0xff), ip32 & 0xff);
+#define PRINT_IP32(ip32)    printf("%d.%d.%d.%d", ip32 & 0xff, ((ip32 >> 8) & 0xff), ((ip32 >> 16) & 0xff), ((ip32 >> 24) & 0xff));
 
 #define CCPACKET_SIZE     (sizeof(struct ccProtocolPacket)/sizeof(char))
 #define EXPECTED_ARGS_SYSMON   ((XADC_CHANNEL_COUNT+1)/2 + QSFP_COUNT*(1 + (QSFP_RX_COUNT+1)/2) + 1 + (PILOT_TONE_ADC_COUNT+1)/2 \

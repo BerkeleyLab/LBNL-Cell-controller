@@ -1,0 +1,31 @@
+Cell Controller marble porting development notes
+
+Badger/BWUDP:
+  Default IP address: 192.168.20.20
+  Source: [epics.c]
+    static const ipv4Address defaultIP = {{192, 168, 20, 20}};
+  Default UDP Port: 50006
+  Source: [cellControllerProtocol.h]
+    #define CC_PROTOCOL_UDP_PORT        50006
+
+230613:
+  Ethernet is working now.  I had a few bugs to squash.
+  1. Assert PHY_RSTN at top level (I guess it was defaulting to low).
+  (now it should ping)
+  2. Register service with bwudp using htons(PORT) rather than just PORT
+  (now it should respond to packets)
+  3. Fix the byte order of sscanf in software/tests/protocolTest.c
+  (now we can send a test packet and parse the response)
+
+230612:
+  First try ethernet is dead.  After setting up route on the lappy, I see the
+  lights on the switch blinking on the host side, but not on the marble side.
+  Also get no response and no chatter.  Can't ping either.
+  Also the marble_mmc MDIO dump is returning all 0xFFFF on all registers.
+  I have never experimented with this function, but that can't be accurate.
+
+  Debug steps:
+    1. Verify xdc file with schematic (everything going where it needs to?)
+    2. Drop in chipscope/ila or scrap memory to log rxd pin activity
+    3. Fix the MDIO issue and query those registers
+    4. Get some FMC breakout to put the GMII pins on a scope

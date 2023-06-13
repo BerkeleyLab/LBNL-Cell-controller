@@ -24,7 +24,7 @@ struct sockaddr_in src_addr;  /* Global */
 socklen_t src_addrlen;
 int udpfd;
 int initialized = 0;
-unsigned short udp_port;
+static unsigned short udp_port;
 
 static pkt_t pkt;
 

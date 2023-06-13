@@ -40,6 +40,11 @@
 #define BWUDP_ENDPOINT_CAPACITY 4
 #endif
 
+// Turn on debug prints (printd)
+#ifndef DEBUG_PRINT
+#define DEBUG_PRINT
+#endif
+
 /*****************************************************************************
  * IPv4 header
  */
