@@ -83,7 +83,7 @@ set_property -dict {PACKAGE_PIN B9 IOSTANDARD LVCMOS25} [get_ports PHY_RSTN]
 # MGTREFCLK1_116 (schematic MGT_CLK_1), U2 output 1
 set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
 set_property -dict {PACKAGE_PIN F5} [get_ports MGT_CLK_1_N]
-create_clock -name clk312 -period 3.200 -waveform {0.000 1.600} [get_ports MGT_CLK_1_P]
+create_clock -name clkAuroraGTREF -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_1_P]
 
 #Problem ports: QSFP2_TX_N[3], QSFP2_TX_N[2], QSFP2_TX_P[3], and QSFP2_TX_P[2]
 

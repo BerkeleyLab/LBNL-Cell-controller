@@ -8,6 +8,15 @@ Badger/BWUDP:
   Source: [cellControllerProtocol.h]
     #define CC_PROTOCOL_UDP_PORT        50006
 
+Aurora clocks:
+  Line rate: Appears to be 3.125 Gb/s (why that number?)
+  F_GTREFCLK can be many discrete values from 125 MHz to 625 MHz
+    What's the trade-off?
+  For marble, I have two options:
+    1. Set F_GTREFCLK to 125MHz and use FPGA_REF_CLK0
+    2. Generate any other frequency with SI570
+  Option 1 sounds easiest.  Any reason why I shouldn't do that?
+
 230613:
   Ethernet is working now.  I had a few bugs to squash.
   1. Assert PHY_RSTN at top level (I guess it was defaulting to low).
@@ -16,6 +25,13 @@ Badger/BWUDP:
   (now it should respond to packets)
   3. Fix the byte order of sscanf in software/tests/protocolTest.c
   (now we can send a test packet and parse the response)
+
+  Next I'd like to re-introduce some of the modules I excluded from the last
+  synthesis and see if I can still build.  If I can introduce modules in the
+  smallest increments I should be able to maintain a tractable understanding
+  of the clock interactions and the required 
+
+  I also need to figure out the clock situation.
 
 230612:
   First try ethernet is dead.  After setting up route on the lappy, I see the

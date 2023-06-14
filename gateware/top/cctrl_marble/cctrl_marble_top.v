@@ -400,7 +400,7 @@ wire  [8:0] evr_mgt_drp_daddr;
     .CEB(1'b0),
     .O(ethRefClk125)                          // output gtrefclk_i
   );
-`endif
+`endif // `ifndef INCLUDE_FOFB
 
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
@@ -691,7 +691,6 @@ linkStatistics #(.dbg("false")) linkStatistics (
          .GPIO_OUT(GPIO_OUT),
          .sysValue(GPIO_IN[GPIO_IDX_LINK_STATISTICS_CSR]));
 
-`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Compute power supply settings
 wire        FOFB_SETPOINT_AXIS_TVALID;
@@ -717,6 +716,7 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .SETPOINT_TLAST(FOFB_SETPOINT_AXIS_TLAST),
     .SETPOINT_TDATA(FOFB_SETPOINT_AXIS_TDATA));
 
+`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
 psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
@@ -763,7 +763,6 @@ wire        PS_SETPOINT_AXIS_TVALID, PS_SETPOINT_AXIS_TLAST;
 wire [31:0] PS_READBACK_AXIS_TDATA;
 wire  [7:0] PS_READBACK_AXIS_TUSER;
 wire        PS_READBACK_AXIS_TVALID;
-
 
 psMUX #(.DEBUG("false"),
         .AXI_WIDTH(32))
@@ -901,7 +900,7 @@ errorConvert errorConvert (
           .status(GPIO_IN[GPIO_IDX_ERROR_CONVERT_CSR]),
           .resultHi(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_HI]),
           .resultLo(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_LO]));
-`endif // INCLUDE_FOFB
+`endif // `ifdef INCLUDE_FOFB
 
 /////////////////////////////////////////////////////////////////////////////
 // Pilot tone reference
@@ -1077,8 +1076,10 @@ out sysClk_ubuf
         .gtxReset(sysGTXreset),
         .gtxResetOut(gtxResetOut),
 
-        .GT_DIFF_REFCLK_312_3_clk_n(MGT_CLK_1_N),
-        .GT_DIFF_REFCLK_312_3_clk_p(MGT_CLK_1_P),
+        //.GT_DIFF_REFCLK_312_3_clk_n(MGT_CLK_1_N),
+        //.GT_DIFF_REFCLK_312_3_clk_p(MGT_CLK_1_P),
+        .GT_DIFF_REFCLK_125_clk_n(MGT_CLK_1_N),
+        .GT_DIFF_REFCLK_125_clk_p(MGT_CLK_1_P),
 
         .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata),
         .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast),
