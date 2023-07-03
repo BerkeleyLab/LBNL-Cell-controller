@@ -17,6 +17,38 @@ Aurora clocks:
     2. Generate any other frequency with SI570
   Option 1 sounds easiest.  Any reason why I shouldn't do that?
 
+230626:
+  After an incredibly annoying bug squash, I was able to change the aurora
+  refclk freq to 125 MHz (from 312.5 MHz) and successfully build.  In the
+  absence of any compelling reasoning to the contrary, I'm going to attempt
+  to require as few different input clock frequencies as possible.
+  On the latest (successful) build,
+    Included:
+      forwardData
+      evrSync
+      evr_mgt_top_i
+      evrLogger
+      readBPMlinks
+      forwardCellLink
+      fofbReadLinks
+      linkStatistics
+      fofbDSP
+    Excluded:
+      qsfpReadout
+      psSetpointMonitor
+      psAWG
+      psMUX
+      psTx
+      psRx
+      fofbRecorder
+      eebi
+      errorConvert
+
+  For the qsfpReadout, I need to add an additional transaction to set the
+  configuration of the I2C mux (U5, TCA9548) to select the desired QSFP
+  (they can have the same I2C address, so must only enable one channel at
+  a time).
+
 230613:
   Ethernet is working now.  I had a few bugs to squash.
   1. Assert PHY_RSTN at top level (I guess it was defaulting to low).

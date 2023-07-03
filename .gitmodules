@@ -9,4 +9,4 @@
 	url = ../../alsu-instrumentation/BMB7UDP.git
 [submodule "gateware/submodules/bwudp"]
 	path = gateware/submodules/bwudp
-	url = git@gitlab.lbl.gov:alsu-instrumentation/bantamweightUDP.git
+	url = ../../alsu-instrumentation/bantamweightUDP.git

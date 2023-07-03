@@ -295,7 +295,6 @@ forwardData #(.DATA_WIDTH(64))
 
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
-/*
 parameter QSFP_COUNT = 2;
 reg [$clog2(QSFP_COUNT)+6:0] qsfpReadAddress;
 wire [15:0] qsfpReadData;
@@ -307,6 +306,7 @@ always @(posedge sysClk) begin
         qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+6:0];
     end
 end
+/*
 qsfpReadout #(.QSFP_COUNT(QSFP_COUNT),
               .dbg("false"),
               .CLOCK_RATE(SYSCLK_RATE),

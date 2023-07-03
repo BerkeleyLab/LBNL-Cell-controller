@@ -240,7 +240,6 @@ vpath %.sh $(GW_SCRIPTS_DIR)
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(info IP_CORES_CUSTOM=$(IP_CORES_CUSTOM))
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
@@ -267,6 +266,14 @@ prio_xci_files.tcl: ila_td256_s4096_cap.xci
 	sed -e 's|$$XCI_FILES|$<|g' \
 		prio_xci_files.tcl.in > $@
 
+# ================= I2C Bridge ==================
+I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c.py
+I2C_VH=$(MODULES_DIR)/marble_i2c.vh
+$(I2C_VH):$(I2C_SCRIPT)
+	PYTHONPATH=$(PERIPH_DRIVERS_DIR) python3 $< v > $@
+
+$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH)
+
 # ip_cores commands. Keep track only of the top-level. If this changed or doesn't
 # exist regenerate eveything. Otherwise, consider this up to date
 vpath %.xci $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
@@ -292,6 +299,14 @@ $(IP_CORES_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).xci
 
 $(BD_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).bd
 	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd.tcl -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
+
+# In case you need to manually generate the Vivado project file
+VIVADO_CREATE_PROJ = $(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/project_proc.tcl $(BUILD_DIR)/vivado_tcl/vivado_project.tcl -tclargs
+# Create $(XPR)
+
+#.PHONY: vproj
+#vproj: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
+#	$(VIVADO_CREATE_PROJ) $(HARDWARE) $* "$(SYNTH_OPT)" $^
 
 # clean generate IP cores files, but the source ones (.xci or .bd)
 clean::
