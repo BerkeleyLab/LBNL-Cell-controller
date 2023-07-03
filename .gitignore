@@ -116,6 +116,7 @@ work/
 /gateware/platform/xilinx/*/*/system_marble_old/
 
 gateware/top/*/gpioIDX.vh
+gateware/modules/marble_i2c.vh
 
 # NCO tables
 *csv
