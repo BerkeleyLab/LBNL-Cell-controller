@@ -269,10 +269,15 @@ prio_xci_files.tcl: ila_td256_s4096_cap.xci
 # ================= I2C Bridge ==================
 I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c.py
 I2C_VH=$(MODULES_DIR)/marble_i2c.vh
+I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
 $(I2C_VH):$(I2C_SCRIPT)
 	PYTHONPATH=$(PERIPH_DRIVERS_DIR) python3 $< v > $@
 
-$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH)
+$(I2C_DAT):$(I2C_SCRIPT)
+	PYTHONPATH=$(PERIPH_DRIVERS_DIR) python3 $< > $@
+
+# TODO - Do I need to explicitly add this to bit dependency list?
+$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 
 # ip_cores commands. Keep track only of the top-level. If this changed or doesn't
 # exist regenerate eveything. Otherwise, consider this up to date

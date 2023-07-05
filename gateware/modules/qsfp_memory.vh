@@ -1,6 +1,7 @@
 /* A subset of the QSFP I2C memory map
  * See: https://www.mouser.com/pdfdocs/AN-2152100GQSFP28LR4EEPROMmapRevC.pdf
  */
+localparam QSFP_OVERRIDE_PRESENT     = 16;
 localparam QSFP_MODULE_STATUS_OFFSET = 2;
 localparam QSFP_TEMPERATURE_OFFSET   = 22;
 localparam QSFP_VSUPPLY_OFFSET       = 26;

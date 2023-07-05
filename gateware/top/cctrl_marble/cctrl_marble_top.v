@@ -57,6 +57,8 @@ module cctrl_marble_top #(
 
 //  inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA, // DONE - Not implemented in marble
 //  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
+  inout TWI_SDA,
+  output TWI_SCL,
 
   output wire        MARBLE_LD16,
   output wire        MARBLE_LD17
@@ -296,16 +298,37 @@ forwardData #(.DATA_WIDTH(64))
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
 parameter QSFP_COUNT = 2;
-reg [$clog2(QSFP_COUNT)+6:0] qsfpReadAddress;
-wire [15:0] qsfpReadData;
-assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{16-QSFP_COUNT{1'b0}},
-                                     QSFP2_PRESENT_N, QSFP1_PRESENT_N,
-                                     qsfpReadData};
+reg [$clog2(QSFP_COUNT)+7:0] qsfpReadAddress;
+reg i2c_buffer_freeze;
+initial begin
+  qsfpReadAddress = 0;
+  i2c_buffer_freeze = 1'b0;
+end
+wire [7:0] qsfpReadData;
+wire i2c_run_stat;
+wire i2c_updated;
+assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{22{1'b0}}, i2c_updated, i2c_run_stat, qsfpReadData};
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_QSFP_IIC]) begin
-        qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+6:0];
+        qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+7:0];
+        i2c_buffer_freeze <= GPIO_OUT[16];
     end
 end
+qsfpMarble #(
+  .QSFP_COUNT(QSFP_COUNT),
+  .CLOCK_RATE(SYSCLK_RATE),
+  .BIT_RATE(100000),
+  ) qsfpMarble_i (
+  .clk(sysClk), // input
+  .readAddress(qsfpReadAddress), // input [$clog2(QSFP_COUNT)+7:0]
+  .readData(qsfpReadData), // output [7:0]
+  .freeze(i2c_buffer_freeze), // input
+  .run_stat(i2c_run_stat), // output
+  .updated(i2c_updated), // output
+  .SCL(TWI_SCL), // inout
+  .SDA(TWI_SDA) // inout
+);
+
 /*
 qsfpReadout #(.QSFP_COUNT(QSFP_COUNT),
               .dbg("false"),
