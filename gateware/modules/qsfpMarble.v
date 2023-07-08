@@ -9,39 +9,6 @@
 *   1. QSFP1_MOD_PRS, QSFP2_MOD_PRS readable via U34 (PCAL9555AHF) over I2C (low means module present, high means absent)
 *      Need to interpose lb_addr to occasionally read from U34_PORT0 and U34_PORT1
 *   2. Figure out how to test this in-situ
-*
-* Notes:
-* Software reads by presenting actual I2C register address to bus and
-* expecting the result roughly immediately available?
-            int qidx = (qsfp * 256 + offset) >> 1;  // NOTE the shift! Even offsets only!
-            GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
-            v = GPIO_READ(GPIO_IDX_QSFP_IIC);
-* Bytes are packed two-at-a-time: [15:8] = byte0; [7:0] = byte1
-*   E.g.: s = "hello world"
-*         xaction0:
-*           addr = STRING_OFFSET
-*           rdata[15:8] = "h"
-*           rdata[7:0]  = "e"
-*         xaction1:
-*           addr = STRING_OFFSET+2
-*           rdata[15:8] = "l"
-*           rdata[7:0]  = "l"
-*         xaction2:
-*           addr = STRING_OFFSET+4
-*           rdata[15:8] = "o"
-*           rdata[7:0]  = " "
-*         xaction3:
-*           addr = STRING_OFFSET+6
-*           rdata[15:8] = "w"
-*           rdata[7:0]  = "o"
-*         xaction4:
-*           addr = STRING_OFFSET+8
-*           rdata[15:8] = "r"
-*           rdata[7:0]  = "l"
-*         xaction5:
-*           addr = STRING_OFFSET+10
-*           rdata[15:8] = "d"
-*           rdata[7:0]  = "\0"
 */
 
 module qsfpMarble #(
@@ -58,7 +25,18 @@ module qsfpMarble #(
   output                          updated,      // i2c_chunk updated flag
   // I2C physical pins
   inout                           SCL,
-  inout                           SDA
+  inout                           SDA,
+  // Diagnostic led should blink if program is running (and program
+  // sets/clearn hw_config)
+`ifdef QSFP_DEBUG_BUS
+  input                           bus_claim,
+  input [11:0]                    lb_addr,
+  input  [7:0]                    lb_din,
+  output [7:0]                    lb_dout,
+  input                           lb_write,
+  input                           run_cmd,
+`endif
+  output                          led
 );
 
 // ====================== GPIO bus ========================
@@ -94,7 +72,7 @@ wire [9:0] offset_decoded = (rqsfp == 0) && (roffset == QSFP_OVERRIDE_PRESENT) ?
                             (rqsfp == 1) && (roffset == QSFP_DATE_CODE_OFFSET) ? QSFP2_DATE_CODE :
                             10'h0;
 // ====================== I2C pins ========================
-reg scl_t = 1'b1;
+wire scl_t;
 wire scl_i;
 IOBUF iobuf_scl(.T(scl_t), .I(1'b0), .O(scl_i), .IO(SCL));
 wire sda_t;
@@ -102,9 +80,16 @@ wire sda_i;
 IOBUF iobuf_sda(.T(sda_t), .I(1'b0), .O(sda_i), .IO(SDA));
 
 // ====================== Localbus ========================
-localparam I2C_CHUNK_RESULTS_OFFSET = 12'h0800;
-wire [11:0] lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+localparam I2C_CHUNK_RESULTS_OFFSET = 12'h800;
+`ifdef QSFP_DEBUG_BUS
+wire [11:0] i2c_lb_addr = bus_claim ? lb_addr : I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+`else
 wire [7:0] lb_dout;
+wire [7:0] lb_din = 8'h00;
+wire lb_write = 1'b0;
+wire [11:0] i2c_lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+wire run_cmd = 1'b0;
+`endif
 assign readData = lb_dout;
 
 // ====================== I2C Memory ======================
@@ -115,16 +100,30 @@ end
 
 localparam TICK_SCALE = $clog2(CLOCK_RATE/(14*BIT_RATE));
 
+// Annoyingly, i2c_chunk needs to see a rising edge on run_cmd to actually
+// start.  Not compatible with a constant 1'b1
+// This gives 3 clk cycles of 0 at startup followed by 1 clk cycle of 1
+reg [2:0] i2c_starter;
+wire i2c_run_cmd = run_cmd | &i2c_starter[1:0];
+initial begin
+  i2c_starter = 0;
+end
+always @(posedge clk) begin
+  if (~i2c_starter[2]) i2c_starter <= i2c_starter + 1;
+end
+
+wire [3:0] i2c_hw_config;
+assign led = i2c_hw_config[0];
 i2c_chunk #(
   .initial_file("marble_i2c.dat"),
   .tick_scale(TICK_SCALE)
   ) i2c_chunk_i (
   .clk(clk), // input
-  .lb_addr(lb_addr), // input [11:0]
-  .lb_din(8'h00), // input [7:0]
-  .lb_write(1'b0), // input
+  .lb_addr(i2c_lb_addr), // input [11:0]
+  .lb_din(lb_din), // input [7:0]
+  .lb_write(lb_write), // input
   .lb_dout(lb_dout), // output [7:0]
-  .run_cmd(1'b1), // input
+  .run_cmd(i2c_run_cmd), // input
   .trace_cmd(1'b0), // input
   .freeze(freeze), // input
   .run_stat(run_stat), // output
@@ -132,8 +131,8 @@ i2c_chunk #(
   .analyze_run(), // output
   .updated(updated), // output
   .err_flag(), // output
-  .hw_config(), // output [3:0]
-  .scl(i2c_t), // output
+  .hw_config(i2c_hw_config), // output [3:0]
+  .scl(scl_t), // output
   .sda_drive(sda_t), // output
   .sda_sense(sda_i), // input
   .scl_sense(scl_i), // input

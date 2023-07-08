@@ -33,6 +33,8 @@ VIVADO_SYNTH_EXTRA_TCL = prop.tcl ipcores_repos.tcl prio_xci_files.tcl
 
 GPIOIDX_V = gpioIDX.vh
 
+I2C_VH=$(MODULES_DIR)/marble_i2c.vh
+VERILOG_AUTOGEN = $(I2C_VH)
 include $(BUILD_DIR)/top_rules.mk
 
 # ignore xilinx primitives
@@ -226,7 +228,7 @@ VFLAGS_COMMAND_FILE += \
 
 VFLAGS_DEP += $(addprefix -c, $(VFLAGS_COMMAND_FILE))
 
-VFLAGS_DEP += -DSIMULATE
+#VFLAGS_DEP += -DSIMULATE
 
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
@@ -237,10 +239,32 @@ vpath %.xdc $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.tcl $(GW_SCRIPTS_DIR)
 vpath %.sh $(GW_SCRIPTS_DIR)
 
+# ================= I2C Bridge ==================
+I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c.py
+I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
+$(I2C_VH):$(I2C_SCRIPT)
+	PYTHONPATH=$(GW_SCRIPTS_DIR) python3 $< v > $@
+
+$(I2C_DAT):$(I2C_SCRIPT)
+	PYTHONPATH=$(GW_SCRIPTS_DIR) python3 $< > $@
+
+# TODO - Do I need to explicitly add this to bit dependency list?
+$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
+
+# Lucas - comment out this block to build without the SCRAP device
+# ================ SCRAP =======================
+# TODO - Submodule this?
+#SCRAP_DIR=/home/kpenney/repos/scrap
+#include $(SCRAP_DIR)/scrap_rules.mk
+#SYNTH_OPT+=-DSCRAP_DEBUG
+#SYNTH_OPT+=-DSCRAPE
+#SYNTH_OPT+=-DSCRAP_SHARED_BUS
+#SYNTH_OPT+=-DQSFP_DEBUG_BUS
+
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
@@ -265,19 +289,6 @@ ipcores_repos.tcl:
 prio_xci_files.tcl: ila_td256_s4096_cap.xci
 	sed -e 's|$$XCI_FILES|$<|g' \
 		prio_xci_files.tcl.in > $@
-
-# ================= I2C Bridge ==================
-I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c.py
-I2C_VH=$(MODULES_DIR)/marble_i2c.vh
-I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
-$(I2C_VH):$(I2C_SCRIPT)
-	PYTHONPATH=$(PERIPH_DRIVERS_DIR) python3 $< v > $@
-
-$(I2C_DAT):$(I2C_SCRIPT)
-	PYTHONPATH=$(PERIPH_DRIVERS_DIR) python3 $< > $@
-
-# TODO - Do I need to explicitly add this to bit dependency list?
-$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 
 # ip_cores commands. Keep track only of the top-level. If this changed or doesn't
 # exist regenerate eveything. Otherwise, consider this up to date

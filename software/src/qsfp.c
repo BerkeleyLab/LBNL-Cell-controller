@@ -201,7 +201,6 @@ qsfpDump(void)
 static void
 showInfo(int idx)
 {
-    uint32_t csr = GPIO_READ(GPIO_IDX_QSFP_IIC);
     uint16_t idw;
     uint8_t id, ext;
     const char *cp;
@@ -214,6 +213,7 @@ showInfo(int idx)
         return;
     }
 #else
+    uint32_t csr = GPIO_READ(GPIO_IDX_QSFP_IIC);
     if ((csr & (1 << (CSR_PRESENCE_BASE + idx))) != 0) {
         printf ("   NOT PRESENT!\n");
         return;

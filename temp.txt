@@ -242,7 +242,7 @@ EVR RX_P is  E4  MGT_RX_1_P  --  QSFP1_RX_1_P Bank 116
 This seems wrong (different banks), but it's how the BMB7 build was done as well.
 
 
-// ================================================= 220515 ===============================
+// ================================================= 230515 ===============================
 Let's figure out this error now
 
 ERROR: [DRC PDCN-2721] IBUFDS_GT_loads_clock_region: IBUFDS_GTE2 IBUFDS_GTE2_inst drives MMCME2_ADV MMCME2_BASE_inst in a different clock region and must do so using local routing resources which may negatively affect clock performance. Use CLOCK_DEDICATED_ROUTE set to FALSE to indicate this is intended.
@@ -282,7 +282,7 @@ ERROR: [DRC PDCN-2721] IBUFDS_GT_loads_clock_region: IBUFDS_GTE2 IBUFDS_GTE2_ins
   );
 
 
-// ================================================= 220522 ===============================
+// ================================================= 230522 ===============================
 All the 'set_false_path' commands in the cctrl_marble_top_tim.xdc timing constraints file
 are not matching.  Let's check the paths.
 
@@ -343,7 +343,297 @@ WARNING: [Vivado 12-663] port, pin or net 'system_i/Aurora/aurora_8b10b_0/inst/s
 [cctrl_marble_top.v]
   system_i (system_marble)
 
-========================================== 220606 ========================
+========================================== 230606 ========================
 Let's track down this error:
 ERROR: [DRC REQP-51] must_use_ref_clock: GTXE2_CHANNEL cell evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i: An input reference clock pin (GTREFCLK0, GTREFCLK1, GTNORTHREFCLK0, GTNORTHREFCLK1, GTSOUTHREFCLK0, GTSOUTHREFCLK1 and set CPLLREFCLKSEL[2:0] appropriately) or GTXE2_COMMON clock input (QPLLCLK) must be used.
 
+========================================== 230705 ========================
+
+set -e;
+mkdir -p _dep;
+iverilog -Wall -Wno-macro-redefinition -Wno-timescale -DSIMULATE  -I_autogen 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/dsp 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/fpga_family 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/fpga_family/xilinx 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/fpga_family/iserdes 
+-y 
+-y 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/serial_io 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/peripheral_drivers 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/peripheral_drivers/i2cbridge 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/homeless 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/badger 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bedrock/badger/tests 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/core 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/ethernet-core/crc 
+-y. 
+-y/home/kpenney/repos/cell-controller/gateware/modules 
+-y../../top/cctrl_marble 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bwudp 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/example_design 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/synth 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/hdl 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble/synth 
+-y/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble/hdl 
+-I. 
+-I../../top/cctrl_marble 
+-I/home/kpenney/repos/cell-controller/gateware/modules 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO 
+-I/home/kpenney/repos/cell-controller/gateware/submodules/bwudp 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/example_design 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/synth 
+-I/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/synth 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/MappingRam/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/PacketMem/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/timeStampFIFO/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/submodules/bwudp/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/evr_mgt_gtx/evr_mgt_gtx/example_design/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fixToFloat/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatMultiply/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatResultFIFO/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/floatToDouble/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbCoefficientMul/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFIRplusIntegral/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbFixToFloat/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbGainMultiplier/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralFixToFloat/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbIntegralMultiplier/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_with_shared_logic/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbPCS_PMA_without_shared_logic/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbReadLinksMux/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/fofbSupplyFilter/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/forwardCellLinkMux/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/linkStatisticsMux/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcConvertToAmps/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/psSetpointCalcFixToFloat/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readBPMlinksMux/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_DoubleToFloat/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_FIFO/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Fix/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/readOldBPMs_Multiply/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/ila_td256_s4096_cap/hdl 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble 
+-I/home/kpenney/repos/cell-controller/gateware/platform/xilinx/7series/cctrl/system_marble/synth 
+-I/home/kpenney/repos/cell
+-controller/gateware/platform/xilinx/7series/cctrl/system_marble/hdl 
+-cMappingRam_iverilog_cfile.txt 
+-cPacketMem_iverilog_cfile.txt 
+-ctimeStampFIFO_iverilog_cfile.txt 
+-cevr_mgt_gtx_iverilog_cfile.txt 
+-cfofbFIRplusIntegral_iverilog_cfile.txt 
+-cfofbFixToFloat_iverilog_cfile.txt 
+-cfofbGainMultiplier_iverilog_cfile.txt 
+-cfofbIntegralFixToFloat_iverilog_cfile.txt 
+-cfofbIntegralMultiplier_iverilog_cfile.txt 
+-creadOldBPMs_DoubleToFloat_iverilog_cfile.txt 
+-creadOldBPMs_FIFO_iverilog_cfile.txt 
+-creadOldBPMs_Fix_iverilog_cfile.txt 
+-creadOldBPMs_Multiply_iverilog_cfile.txt
+-DSIMULATE
+-o /dev/null -M_dep/cctrl_marble_top.bit.d.$$ ../../top/cctrl_marble/cctrl_marble_top.v &&
+( printf "cctrl_marble_top.bit _dep/cctrl_marble_top.bit.d: "; sort -u _dep/cctrl_marble_top.bit.d.$$ | grep -Ee 'BUFG|BUFGCE|BUFG_GT|BUFH|FD|IBUF|IBUFDS|IBUFDS_GTE2|IBUFDS_GTE4|IBUFGDS|IDDR|IDELAYE2|IOBUF|MMCME2_BASE|MMCME4_ADV|OBUF|OBUFDS' -e 'FDP|OBUFT|GTXE2_CHANNEL|GTXE2_COMMON|MMCME2_ADV' -v | tr '\n' ' '; printf "\n" )
+ > _dep/cctrl_marble_top.bit.d && rm -f _dep/cctrl_marble_top.bit.d.$$

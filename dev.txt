@@ -17,6 +17,14 @@ Aurora clocks:
     2. Generate any other frequency with SI570
   Option 1 sounds easiest.  Any reason why I shouldn't do that?
 
+230707:
+  Adding scrap_dev instance to cctrl_marble_top.v using UART pins on Pmod1
+  to provide a debug view into memory in the live hardware.  This will ultimately
+  be faster and more flexible than hacking the console API.  It should be removed
+  before production.
+  Added scrap files to Makefile.  Should I submodule it?  Probably if Lucas wants
+  to build it as well.
+
 230626:
   After an incredibly annoying bug squash, I was able to change the aurora
   refclk freq to 125 MHz (from 312.5 MHz) and successfully build.  In the

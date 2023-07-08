@@ -88,10 +88,19 @@ cmdDEBUG(int argc, char **argv)
     return 0;
 }
 
+#ifndef MARBLE
 static int
 cmdAD9520(int argc, char **argv)
 {
     ad9520show();
+    return 0;
+}
+#endif
+
+static int
+cmdQSFP(int argc, char **argv)
+{
+    qsfpShowInfo();
     return 0;
 }
 
@@ -356,8 +365,11 @@ struct commandInfo {
     int       (*handler)(int argc, char **argv);
     const char *description;
 };
+
+#ifdef MARBLE
 static struct commandInfo commandTable[] = {
-  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+//  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
   { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
   { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
   { "debug",      cmdDEBUG,      "Set debug flags"                    },
@@ -371,6 +383,25 @@ static struct commandInfo commandTable[] = {
   { "tlog",       cmdTLOG,       "Start timing system event logger"   },
   { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
 };
+#else
+static struct commandInfo commandTable[] = {
+  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
+  { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
+  { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
+  { "debug",      cmdDEBUG,      "Set debug flags"                    },
+  { "evr",        cmdEVR,        "Show EVR status"                    },
+  { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
+  { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
+  { "log",        cmdREPLAY,     "Replay start up messages"           },
+  { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
+  { "reg",        cmdREG,        "Show GPIO register(s)"              },
+  { "stats",      cmdSTATS,      "Show Aurora link statistics"        },
+  { "tlog",       cmdTLOG,       "Start timing system event logger"   },
+  { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
+};
+#endif
+
 static void
 commandCallback(int argc, char **argv)
 {

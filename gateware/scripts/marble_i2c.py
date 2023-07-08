@@ -7,8 +7,11 @@ import sys
 try:
     from i2cbridge import assem
 except:
-    print("Must set PYTHONPATH=path/to/bedrock/peripheral_drivers/i2cbridge")
-    sys.exit(0)
+    try:
+        import assem
+    except:
+        print("Must set PYTHONPATH=path/to/bedrock/peripheral_drivers/i2cbridge")
+        sys.exit(0)
 
 qsfp_init_d = {
     # Address : (size, fmt_string)
@@ -217,6 +220,7 @@ def build_prog(argv):
     jump_n = s.pad()
 
     # Read board configuration
+    s.hw_config(1)
     m.bsp_readback()
     # Read QSFP1 dynamic params
     m.qsfp_poll(0)
@@ -224,6 +228,8 @@ def build_prog(argv):
     m.qsfp_poll(1)
 
     s.buffer_flip()
+    s.pause(4096)  # Pause for roughly 0.24ms
+    s.hw_config(0)
     s.pause(4096)  # Pause for roughly 0.24ms
     s.jump(jump_n) # Jump back to loop start
 

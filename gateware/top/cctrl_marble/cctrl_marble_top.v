@@ -59,6 +59,13 @@ module cctrl_marble_top #(
 //  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
   inout TWI_SDA,
   output TWI_SCL,
+`ifdef SCRAP_DEBUG
+  // Pinout to match Pmod UART standard (i.e. Pmod_USBUART)
+  output PMOD1_0, // SCRAP RTS to USB-UART CTS (Unused)
+  input PMOD1_1,  // SCRAP CTS from USB-UART RTS (Unused)
+  input PMOD1_2,  // SCRAP RxD from USB-UART TxD
+  output PMOD1_3, // SCRAP TxD to USB-UART RxD
+`endif
 
   output wire        MARBLE_LD16,
   output wire        MARBLE_LD17
@@ -295,6 +302,69 @@ forwardData #(.DATA_WIDTH(64))
               .outClk(sysClk),
               .outData(sysTimestamp));
 
+`ifdef SCRAP_DEBUG
+//////////////////////////////////////////////////////////////////////////////
+// SCRAP Debug Memory Interface
+
+// Bypass hardware flow control
+assign PMOD1_0 = 1'b1; // SCRAP RTS to USB-UART CTS
+
+localparam F_BAUD = 115200;
+localparam SCRAP_ADDRESS_WIDTH = 12;
+localparam SCRAP_DATA_WIDTH = 8;
+wire ext_uart_rxd_in = PMOD1_2;
+wire ext_uart_txd_out;
+assign PMOD1_3 = ext_uart_txd_out;
+wire [SCRAP_ADDRESS_WIDTH-1:0] scrap_addr;
+wire [SCRAP_DATA_WIDTH-1:0] scrap_rdata;
+wire [SCRAP_DATA_WIDTH-1:0] scrap_wdata;
+wire scrap_we;
+wire scrap_bus_claim;
+wire scrap_bus_claimed = scrap_bus_claim; // SCRAP dev has priority
+scrap_dev #(
+  .F_CLK_IN(SYSCLK_RATE),
+  .F_BAUD(F_BAUD),
+  .ADDRESS_WIDTH(SCRAP_ADDRESS_WIDTH),
+  .DATA_WIDTH(SCRAP_DATA_WIDTH)
+) scrap_dev_inst (
+  .clk(sysClk),
+  .rst(1'b0),
+  // PHY interface
+  .uart_rxd(ext_uart_rxd_in),   // input
+  .uart_txd(ext_uart_txd_out),  // output
+  // Memory interface
+  .addr(scrap_addr),    // output [ADDRESS_WIDTH-1:0]
+  .rdata(scrap_rdata),  // input [DATA_WIDTH-1:0]
+  .wdata(scrap_wdata),  // output [DATA_WIDTH-1:0]
+  .we(scrap_we),
+  .op(),
+  // Shared bus
+  .bus_claim(scrap_bus_claim),  // output
+  .bus_claimed(scrap_bus_claimed),  // input
+  // Status
+  .error_count()
+);
+
+wire [7:0] qsfp_lb_dout;
+reg qsfp_run_cmd;
+initial begin
+  qsfp_run_cmd = 1'b0;
+end
+// Memory map
+wire qsfp_we = scrap_addr[12] ? 1'b0 : scrap_we;
+assign scrap_rdata = scrap_addr[12] ? 0 : qsfp_lb_dout;
+
+always @(posedge sysClk) begin
+  qsfp_run_cmd <= 1'b0;  // single-cycle
+  if (scrap_we) begin
+    case (scrap_addr)
+      'h1000 : qsfp_run_cmd <= 1'b1;
+    endcase
+  end
+end
+`define QSFP_DEBUG_BUS
+`endif
+
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
 parameter QSFP_COUNT = 2;
@@ -314,10 +384,12 @@ always @(posedge sysClk) begin
         i2c_buffer_freeze <= GPIO_OUT[16];
     end
 end
+
+wire qsfp_led;
 qsfpMarble #(
   .QSFP_COUNT(QSFP_COUNT),
   .CLOCK_RATE(SYSCLK_RATE),
-  .BIT_RATE(100000),
+  .BIT_RATE(100000)
   ) qsfpMarble_i (
   .clk(sysClk), // input
   .readAddress(qsfpReadAddress), // input [$clog2(QSFP_COUNT)+7:0]
@@ -326,7 +398,16 @@ qsfpMarble #(
   .run_stat(i2c_run_stat), // output
   .updated(i2c_updated), // output
   .SCL(TWI_SCL), // inout
-  .SDA(TWI_SDA) // inout
+  .SDA(TWI_SDA), // inout
+`ifdef QSFP_DEBUG_BUS
+  .bus_claim(scrap_bus_claim),
+  .lb_addr(scrap_addr[11:0]), // input [11:0]
+  .lb_din(scrap_wdata),
+  .lb_dout(qsfp_lb_dout),
+  .lb_write(qsfp_we),
+  .run_cmd(qsfp_run_cmd),
+`endif
+  .led(qsfp_led)
 );
 
 /*
@@ -1019,7 +1100,7 @@ assign FP_LED2_RED = FP_LED2_STATE_YELLOW || FP_LED2_STATE_RED;
 /////////////////////////////////////////////////////////////////////////////
 // Marble LEDs
 assign MARBLE_LD16 = evrTriggerBus[0];
-assign MARBLE_LD17 = 1'b0;
+assign MARBLE_LD17 = qsfp_led;
 
 /////////////////////////////////////////////////////////////////////////////
 // Miscellaneous
