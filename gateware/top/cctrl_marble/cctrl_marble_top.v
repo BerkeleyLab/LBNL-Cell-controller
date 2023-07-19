@@ -313,14 +313,13 @@ forwardData #(.DATA_WIDTH(64))
 
 wire i2c_run_stat;
 wire qsfp_led;
-wire qsfp_i2c_run_cmd_out;
 wire qsfp_scl_mon;
 wire qsfp_sda_mon;
 wire busmux_reset;
 wire busmux_reset_i;
 IOBUF iobuf_sw_rst(.T(~busmux_reset), .I(1'b0), .O(busmux_reset_i), .IO(TWI_SW_RST));
 
-//`ifdef SCRAP_DEBUG
+`ifdef QSFP_DEBUG_BUS
 //////////////////////////////////////////////////////////////////////////////
 // SCRAP Debug Memory Interface
 
@@ -388,8 +387,8 @@ always @(posedge sysClk) begin
     default: scrap_rdata_hi <= 8'h00;
   endcase
 end
-`define QSFP_DEBUG_BUS
-//`endif
+`endif
+
 assign PMOD2_0 = qsfp_run_cmd;
 assign PMOD2_1 = i2c_run_stat;
 assign PMOD2_2 = scrap_we;
@@ -397,7 +396,7 @@ assign PMOD2_3 = qsfp_led;
 assign PMOD2_4 = qsfp_scl_mon;
 assign PMOD2_5 = qsfp_sda_mon;
 assign PMOD2_6 = i2c_updated;
-assign PMOD2_7 = qsfp_i2c_run_cmd_out;
+assign PMOD2_7 = 1'b0;
 
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
@@ -434,34 +433,17 @@ qsfpMarble #(
   .SDA(TWI_SDA), // inout
   .scl_mon(qsfp_scl_mon),
   .sda_mon(qsfp_sda_mon),
-//`ifdef QSFP_DEBUG_BUS
+`ifdef QSFP_DEBUG_BUS
   .bus_claim(scrap_bus_claim),
   .lb_addr(scrap_addr[11:0]), // input [11:0]
   .lb_din(scrap_wdata),
   .lb_dout(qsfp_lb_dout),
   .lb_write(qsfp_we),
   .run_cmd(qsfp_run_cmd),
-//`endif
+`endif
   .led(qsfp_led),
-  .busmux_reset(busmux_reset),
-  .i2c_run_cmd_out(qsfp_i2c_run_cmd_out)
+  .busmux_reset(busmux_reset)
 );
-
-/*
-qsfpReadout #(.QSFP_COUNT(QSFP_COUNT),
-              .dbg("false"),
-              .CLOCK_RATE(SYSCLK_RATE),
-              .BIT_RATE(100000)) qsfpReadout (
-                             .clk(sysClk),
-                             .readAddress(qsfpReadAddress),
-                             .readData(qsfpReadData),
-                             .PRESENT_n({QSFP2_PRESENT_N, QSFP1_PRESENT_N}),
-                             .RESET_n({QSFP2_RESET_N, QSFP1_RESET_N}),
-                             .MODSEL_n({QSFP2_MODSEL_N, QSFP1_MODSEL_N}),
-                             .LPMODE({QSFP2_LPMODE, QSFP1_LPMODE}),
-                             .SCL(QSFP_SCL),
-                             .SDA(QSFP_SDA));
-*/
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver

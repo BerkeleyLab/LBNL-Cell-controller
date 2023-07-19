@@ -63,9 +63,11 @@ int main()
      */
     init_platform();
     printf("\n");
-    printf("Firmware build POSIX seconds: %d\n",
+    /*printf("Firmware build POSIX seconds: %d\n",
                                     GPIO_READ(GPIO_IDX_FIRMWARE_BUILD_DATE));
-    printf("Software build POSIX seconds: %d\n", SOFTWARE_BUILD_DATE);
+                                    */
+    printf("Git ID (32-bit): %08x\n", GPIO_READ(GPIO_IDX_GITHASH));
+    //printf("Software build POSIX seconds: %d\n", SOFTWARE_BUILD_DATE);
 
     /*
      * Continue with initialization

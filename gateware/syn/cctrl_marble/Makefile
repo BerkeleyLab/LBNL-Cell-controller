@@ -262,10 +262,9 @@ $(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 SCRAP_DIR=/home/kpenney/repos/scrap
 include $(SCRAP_DIR)/scrap_rules.mk
 SYNTH_OPT ?=
-SYNTH_OPT+=-DSCRAP_DEBUG
+SYNTH_OPT+=-DQSFP_DEBUG_BUS
 SYNTH_OPT+=-DSCRAPE
 SYNTH_OPT+=-DSCRAP_SHARED_BUS
-SYNTH_OPT+=-DQSFP_DEBUG_BUS
 
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as

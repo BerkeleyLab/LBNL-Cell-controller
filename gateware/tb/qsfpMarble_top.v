@@ -31,6 +31,7 @@ end
 assign GPIO_IN = {{22{1'b0}}, i2c_updated, i2c_run_stat, readData};
 always @(posedge clk) begin
     if (GPIO_STROBE) begin
+        //$display("STROBE: readAddress <= 0x%h", GPIO_OUT[$clog2(QSFP_COUNT)+7:0]);
         readAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+7:0];
         buffer_freeze <= GPIO_OUT[16];
     end

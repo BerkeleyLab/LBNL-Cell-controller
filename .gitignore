@@ -175,6 +175,10 @@ bwUDP
 *gpioIDX.v
 *aggregate.v
 
+# Verilator testbench files
+gateware/tb/obj_dir
+gateware/tb/obj_dir/*
+
 ######################
 # Generated native binaries
 ######################

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#ifdef SIMULATE
+#ifndef SIMULERP
 #include "gpio.h"
 #include "qsfp.h"
 #include "util.h"
@@ -39,7 +39,7 @@
 // See marble schematic U34 ports 0 and 1.
 // QSFPx_MOD_PRS is routed to bit 5 of each port
 #define MARBLE_PRESENT_MASK   (1<<5)
-#define I2C_FREEZE            0x0100
+#define I2C_FREEZE            0x10000
 // Marble has 8-bit interface to QSFP readout (due to structure of i2c_chunk)
 // GPIO_OUT bit map:
 //  [16]  : i2c_freeze
@@ -64,9 +64,10 @@ str(int qsfp, int offset, int length)
     for (i = 0 ; i < length ; i++, offset++) {
         //int bidx = offset & 1;
         unsigned char c;
-        int qidx = I2C_FREEZE + qsfp * 256 + offset;
+        int qidx = I2C_FREEZE + (qsfp * 256) + offset;
         GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
         v = GPIO_READ(GPIO_IDX_QSFP_IIC);
+        //printf("GPIO_READ: v = 0x%x\n", v);
         c = (unsigned char)(v & 0xff);
         if (c == 0xFF) {
           // Returns a null string

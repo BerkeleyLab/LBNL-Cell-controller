@@ -445,7 +445,6 @@ handleLine(char *line)
     char *tokArg, *tokSave;
 
     // DEBUG
-    xil_printf("Handle line\r\n");
     argc = 0;
     tokArg = line;
     while ((argc < (sizeof argv / sizeof argv[0]) - 1)) {

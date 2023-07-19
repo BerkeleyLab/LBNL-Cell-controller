@@ -9,7 +9,7 @@ SOURCES = $(MODS)/qsfpMarble.v
 
 C_SOURCES=$(SW_SRC)/qsfp.c
 
-SIM_DEFINES =-DSIMULATE
+SIM_DEFINES =-DSIMULERP -DMARBLE
 INCLUDES=-I$(HERE) -I$(SW_SRC) -I$(MODS)
 TB_DIR = .
 
@@ -37,9 +37,15 @@ VERILATED_TOP = $(VERILATOR_OBJ_DIR)/V$(VROOT)
 $(VERILATOR_OBJ_DIR):
 	mkdir -p $@
 
+VL_CFLAGS_L=-I/home/kpenney/repos/cell-controller/gateware/tb \
+			 -I/home/kpenney/repos/cell-controller/software/src \
+			 -DMARBLE \
+			 -DSIMULERP
+VL_CFLAGS=$(addprefix -CFLAGS ,$(VL_CFLAGS_L))
 verilate: $(VL_SIM) $(VL_WRAPPER) $(C_SOURCES) $(SOURCES_NO_TB)
 	mkdir -p $(VERILATOR_OBJ_DIR)
-	$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(SIM_DEFINES) $(INCLUDES) $^ -CFLAGS -I/home/kpenney/repos/cell-controller/gateware/tb -CFLAGS -I/home/kpenney/repos/cell-controller/software/src
+	$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(SIM_DEFINES) $(INCLUDES) $^ $(VL_CFLAGS)
+#$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(SIM_DEFINES) $(INCLUDES) $^ -CFLAGS -I/home/kpenney/repos/cell-controller/gateware/tb -CFLAGS -I/home/kpenney/repos/cell-controller/software/src -CFLAGS -DMARBLE
 
 ifdef VROOT
 vl_run: $(VERILATED_TOP)

@@ -63,7 +63,6 @@ int epicsInit(void) {
 static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
     // Handle the packet
     handleNonce = handle; // I don't know what this is
-    printf("[epics.c] Received payload length %d\r\n", length);
     parseCmd((struct ccProtocolPacket *)payload, length);
     return;
 }
@@ -515,19 +514,15 @@ static void pollEPICS(void) {
 #endif
 
 static void parseCmd(struct ccProtocolPacket *cmd, int length) {
-  printf("parseCmd\r\n");
     if (length >= (int)CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(0)) {
-        printf("parseCmd min length exceeded\r\n");
         if (debugFlags & DEBUGFLAG_EPICS)
             printf("%d CMD %X %X %X\n", length, cmd->magic, cmd->identifier,
                                                                 cmd->command);
         if ((cmd->magic == reply.magic)
          && (cmd->identifier == reply.identifier)) {
-            printf("Sending a reply...\r\n");
             sendReply();
         }
         else {
-            printf("Magic miss\r\n");
             int argc = CC_PROTOCOL_U32_COUNT_TO_ARG_COUNT(length);
             reply.magic = cmd->magic;
             reply.identifier = cmd->identifier;
@@ -542,8 +537,6 @@ static void parseCmd(struct ccProtocolPacket *cmd, int length) {
             }
             if (cmd->magic == CC_PROTOCOL_MAGIC) handleCommand(argc, cmd);
         }
-    } else {
-        printf("parseCmd Too $hort\r\n");
     }
     return;
 }

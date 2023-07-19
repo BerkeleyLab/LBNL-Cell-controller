@@ -34,6 +34,7 @@ int main(int argc, char** argv, char** env) {
     top->GPIO_STROBE = 0;
     top->eval();
     if (setup_counter > 2) {
+      //qsfpShowVendor();
       qsfpShowInfo();
       toExit = 1;
     }
@@ -55,6 +56,10 @@ static void _sigHandler(int c) {
 #endif
 
 uint32_t vtb_In32(uint32_t addr) {
+  top->clk = ~top->clk;
+  top->eval();
+  top->clk = ~top->clk;
+  top->eval();
   return top->GPIO_IN;
 }
 
