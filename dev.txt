@@ -17,6 +17,13 @@ Aurora clocks:
     2. Generate any other frequency with SI570
   Option 1 sounds easiest.  Any reason why I shouldn't do that?
 
+230713:
+  Jira task list:
+    Get QSFP register readout working
+    Get fiber connection functioning
+    Make single-board fiber loopback on CC link (connect tx to rx)
+    Make single-board fiber loopback on BPM link (connect tx to rx)
+
 230707:
   Adding scrap_dev instance to cctrl_marble_top.v using UART pins on Pmod1
   to provide a debug view into memory in the live hardware.  This will ultimately
@@ -43,13 +50,13 @@ Aurora clocks:
       fofbDSP
     Excluded:
       qsfpReadout
-      psSetpointMonitor
-      psAWG
-      psMUX
-      psTx
-      psRx
+      *psSetpointMonitor
+      *psAWG
+      *psMUX
+      *psTx
+      *psRx
       fofbRecorder
-      eebi
+      *eebi
       errorConvert
 
   For the qsfpReadout, I need to add an additional transaction to set the

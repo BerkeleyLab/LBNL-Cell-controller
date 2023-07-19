@@ -22,21 +22,25 @@ set_property IOB TRUE [get_ports RGMII_TX*]
 set_property SLEW FAST [get_ports RGMII_TX*]
 
 # QSPI Boot Flash
-set_property -dict {PACKAGE_PIN C23 IOSTANDARD LVCMOS25} [get_ports BOOT_CS_B]
-set_property -dict {PACKAGE_PIN B24 IOSTANDARD LVCMOS25} [get_ports BOOT_MOSI]
-set_property -dict {PACKAGE_PIN A25 IOSTANDARD LVCMOS25} [get_ports BOOT_MISO]
+#set_property -dict {PACKAGE_PIN C23 IOSTANDARD LVCMOS25} [get_ports BOOT_CS_B]
+#set_property -dict {PACKAGE_PIN B24 IOSTANDARD LVCMOS25} [get_ports BOOT_MOSI]
+#set_property -dict {PACKAGE_PIN A25 IOSTANDARD LVCMOS25} [get_ports BOOT_MISO]
 
 # I2C, shared access with microcontroller
 set_property -dict {PACKAGE_PIN A17 IOSTANDARD LVCMOS25} [get_ports TWI_SDA]
 set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS25} [get_ports TWI_SCL]
+set_property PULLUP true [get_ports TWI_SDA]
+set_property PULLUP true [get_ports TWI_SCL]
+set_property -dict {PACKAGE_PIN B19 IOSTANDARD LVCMOS25} [get_ports TWI_SW_RST]
+set_property PULLUP true [get_ports TWI_SW_RST]
 
 # SPI from microcontroller
-set_property -dict {PACKAGE_PIN AE21 IOSTANDARD LVCMOS25} [get_ports FPGA_SCLK]
-set_property -dict {PACKAGE_PIN AD21 IOSTANDARD LVCMOS25} [get_ports FPGA_CSB]
-set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS25} [get_ports FPGA_MOSI]
-set_property -dict {PACKAGE_PIN AC21 IOSTANDARD LVCMOS25} [get_ports FPGA_MISO]
+#set_property -dict {PACKAGE_PIN AE21 IOSTANDARD LVCMOS25} [get_ports FPGA_SCLK]
+#set_property -dict {PACKAGE_PIN AD21 IOSTANDARD LVCMOS25} [get_ports FPGA_CSB]
+#set_property -dict {PACKAGE_PIN AB21 IOSTANDARD LVCMOS25} [get_ports FPGA_MOSI]
+#set_property -dict {PACKAGE_PIN AC21 IOSTANDARD LVCMOS25} [get_ports FPGA_MISO]
 
-# PMOD1 -- Optional GPS receiver
+# PMOD1 J12
 set_property -dict {PACKAGE_PIN C24 IOSTANDARD LVCMOS25} [get_ports PMOD1_0]
 set_property -dict {PACKAGE_PIN C22 IOSTANDARD LVCMOS25} [get_ports PMOD1_1]
 set_property -dict {PACKAGE_PIN L23 IOSTANDARD LVCMOS25} [get_ports PMOD1_2]
@@ -45,20 +49,20 @@ set_property -dict {PACKAGE_PIN K21 IOSTANDARD LVCMOS25} [get_ports PMOD1_4]
 set_property -dict {PACKAGE_PIN C18 IOSTANDARD LVCMOS25} [get_ports PMOD1_5]
 set_property -dict {PACKAGE_PIN C19 IOSTANDARD LVCMOS25} [get_ports PMOD1_6]
 set_property -dict {PACKAGE_PIN C17 IOSTANDARD LVCMOS25} [get_ports PMOD1_7]
-set_property PULLUP true [get_ports PMOD1_0]
+set_property PULLUP false [get_ports PMOD1_0]
 set_property PULLUP true [get_ports PMOD1_1]
 set_property PULLUP true [get_ports PMOD1_2]
-set_property PULLUP true [get_ports PMOD1_3]
+set_property PULLUP false [get_ports PMOD1_3]
 
-# PMOD2 -- Display and front panel switches
-set_property -dict {PACKAGE_PIN AE7 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_0]
-set_property -dict {PACKAGE_PIN V7 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_1]
-set_property -dict {PACKAGE_PIN Y7 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_2]
-set_property -dict {PACKAGE_PIN AF7 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_3]
-set_property -dict {PACKAGE_PIN V8 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_4]
-set_property -dict {PACKAGE_PIN AA8 IOSTANDARD LVCMOS15 DRIVE 16} [get_ports PMOD2_5]
-set_property -dict {PACKAGE_PIN Y8 IOSTANDARD LVCMOS15} [get_ports PMOD2_6]
-set_property -dict {PACKAGE_PIN W9 IOSTANDARD LVCMOS15} [get_ports PMOD2_7]
+# PMOD2 J13
+set_property -dict {PACKAGE_PIN AE7 IOSTANDARD LVCMOS15} [get_ports PMOD2_0]
+set_property -dict {PACKAGE_PIN V7  IOSTANDARD LVCMOS15} [get_ports PMOD2_1]
+set_property -dict {PACKAGE_PIN Y7  IOSTANDARD LVCMOS15} [get_ports PMOD2_2]
+set_property -dict {PACKAGE_PIN AF7 IOSTANDARD LVCMOS15} [get_ports PMOD2_3]
+set_property -dict {PACKAGE_PIN V8  IOSTANDARD LVCMOS15} [get_ports PMOD2_4]
+set_property -dict {PACKAGE_PIN AA8 IOSTANDARD LVCMOS15} [get_ports PMOD2_5]
+set_property -dict {PACKAGE_PIN Y8  IOSTANDARD LVCMOS15} [get_ports PMOD2_6]
+set_property -dict {PACKAGE_PIN W9  IOSTANDARD LVCMOS15} [get_ports PMOD2_7]
 
 # 125 MHz from U20  # TODO - Are these compatible with LVCMOS15?
 set_property -dict {PACKAGE_PIN AC9 IOSTANDARD DIFF_SSTL15} [get_ports DDR_REF_CLK_P]
@@ -66,7 +70,7 @@ set_property -dict {PACKAGE_PIN AD9 IOSTANDARD DIFF_SSTL15} [get_ports DDR_REF_C
 create_clock -name clkSys -period 8.000 -waveform {0.000 4.000} [get_ports DDR_REF_CLK_P]
 
 # VCXO
-set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
+#set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
 
 # UART to USB (marble schematic: FPGA_RxD is FPGA-to-host, FPGA_TxD is host-to-FPGA)
 set_property -dict {PACKAGE_PIN C16 IOSTANDARD LVCMOS25} [get_ports FPGA_TxD]
@@ -104,8 +108,8 @@ create_clock -name clk125 -period 8.000 -waveform {0.000 4.000} [get_ports MGT_C
 # Corrected on 220315
 set_property PACKAGE_PIN E3 [get_ports {QSFP1_RX_N[0]}]
 set_property PACKAGE_PIN E4 [get_ports {QSFP1_RX_P[0]}]
-set_property PACKAGE_PIN D1 [get_ports {QSFP1_TX_N[0]}]
-set_property PACKAGE_PIN D2 [get_ports {QSFP1_TX_P[0]}]
+#set_property PACKAGE_PIN D1 [get_ports {QSFP1_TX_N[0]}]
+#set_property PACKAGE_PIN D2 [get_ports {QSFP1_TX_P[0]}]
 set_property PACKAGE_PIN C3 [get_ports {QSFP1_RX_N[1]}]
 set_property PACKAGE_PIN C4 [get_ports {QSFP1_RX_P[1]}]
 set_property PACKAGE_PIN B1 [get_ports {QSFP1_TX_N[1]}]
@@ -114,10 +118,10 @@ set_property PACKAGE_PIN G3 [get_ports {QSFP1_RX_N[2]}]
 set_property PACKAGE_PIN G4 [get_ports {QSFP1_RX_P[2]}]
 set_property PACKAGE_PIN F1 [get_ports {QSFP1_TX_N[2]}]
 set_property PACKAGE_PIN F2 [get_ports {QSFP1_TX_P[2]}]
-set_property PACKAGE_PIN B5 [get_ports {QSFP1_RX_N[3]}]
-set_property PACKAGE_PIN B6 [get_ports {QSFP1_RX_P[3]}]
-set_property PACKAGE_PIN A3 [get_ports {QSFP1_TX_N[3]}]
-set_property PACKAGE_PIN A4 [get_ports {QSFP1_TX_P[3]}]
+#set_property PACKAGE_PIN B5 [get_ports {QSFP1_RX_N[3]}]
+#set_property PACKAGE_PIN B6 [get_ports {QSFP1_RX_P[3]}]
+#set_property PACKAGE_PIN A3 [get_ports {QSFP1_TX_N[3]}]
+#set_property PACKAGE_PIN A4 [get_ports {QSFP1_TX_P[3]}]
 # ----------------------------------------------------------------------
 # ------------------------------- QSFP2 --------------------------------
 # ----------------------------------------------------------------------
@@ -130,14 +134,14 @@ set_property PACKAGE_PIN L3 [get_ports {QSFP2_RX_N[1]}]
 set_property PACKAGE_PIN L4 [get_ports {QSFP2_RX_P[1]}]
 set_property PACKAGE_PIN K1 [get_ports {QSFP2_TX_N[1]}]
 set_property PACKAGE_PIN K2 [get_ports {QSFP2_TX_P[1]}]
-set_property PACKAGE_PIN R3 [get_ports {QSFP2_RX_N[2]}]
-set_property PACKAGE_PIN R4 [get_ports {QSFP2_RX_P[2]}]
-set_property PACKAGE_PIN P1 [get_ports {QSFP2_TX_N[2]}]
-set_property PACKAGE_PIN P2 [get_ports {QSFP2_TX_P[2]}]
-set_property PACKAGE_PIN J3 [get_ports {QSFP2_RX_N[3]}]
-set_property PACKAGE_PIN J4 [get_ports {QSFP2_RX_P[3]}]
-set_property PACKAGE_PIN H1 [get_ports {QSFP2_TX_N[3]}]
-set_property PACKAGE_PIN H2 [get_ports {QSFP2_TX_P[3]}]
+#set_property PACKAGE_PIN R3 [get_ports {QSFP2_RX_N[2]}]
+#set_property PACKAGE_PIN R4 [get_ports {QSFP2_RX_P[2]}]
+#set_property PACKAGE_PIN P1 [get_ports {QSFP2_TX_N[2]}]
+#set_property PACKAGE_PIN P2 [get_ports {QSFP2_TX_P[2]}]
+#set_property PACKAGE_PIN J3 [get_ports {QSFP2_RX_N[3]}]
+#set_property PACKAGE_PIN J4 [get_ports {QSFP2_RX_P[3]}]
+#set_property PACKAGE_PIN H1 [get_ports {QSFP2_TX_N[3]}]
+#set_property PACKAGE_PIN H2 [get_ports {QSFP2_TX_P[3]}]
 ### QSFP1-2/11, Bank 116 MGT 2, X0Y6
 ##set_property -dict {PACKAGE_PIN B2} [get_ports MGT_TX_t1_P]
 ##set_property -dict {PACKAGE_PIN B1} [get_ports MGT_TX_t1_N]
@@ -151,11 +155,11 @@ set_property PACKAGE_PIN H2 [get_ports {QSFP2_TX_P[3]}]
 
 # Direct monitoring of MGT reference clocks
 # FMC1 -- H4/H5
-set_property -dict {PACKAGE_PIN F17 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC1_CLK0_M2C_P]
-set_property -dict {PACKAGE_PIN E17 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC1_CLK0_M2C_N]
+#set_property -dict {PACKAGE_PIN F17 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC1_CLK0_M2C_P]
+#set_property -dict {PACKAGE_PIN E17 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC1_CLK0_M2C_N]
 # FMC2 -- H4/H5
-set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_P]
-set_property -dict {PACKAGE_PIN AA24 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_N]
+#set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_P]
+#set_property -dict {PACKAGE_PIN AA24 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_N]
 
 # Bank 0 setup
 set_property CFGBVS VCCO [current_design]

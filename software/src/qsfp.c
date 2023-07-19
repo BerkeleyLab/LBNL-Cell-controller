@@ -1,8 +1,17 @@
 #include <stdio.h>
 #include <stdint.h>
+#ifdef SIMULATE
 #include "gpio.h"
 #include "qsfp.h"
 #include "util.h"
+#else
+#define GPIO_IDX_QSFP_IIC   0
+#include "gpio_vtb.h"
+#define QSFP_COUNT 2
+#define QSFP_RX_COUNT 4
+#define warn(s,x)
+#define microsecondSpin(s)
+#endif
 
 #define CSR_PRESENCE_BASE  16
 
@@ -198,8 +207,7 @@ qsfpDump(void)
     }
 }
 
-static void
-showInfo(int idx)
+static void showInfo(int idx)
 {
     uint16_t idw;
     uint8_t id, ext;

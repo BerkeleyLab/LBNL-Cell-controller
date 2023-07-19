@@ -19,24 +19,30 @@ module qsfpMarble #(
   input                           clk,
   // Bus interface
   input  [$clog2(QSFP_COUNT)+7:0] readAddress,  // QSFP register to read
-  output                    [7:0] readData,     // Data read from QSFP register
+  output                    [7:0] readData      // Data read from QSFP register
+`ifndef SIMULATE
+  // I2C physical pins
+  ,inout                           SCL,
+  inout                           SDA,
+  output                          scl_mon,
+  output                          sda_mon,
+  // Diagnostic led should blink if program is running (and program
+  // sets/clearn hw_config)
+//`ifdef QSFP_DEBUG_BUS
   input                           freeze,       // i2c_chunk freeze
   output                          run_stat,     // i2c_chunk run status
   output                          updated,      // i2c_chunk updated flag
-  // I2C physical pins
-  inout                           SCL,
-  inout                           SDA,
-  // Diagnostic led should blink if program is running (and program
-  // sets/clearn hw_config)
-`ifdef QSFP_DEBUG_BUS
   input                           bus_claim,
   input [11:0]                    lb_addr,
   input  [7:0]                    lb_din,
   output [7:0]                    lb_dout,
   input                           lb_write,
   input                           run_cmd,
+  output                          led,
+  output                          busmux_reset,
+  output                          i2c_run_cmd_out // debug
+//`endif
 `endif
-  output                          led
 );
 
 // ====================== GPIO bus ========================
@@ -46,7 +52,7 @@ wire [$clog2(QSFP_COUNT)-1:0] rqsfp = readAddress[$clog2(QSFP_COUNT)+7:8];  // Q
 
 `include "marble_i2c.vh"
 `include "qsfp_memory.vh"
-wire [9:0] offset_decoded = (rqsfp == 0) && (roffset == QSFP_OVERRIDE_PRESENT) ? U34_PORT0 :
+wire [9:0] offset_decoded = (rqsfp == 0) && (roffset == QSFP_OVERRIDE_PRESENT) ? U34_PORT_DATA :
                             (rqsfp == 0) && (roffset == QSFP_MODULE_STATUS_OFFSET) ? QSFP1_MODULE_STATUS :
                             (rqsfp == 0) && (roffset == QSFP_TEMPERATURE_OFFSET) ? QSFP1_TEMPERATURE :
                             (rqsfp == 0) && (roffset == QSFP_VSUPPLY_OFFSET) ? QSFP1_VSUPPLY :
@@ -58,7 +64,7 @@ wire [9:0] offset_decoded = (rqsfp == 0) && (roffset == QSFP_OVERRIDE_PRESENT) ?
                             (rqsfp == 0) && (roffset == QSFP_WAVELENGTH_OFFSET) ? QSFP1_WAVELENGTH:
                             (rqsfp == 0) && (roffset == QSFP_SERIAL_NUMBER_OFFSET) ? QSFP1_SER_NUM :
                             (rqsfp == 0) && (roffset == QSFP_DATE_CODE_OFFSET) ? QSFP1_DATE_CODE :
-                            (rqsfp == 1) && (roffset == QSFP_OVERRIDE_PRESENT) ? U34_PORT1 :
+                            (rqsfp == 1) && (roffset == QSFP_OVERRIDE_PRESENT) ? U34_PORT_DATA+1:
                             (rqsfp == 1) && (roffset == QSFP_MODULE_STATUS_OFFSET) ? QSFP2_MODULE_STATUS :
                             (rqsfp == 1) && (roffset == QSFP_TEMPERATURE_OFFSET) ? QSFP2_TEMPERATURE :
                             (rqsfp == 1) && (roffset == QSFP_VSUPPLY_OFFSET) ? QSFP2_VSUPPLY :
@@ -72,25 +78,40 @@ wire [9:0] offset_decoded = (rqsfp == 0) && (roffset == QSFP_OVERRIDE_PRESENT) ?
                             (rqsfp == 1) && (roffset == QSFP_DATE_CODE_OFFSET) ? QSFP2_DATE_CODE :
                             10'h0;
 // ====================== I2C pins ========================
+`ifndef SIMULATE
 wire scl_t;
 wire scl_i;
-IOBUF iobuf_scl(.T(scl_t), .I(1'b0), .O(scl_i), .IO(SCL));
+//IOBUF iobuf_scl(.T(scl_t), .I(1'b0), .O(scl_i), .IO(SCL));
+assign SCL = scl_t == 1'b1 ? 1'bZ : 1'b0;
+assign scl_i = SCL;
+assign scl_mon = scl_i;
 wire sda_t;
 wire sda_i;
-IOBUF iobuf_sda(.T(sda_t), .I(1'b0), .O(sda_i), .IO(SDA));
+//IOBUF iobuf_sda(.T(sda_t), .I(1'b0), .O(sda_i), .IO(SDA));
+assign SDA = sda_t == 1'b1 ? 1'bZ : 1'b0;
+assign sda_i = SDA;
+assign sda_mon = sda_i;
+`endif
 
 // ====================== Localbus ========================
 localparam I2C_CHUNK_RESULTS_OFFSET = 12'h800;
-`ifdef QSFP_DEBUG_BUS
-wire [11:0] i2c_lb_addr = bus_claim ? lb_addr : I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+//`ifdef QSFP_DEBUG_BUS
+`ifdef SIMULATE
+wire [11:0] i2c_lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+assign readData = ram[i2c_lb_addr];
 `else
+wire [11:0] i2c_lb_addr = bus_claim ? lb_addr : I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
+assign readData = lb_dout;
+`endif
+//`else
+/*
 wire [7:0] lb_dout;
 wire [7:0] lb_din = 8'h00;
 wire lb_write = 1'b0;
 wire [11:0] i2c_lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
-wire run_cmd = 1'b0;
-`endif
-assign readData = lb_dout;
+wire run_cmd = 1'b1;
+//`endif
+*/
 
 // ====================== I2C Memory ======================
 reg i2c_rst;    // TODO unused
@@ -103,17 +124,19 @@ localparam TICK_SCALE = $clog2(CLOCK_RATE/(14*BIT_RATE));
 // Annoyingly, i2c_chunk needs to see a rising edge on run_cmd to actually
 // start.  Not compatible with a constant 1'b1
 // This gives 3 clk cycles of 0 at startup followed by 1 clk cycle of 1
-reg [2:0] i2c_starter;
-wire i2c_run_cmd = run_cmd | &i2c_starter[1:0];
+`ifndef SIMULATE
+wire [3:0] i2c_hw_config;
+reg [1:0] i2c_starter;
+assign i2c_run_cmd_out = i2c_run_cmd;
 initial begin
   i2c_starter = 0;
 end
 always @(posedge clk) begin
-  if (~i2c_starter[2]) i2c_starter <= i2c_starter + 1;
+  if (~(&i2c_starter)) i2c_starter <= i2c_starter + 1;
 end
-
-wire [3:0] i2c_hw_config;
 assign led = i2c_hw_config[0];
+assign busmux_reset = i2c_hw_config[1];
+wire i2c_run_cmd = run_cmd & (&i2c_starter);
 i2c_chunk #(
   .initial_file("marble_i2c.dat"),
   .tick_scale(TICK_SCALE)
@@ -140,5 +163,49 @@ i2c_chunk #(
   .rst(i2c_rst), // input
   .intp(1'b0) // input
 );
+`else
+reg [7:0] ram [0:'h1000];
+initial begin
+  ram[QSFP1_VENDOR_NAME+0]  = "q";
+  ram[QSFP1_VENDOR_NAME+1]  = "s";
+  ram[QSFP1_VENDOR_NAME+2]  = "f";
+  ram[QSFP1_VENDOR_NAME+3]  = "p";
+  ram[QSFP1_VENDOR_NAME+4]  = ".";
+  ram[QSFP1_VENDOR_NAME+5]  = "c";
+  ram[QSFP1_VENDOR_NAME+6]  = "o";
+  ram[QSFP1_VENDOR_NAME+7]  = "m";
+  ram[QSFP1_VENDOR_NAME+8]  = " ";
+  ram[QSFP1_VENDOR_NAME+9]  = "p";
+  ram[QSFP1_VENDOR_NAME+10] = "a";
+  ram[QSFP1_VENDOR_NAME+11] = "r";
+  ram[QSFP1_VENDOR_NAME+12] = "t";
+  ram[QSFP1_VENDOR_NAME+13] = "y";
+  ram[QSFP1_VENDOR_NAME+14] = 0;
+  ram[QSFP1_VENDOR_NAME+15] = 0;
+
+  ram[U34_PORT_DATA]    = 8'h47;
+  ram[U34_PORT_DATA+1]  = 8'h77;
+
+  ram[QSFP1_PART_NAME+0]  = "T";
+  ram[QSFP1_PART_NAME+1]  = "H";
+  ram[QSFP1_PART_NAME+2]  = "A";
+  ram[QSFP1_PART_NAME+3]  = "T";
+  ram[QSFP1_PART_NAME+4]  = "-";
+  ram[QSFP1_PART_NAME+5]  = "O";
+  ram[QSFP1_PART_NAME+6]  = "L";
+  ram[QSFP1_PART_NAME+7]  = " ";
+  ram[QSFP1_PART_NAME+8]  = "Q";
+  ram[QSFP1_PART_NAME+9]  = "S";
+  ram[QSFP1_PART_NAME+10] = "F";
+  ram[QSFP1_PART_NAME+11] = "P";
+  ram[QSFP1_PART_NAME+12] = 0;
+  ram[QSFP1_PART_NAME+13] = 0;
+  ram[QSFP1_PART_NAME+14] = 0;
+  ram[QSFP1_PART_NAME+15] = 0;
+end
+
+always @(posedge clk) begin
+end
+`endif
 
 endmodule

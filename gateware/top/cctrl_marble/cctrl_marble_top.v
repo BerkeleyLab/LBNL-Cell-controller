@@ -5,7 +5,7 @@ module cctrl_marble_top #(
   input              DDR_REF_CLK_N, // 125 MHz (complement)
   //input              MGT_CLK_0_P, // 125 MHz
   //input              MGT_CLK_0_N, // 125 MHz (complement)
-  output             VCXO_EN,
+  //output             VCXO_EN,
   output             PHY_RSTN,
 
   input  wire        FPGA_TxD,
@@ -58,14 +58,23 @@ module cctrl_marble_top #(
 //  inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA, // DONE - Not implemented in marble
 //  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
   inout TWI_SDA,
-  output TWI_SCL,
-`ifdef SCRAP_DEBUG
-  // Pinout to match Pmod UART standard (i.e. Pmod_USBUART)
-  output PMOD1_0, // SCRAP RTS to USB-UART CTS (Unused)
-  input PMOD1_1,  // SCRAP CTS from USB-UART RTS (Unused)
+  inout TWI_SCL,
+  inout TWI_SW_RST,
+//`ifdef SCRAP_DEBUG
+  // Pinout to match PmodUSBUART (strangely, not Pmod UART standard)
+  input PMOD1_0,  // SCRAP ~CTS from USB-UART ~RTS (Unused)
+  output PMOD1_1, // SCRAP TxD to USB-UART RxD
   input PMOD1_2,  // SCRAP RxD from USB-UART TxD
-  output PMOD1_3, // SCRAP TxD to USB-UART RxD
-`endif
+  output PMOD1_3, // SCRAP ~RTS to USB-UART ~CTS (Unused)
+//`endif
+  output PMOD2_0,
+  output PMOD2_1,
+  output PMOD2_2,
+  output PMOD2_3,
+  output PMOD2_4,
+  output PMOD2_5,
+  output PMOD2_6,
+  output PMOD2_7,
 
   output wire        MARBLE_LD16,
   output wire        MARBLE_LD17
@@ -302,19 +311,28 @@ forwardData #(.DATA_WIDTH(64))
               .outClk(sysClk),
               .outData(sysTimestamp));
 
-`ifdef SCRAP_DEBUG
+wire i2c_run_stat;
+wire qsfp_led;
+wire qsfp_i2c_run_cmd_out;
+wire qsfp_scl_mon;
+wire qsfp_sda_mon;
+wire busmux_reset;
+wire busmux_reset_i;
+IOBUF iobuf_sw_rst(.T(~busmux_reset), .I(1'b0), .O(busmux_reset_i), .IO(TWI_SW_RST));
+
+//`ifdef SCRAP_DEBUG
 //////////////////////////////////////////////////////////////////////////////
 // SCRAP Debug Memory Interface
 
 // Bypass hardware flow control
-assign PMOD1_0 = 1'b1; // SCRAP RTS to USB-UART CTS
+assign PMOD1_3 = 1'b0; // SCRAP ~RTS to USB-UART ~CTS
 
 localparam F_BAUD = 115200;
-localparam SCRAP_ADDRESS_WIDTH = 12;
+localparam SCRAP_ADDRESS_WIDTH = 16;
 localparam SCRAP_DATA_WIDTH = 8;
-wire ext_uart_rxd_in = PMOD1_2;
 wire ext_uart_txd_out;
-assign PMOD1_3 = ext_uart_txd_out;
+wire ext_uart_rxd_in = PMOD1_2;
+assign PMOD1_1 = ext_uart_txd_out;
 wire [SCRAP_ADDRESS_WIDTH-1:0] scrap_addr;
 wire [SCRAP_DATA_WIDTH-1:0] scrap_rdata;
 wire [SCRAP_DATA_WIDTH-1:0] scrap_wdata;
@@ -325,7 +343,8 @@ scrap_dev #(
   .F_CLK_IN(SYSCLK_RATE),
   .F_BAUD(F_BAUD),
   .ADDRESS_WIDTH(SCRAP_ADDRESS_WIDTH),
-  .DATA_WIDTH(SCRAP_DATA_WIDTH)
+  .DATA_WIDTH(SCRAP_DATA_WIDTH),
+  .LATCH_CYCLES(2)
 ) scrap_dev_inst (
   .clk(sysClk),
   .rst(1'b0),
@@ -347,23 +366,38 @@ scrap_dev #(
 
 wire [7:0] qsfp_lb_dout;
 reg qsfp_run_cmd;
+reg qsfp_freeze;
+reg [7:0] scrap_rdata_hi;
 initial begin
-  qsfp_run_cmd = 1'b0;
+  qsfp_run_cmd = 1'b1;
+  qsfp_freeze = 1'b0;
+  scrap_rdata_hi = 0;
 end
 // Memory map
 wire qsfp_we = scrap_addr[12] ? 1'b0 : scrap_we;
-assign scrap_rdata = scrap_addr[12] ? 0 : qsfp_lb_dout;
+assign scrap_rdata = scrap_addr[12] ? scrap_rdata_hi : qsfp_lb_dout;
 
 always @(posedge sysClk) begin
-  qsfp_run_cmd <= 1'b0;  // single-cycle
   if (scrap_we) begin
     case (scrap_addr)
-      'h1000 : qsfp_run_cmd <= 1'b1;
+      'h1000 : {qsfp_freeze, qsfp_run_cmd} <= scrap_wdata[1:0];
     endcase
   end
+  case (scrap_addr)
+    'h1000 : scrap_rdata_hi <= {5'h0, busmux_reset_i, qsfp_buffer_freeze, i2c_run_stat};
+    default: scrap_rdata_hi <= 8'h00;
+  endcase
 end
 `define QSFP_DEBUG_BUS
-`endif
+//`endif
+assign PMOD2_0 = qsfp_run_cmd;
+assign PMOD2_1 = i2c_run_stat;
+assign PMOD2_2 = scrap_we;
+assign PMOD2_3 = qsfp_led;
+assign PMOD2_4 = qsfp_scl_mon;
+assign PMOD2_5 = qsfp_sda_mon;
+assign PMOD2_6 = i2c_updated;
+assign PMOD2_7 = qsfp_i2c_run_cmd_out;
 
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
@@ -375,7 +409,6 @@ initial begin
   i2c_buffer_freeze = 1'b0;
 end
 wire [7:0] qsfpReadData;
-wire i2c_run_stat;
 wire i2c_updated;
 assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{22{1'b0}}, i2c_updated, i2c_run_stat, qsfpReadData};
 always @(posedge sysClk) begin
@@ -385,7 +418,7 @@ always @(posedge sysClk) begin
     end
 end
 
-wire qsfp_led;
+wire qsfp_buffer_freeze = qsfp_freeze | i2c_buffer_freeze;
 qsfpMarble #(
   .QSFP_COUNT(QSFP_COUNT),
   .CLOCK_RATE(SYSCLK_RATE),
@@ -394,20 +427,24 @@ qsfpMarble #(
   .clk(sysClk), // input
   .readAddress(qsfpReadAddress), // input [$clog2(QSFP_COUNT)+7:0]
   .readData(qsfpReadData), // output [7:0]
-  .freeze(i2c_buffer_freeze), // input
+  .freeze(qsfp_buffer_freeze), // input
   .run_stat(i2c_run_stat), // output
   .updated(i2c_updated), // output
   .SCL(TWI_SCL), // inout
   .SDA(TWI_SDA), // inout
-`ifdef QSFP_DEBUG_BUS
+  .scl_mon(qsfp_scl_mon),
+  .sda_mon(qsfp_sda_mon),
+//`ifdef QSFP_DEBUG_BUS
   .bus_claim(scrap_bus_claim),
   .lb_addr(scrap_addr[11:0]), // input [11:0]
   .lb_din(scrap_wdata),
   .lb_dout(qsfp_lb_dout),
   .lb_write(qsfp_we),
   .run_cmd(qsfp_run_cmd),
-`endif
-  .led(qsfp_led)
+//`endif
+  .led(qsfp_led),
+  .busmux_reset(busmux_reset),
+  .i2c_run_cmd_out(qsfp_i2c_run_cmd_out)
 );
 
 /*
@@ -1104,8 +1141,10 @@ assign MARBLE_LD17 = qsfp_led;
 
 /////////////////////////////////////////////////////////////////////////////
 // Miscellaneous
-`include "firmwareBuildDate.v"
-assign GPIO_IN[GPIO_IDX_FIRMWARE_BUILD_DATE] = FIRMWARE_BUILD_DATE;
+//`include "firmwareBuildDate.v"
+assign GPIO_IN[GPIO_IDX_FIRMWARE_BUILD_DATE] = 0; // Deprecating firmware build date
+`include "gitHash.vh"
+assign GPIO_IN[GPIO_IDX_GITHASH] = GIT_REV_32BIT; // Deprecating firmware build date
 
 /////////////////////////////////////////////////////////////////////////////
 // FIFO/UART console I/O

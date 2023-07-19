@@ -158,13 +158,18 @@ VFLAGS_DEP += -y$(TOP_LVL_DIR)
 VFLAGS_DEP += -y$(PLATFORM_7SERIES_DIR)
 VFLAGS_DEP += $(addprefix -y, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -y, $(BD_SRCS_DIRS))
+VFLAGS_DEP += -y$(SCRAP_DIR)/src
 
 # Local directories for include searching
 VFLAGS_DEP += -I.
 VFLAGS_DEP += -I$(TOP_LVL_DIR)
 VFLAGS_DEP += -I$(MODULES_DIR)
+VFLAGS_DEP += -I$(SCRAP_DIR)/inc
 VFLAGS_DEP += $(addprefix -I, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
+
+# Make sure everyone uses the same macro definitions too
+VFLAGS_DEP += $(SYNTH_OPT)
 
 # Files to be treated as library files. This is needed if the filename
 # does not match the module name, which is the case for Xilinx ip cores.
@@ -240,7 +245,7 @@ vpath %.tcl $(GW_SCRIPTS_DIR)
 vpath %.sh $(GW_SCRIPTS_DIR)
 
 # ================= I2C Bridge ==================
-I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c.py
+I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c_prog.py
 I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
 $(I2C_VH):$(I2C_SCRIPT)
 	PYTHONPATH=$(GW_SCRIPTS_DIR) python3 $< v > $@
@@ -254,18 +259,19 @@ $(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 # Lucas - comment out this block to build without the SCRAP device
 # ================ SCRAP =======================
 # TODO - Submodule this?
-#SCRAP_DIR=/home/kpenney/repos/scrap
-#include $(SCRAP_DIR)/scrap_rules.mk
-#SYNTH_OPT+=-DSCRAP_DEBUG
-#SYNTH_OPT+=-DSCRAPE
-#SYNTH_OPT+=-DSCRAP_SHARED_BUS
-#SYNTH_OPT+=-DQSFP_DEBUG_BUS
+SCRAP_DIR=/home/kpenney/repos/scrap
+include $(SCRAP_DIR)/scrap_rules.mk
+SYNTH_OPT ?=
+SYNTH_OPT+=-DSCRAP_DEBUG
+SYNTH_OPT+=-DSCRAPE
+SYNTH_OPT+=-DSCRAP_SHARED_BUS
+SYNTH_OPT+=-DQSFP_DEBUG_BUS
 
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
 	vivado -mode batch -nojou -nolog -source $(GW_SCRIPTS_DIR)/gen_mem_info.tcl -tclargs $< $@
@@ -278,6 +284,11 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(IP_CORES_XDCS) $(SYSTEM_TOP_TIM_XDC)
 # Generate firmware date and parameters
 %firmwareBuildDate.v: set_firmware_build_date.tcl
 	$(VIVADO_CMD) -source $< -tclargs $@
+
+# This PHONY is causing problems
+#.PHONY: $(TOP_LVL_DIR)/gitHash.vh
+$(TOP_LVL_DIR)/gitHash.vh:
+	sh $(GW_SCRIPTS_DIR)/gitHashVerilog.sh > $@
 
 %/$(GPIOIDX_V): $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@

@@ -5,15 +5,43 @@ Assembler for the i2cbridge program sequencer
 import sys
 import math
 
-# TODO:
-#   * Add a set_resx function which takes the explicit address as
-#     the argument and rounds to nearest 32-byte interval (or raises
-#     exception when address & 0x1f != 0)
+
+class ListStream():
+    """A class that behaves as both an iterator (has '__next__') and a stream in read-mode
+    (has 'seek' and 'tell')."""
+    def __init__(self, lst):
+        self._l = lst
+        self._rptr = 0
+        self._max = len(self._l) - 1
+
+    def __next__(self):
+        if self._rptr > self._max:
+            raise StopIteration
+        else:
+            rval = self._l[self._rptr]
+            self._rptr += 1
+            return rval
+
+    def seek(self, offset):
+        """Set read pointer to integer 'offset'.
+        If offset < 0, set read pointer to end-abs(offset)."""
+        offset = int(offset)
+        if abs(offset) > self._max-1:
+            raise Exception(f"Attempting to seek to {offset} beyond size of stream {self._max}")
+        if offset < 0:
+            offset = self._max + offset
+        if offset < self._max:
+            self._rptr = offset
+        return
+
+    def tell(self):
+        """Return current read pointer"""
+        return self._rptr
 
 
 class i2c_assem:
     # sequencer op codes
-    o_zz = 0x00
+    o_oo = 0x00
     o_rd = 0x20
     o_wr = 0x40
     o_wx = 0x60
@@ -26,6 +54,10 @@ class i2c_assem:
     # in the instruction stream, but o_rd is only followed by one more
     # byte (the device address); the data read cycles still happen, and
     # post results to the result bus, but don't consume instruction bytes.
+    n_oo_zz = 0x00
+    n_oo_bf = 0x02
+    n_oo_ta = 0x03
+    n_oo_hw = 0x10
 
     # write data words to specified dadr
     @classmethod
@@ -95,18 +127,18 @@ class i2c_assem:
 
     @classmethod
     def buffer_flip(cls):
-        return [cls.o_zz + 2]
+        return [cls.o_oo + 2]
 
     @classmethod
     def trig_analyz(cls):
-        return [cls.o_zz + 3]
+        return [cls.o_oo + 3]
 
     @classmethod
     def hw_config(cls, n):
         n = int(n)
         if n > 15:
             raise I2C_Assembler_Exception(f"Invalid hw_config: {n} (4 bits, valid range = 0-15)")
-        return [cls.o_zz + 16 + n]
+        return [cls.o_oo + 16 + n]
 
     # l is length of program so far
     # jump_n is jump address after padding
@@ -115,7 +147,11 @@ class i2c_assem:
         pad_n = 32*jump_n - length
         if pad_n < 0:
             raise I2C_Assembler_Exception("Oops!  negative pad %d" % pad_n)
-        return pad_n*[cls.o_zz]
+        return pad_n*[cls.o_p1]  # Pause for zero ticks
+
+    @classmethod
+    def stop(cls):
+        return [cls.o_oo]
 
 
 class I2CAssembler(i2c_assem):
@@ -126,20 +162,134 @@ class I2CAssembler(i2c_assem):
 
     @staticmethod
     def _mkRegName(dadr, madr, rc):
-        """Build a default register name from device address 'dadr', memory address
+        """[private] Build a default register name from device address 'dadr', memory address
         'madr' and results pointer 'rc'
         """
-        return f"reg_{dadr:02x}_{madr:02x}_{rc:04x}"
+        if madr is None:
+            madr_s = ""
+        else:
+            madr_s = f"{madr:02x}_"
+        return f"reg_{dadr:02x}_{madr_s}{rc:04x}"
 
-    def __init__(self):
+    def __init__(self, advanced_mode=False):
+        """Params:
+            advanced_mode : Suppresses certain exceptions during program check.  Allows you
+                            to shoot yourself in the foot.
+        """
         super().__init__()
         self._rc = 0    # Results counter
         self._program = []
         self._memdict = {}  # {"name" : (offset, size)}
+        self._advanced_mode = advanced_mode
 
     def _pc(self):
-        """Get current program counter value"""
+        """[private] Get current program counter value"""
         return len(self._program)
+
+    def _check_pc(self):
+        if len(self._program) > self._ADDRESS_MAX-1:
+            raise I2C_Assembler_Exception("Program size exceeded")
+        return
+
+    def _check_rc(self):
+        if self._rc > self._ADDRESS_MAX-1:
+            raise I2C_Assembler_Exception("Result buffer size exceeded")
+        return
+
+    @classmethod
+    def _get_next_instruction(cls, prog_iter):
+        """[private] Get next instruction from iterator 'prog_iter'.
+        Returns (op_code, n_code, [data])"""
+        try:
+            inst = next(prog_iter)
+        except StopIteration:
+            return None
+        op_code = (inst & 0xe0)  # Mask in upper 3 bits
+        n_code = (inst & 0x1f)   # Mask in lower 5 bits
+        data = []
+        if op_code == cls.o_rd:
+            try:
+                data.append(next(prog_iter))
+            except StopIteration:
+                raise I2C_Assembler_Exception("Corrupted program detected. " +
+                    "Program terminates before read (rd) instruction is completed")
+        elif op_code == cls.o_wr:
+            for n in range(n_code):
+                try:
+                    data.append(next(prog_iter))
+                except StopIteration:
+                    raise I2C_Assembler_Exception("Corrupted program detected. " +
+                        "Program terminates before write (wr) instruction is completed")
+        elif op_code == cls.o_wx:
+            for n in range(n_code):
+                try:
+                    data.append(next(prog_iter))
+                except StopIteration:
+                    raise I2C_Assembler_Exception("Corrupted program detected. " +
+                        "Program terminates before write-multi (wx) instruction is completed")
+        # All other op_code values have no data
+        return (op_code, n_code, data)
+
+    def check_program(self, verbose=False):
+        """Check program for violations of subtle usage rules."""
+        # Look for a jump backward then follow that address forward
+        # Must encounter a set_resx() before a read() or violation.
+        def prnt(*args, **kwargs):
+            if verbose:
+                print(*args, **kwargs)
+        jumps = []
+        backwards_jumped = False
+        srx_after_jump = False
+        loop_end = False
+        has_read = False
+        has_buffer_flip = False
+        iprog = ListStream(self._program)
+        pc = iprog.tell()
+        rval = self._get_next_instruction(iprog)
+        while rval is not None:
+            op_code, n_code, data = rval
+            if loop_end:    # Should not be any code after a backwards jump
+                raise I2C_Assembler_Exception(f"Instruction [{op_code:03b}:{n_code:05b}] " +
+                    f"at address {pc} is unreachable.")
+            if op_code == self.o_oo:
+                if n_code == self.n_oo_bf:  # buffer_flip
+                    has_buffer_flip = True
+            elif op_code == self.o_jp:    # jump
+                prnt(f"Found jump at pc {pc:03x}")
+                if pc not in jumps:
+                    jumps.append(pc)
+                    # Follow jump
+                    if pc > n_code*32:
+                        prnt("  Jump is backwards")
+                        backwards_jumped = True
+                    pc = n_code*32
+                    prnt(f"Going to pc {pc:03x}")
+                    iprog.seek(pc)
+                else:   # pc is in jumps (we've already followed it)
+                    if pc > n_code*32:
+                        loop_end = True
+            elif op_code == self.o_sx:  # set_resx
+                prnt(f"Found set_resx at pc {pc:03x}")
+                if backwards_jumped:
+                    prnt("  After a backwards jump")
+                    srx_after_jump = True
+            elif op_code == self.o_rd:  # read
+                prnt(f"Found read at pc {pc:03x}")
+                has_read = True
+                if backwards_jumped:
+                    prnt(f"  After a backwards jump (srx_after_jump = {srx_after_jump})")
+                    if not srx_after_jump:
+                        raise I2C_Assembler_Exception(f"Program address 0x{pc:03x}: Must use set_resx() after " +
+                            "a backwards jump before any read operations for consistent address of results.")
+            pc = iprog.tell()
+            prnt(f"pc = {pc:03x}")
+            rval = self._get_next_instruction(iprog)
+        if has_read and not has_buffer_flip:
+            if not self._advanced_mode:
+                raise I2C_Assembler_Exception("Program has read operation but no buffer flip found." +
+                    " Result buffer is unreadable.  Use 'advanced mode' to suppress this exception.")
+        prnt("Program good")
+        return
 
     def write(self, dadr, madr, data, addr_bytes=1):
         """Add an I2C write transaction to the program.
@@ -150,7 +300,11 @@ class I2CAssembler(i2c_assem):
             int addr_bytes : Size in bytes of memory address (1 or 2)
         Returns: None
         """
-        self._program += super().write(dadr, madr, data, addr_bytes=1)
+        if madr is None:
+            addr_bytes = 0
+        self._program += super().write(dadr, madr, data, addr_bytes=addr_bytes)
+        self._check_pc()
+        return None
 
     def read(self, dadr, madr, dlen, addr_bytes=1, reg_name = None):
         """Add an I2C read transaction to the program.
@@ -162,17 +316,22 @@ class I2CAssembler(i2c_assem):
             str reg_name : A name to associate with result memory address
         Returns: Starting memory offset of result
         """
-        self._program += super().read(dadr, madr, dlen, addr_bytes=1)
+        if madr is None:
+            addr_bytes = 0
+        self._program += super().read(dadr, madr, dlen, addr_bytes=addr_bytes)
+        self._check_pc()
         if reg_name is None:
             reg_name = self._mkRegName(dadr, madr, self._rc)
         self._memdict[reg_name] = (self._rc, dlen)
         self._rc += dlen
+        self._check_rc()
         return self._rc
 
     def pause(self, n):
         """Add a pause of 'n' ticks to the program
         See README.md for discussion of tick length."""
         self._program += super().pause(n)
+        self._check_pc()
         return
 
     def jump(self, n):
@@ -189,6 +348,7 @@ class I2CAssembler(i2c_assem):
             raise I2C_Assembler_Exception("Jump would result in 'jump here' instruction" +
                                           "(a jump to the program counter value of the jump instruction).")
         self._program += super().jump(n)
+        self._check_pc()
         return
 
     def jump_address(self, address):
@@ -246,22 +406,60 @@ class I2CAssembler(i2c_assem):
         self.pad(n)
         return self._pc()
 
-    def set_resx(self, n):
+    def set_resx(self, n=None):
         """Add a set result address pointer instruction to program.
-        Sets results address to (0x800 + n*32)."""
+        Sets results address to (0x800 + n*32).
+        Params:
+            int n : result address offset in units of 32-bytes (address = 0x800 + n*32)
+                    If n is None, sets result address pointer to the next unoccupied increment
+                    address 32*(int(rc/32)+1) where 'rc' is the results memory pointer.
+                    This is useful just after a jump-to address to ensure data from any
+                    reads in the program loop always end up in the
+                    same location.
+        Gotchas:
+            See above for special case when n is None.
+        """
+        if n is None:
+            n = (self._rc//32)+1     # ceil(rc/32)
         n = int(n)
         self._program += super().set_resx(n)
+        self._check_pc()
         self._rc = 32*n
+        self._check_rc()    # This should be redundant but certainly can't hurt
         return
+
+    def set_resx_address(self, address=None):
+        """Add a set result address pointer instruction to program.
+        Sets results address to (0x800 + address).
+        Params:
+            int address : The explicit address offset within the results memory space to
+                    which to set the results pointer.
+                    If address is None, sets result address pointer to the next jumpable
+                    address 32*(int(pc/32)+1).  This is useful just after a jump-to address
+                    to ensure data from any reads in the program loop always end up in the
+                    same location.
+        Gotchas:
+            The memory space offset 0x800 is implied; 'address' should be an offset from
+            that point.
+            See above for special case when address is None.
+        """
+        if address is not None:
+            # Skim off memory region offset 0x800 if accidentally included
+            n = (address & 0x3ff)//32
+        else:
+            n = None
+        return self.set_resx(n)
 
     def buffer_flip(self):
         """Add a buffer flip instruction to the program."""
         self._program += super().buffer_flip()
+        self._check_pc()
         return
 
     def trig_analyz(self):
         """Add an analyzer trigger instruction to the program."""
         self._program += super().trig_analyz()
+        self._check_pc()
         return
 
     def hw_config(self, n):
@@ -269,6 +467,7 @@ class I2CAssembler(i2c_assem):
         Params:
             int n : 4-bit mask of hw_config outputs of module i2c_chunk"""
         self._program += super().hw_config(n)
+        self._check_pc()
         return
 
     def pad(self, n=None):
@@ -289,6 +488,7 @@ class I2CAssembler(i2c_assem):
         elif (n > self._INDEX_MAX):
             raise I2C_Assembler_Exception(f"Program counter index {n} exceeds maximum {self._INDEX_MAX}")
         self._program += super().pad(n, self._pc())
+        self._check_pc()
         return self._pc()//32
 
     def pad_address(self, address=None):
@@ -312,8 +512,22 @@ class I2CAssembler(i2c_assem):
         self.pad(n)
         return self._pc()
 
+    def stop(self):
+        """Add a deliberate stop character to the I2C program.  When encountered, the
+        I2C program will halt and reset, requiring intervention to restart (assert
+        run_cmd at the verilog module)."""
+        self._program += super().stop()
+        self._check_pc()
+        return
+
+    def get_program(self):
+        """Get the program as a list (after checking)"""
+        self.check_program()
+        return self._program
+
     def write_program(self, fd=sys.stdout):
         """Write program contents to file descriptor 'fd'."""
+        self.check_program()
         for b in self._program:
             fd.write(f"{b:0x}\n")
         return
@@ -332,7 +546,7 @@ class I2CAssembler(i2c_assem):
             filename = "assem_reg_map"
         else:
             filename = str(filename)
-        offset = int(offset)
+        global_offset = int(offset)
         pre = None
         post = None
         inter = ""
@@ -366,6 +580,7 @@ class I2CAssembler(i2c_assem):
             fd.write(pre)
         for name, v in self._memdict.items():
             offset, nbytes = v
+            offset = offset + global_offset
             addr_width = math.ceil(math.log2(nbytes))
             if first:
                 first = False
