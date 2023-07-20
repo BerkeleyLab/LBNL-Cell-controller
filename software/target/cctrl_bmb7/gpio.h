@@ -60,6 +60,7 @@
 #define GPIO_IDX_WFR_W_POSTTRIGGER        45 // Recorder posttrigger 'count'(W)
 #define GPIO_IDX_WFR_R_SECONDS            45 // Recorder timestamp seconds(R)
 #define GPIO_IDX_WFR_R_TICKS              46 // Recorder timestamp ticks(R)
+#define GPIO_IDX_GITHASH                  51 // (NOT IMPLEMENTED) git 32-bit hash
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1

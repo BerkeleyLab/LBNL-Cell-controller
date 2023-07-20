@@ -63,11 +63,13 @@ int main()
      */
     init_platform();
     printf("\n");
-    /*printf("Firmware build POSIX seconds: %d\n",
-                                    GPIO_READ(GPIO_IDX_FIRMWARE_BUILD_DATE));
-                                    */
+#ifdef MARBLE
     printf("Git ID (32-bit): %08x\n", GPIO_READ(GPIO_IDX_GITHASH));
-    //printf("Software build POSIX seconds: %d\n", SOFTWARE_BUILD_DATE);
+#else
+    printf("Firmware build POSIX seconds: %d\n",
+                                    GPIO_READ(GPIO_IDX_FIRMWARE_BUILD_DATE));
+    printf("Software build POSIX seconds: %d\n", SOFTWARE_BUILD_DATE);
+#endif
 
     /*
      * Continue with initialization
