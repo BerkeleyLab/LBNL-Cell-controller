@@ -37,6 +37,8 @@ always @(posedge clk) begin
     end
 end
 
+wire scl, sda;
+
 qsfpMarble #(
   .QSFP_COUNT(QSFP_COUNT),
   .CLOCK_RATE(SYSCLK_RATE),
@@ -44,7 +46,16 @@ qsfpMarble #(
   ) qsfpMarble_i (
   .clk(clk), // input
   .readAddress(readAddress), // input [$clog2(QSFP_COUNT)+7:0]
-  .readData(readData)  // output [7:0]
+  .readData(readData), // output [7:0]
+  .freeze(1'b0), // input
+  .run_stat(), // output
+  .updated(), // output
+  .SCL(scl),
+  .SDA(sda),
+  .scl_mon(),
+  .sda_mon(),
+  .led(),
+  .busmux_reset()
 );
 
 endmodule

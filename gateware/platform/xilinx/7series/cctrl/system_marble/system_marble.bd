@@ -879,10 +879,10 @@
           }
         },
         "interface_nets": {
-          "microblaze_0_ilmb_bus": {
+          "microblaze_0_dlmb_bus": {
             "interface_ports": [
-              "ilmb_v10/LMB_Sl_0",
-              "ilmb_bram_if_cntlr/SLMB"
+              "dlmb_v10/LMB_Sl_0",
+              "dlmb_bram_if_cntlr/SLMB"
             ]
           },
           "dlmb_bram_if_cntlr_BRAM_PORT": {
@@ -891,28 +891,28 @@
               "dlmb_bram_if_cntlr/BRAM_PORT"
             ]
           },
+          "microblaze_0_ilmb_bus": {
+            "interface_ports": [
+              "ilmb_v10/LMB_Sl_0",
+              "ilmb_bram_if_cntlr/SLMB"
+            ]
+          },
           "microblaze_0_ilmb": {
             "interface_ports": [
               "ILMB",
               "ilmb_v10/LMB_M"
             ]
           },
-          "microblaze_0_dlmb_bus": {
+          "microblaze_0_dlmb": {
             "interface_ports": [
-              "dlmb_v10/LMB_Sl_0",
-              "dlmb_bram_if_cntlr/SLMB"
+              "DLMB",
+              "dlmb_v10/LMB_M"
             ]
           },
           "ilmb_bram_if_cntlr_BRAM_PORT": {
             "interface_ports": [
               "dlmb_bram_if_cntlr_bram/BRAM_PORTB",
               "ilmb_bram_if_cntlr/BRAM_PORT"
-            ]
-          },
-          "microblaze_0_dlmb": {
-            "interface_ports": [
-              "DLMB",
-              "dlmb_v10/LMB_M"
             ]
           }
         },
@@ -1337,154 +1337,16 @@
           }
         },
         "interface_nets": {
-          "aurora_8b10b_3_CORE_STATUS": {
-            "interface_ports": [
-              "CORE_STATUS3",
-              "aurora_8b10b_3/CORE_STATUS"
-            ]
-          },
-          "Conn1": {
-            "interface_ports": [
-              "USER_DATA_M_AXI_RX",
-              "aurora_8b10b_0/USER_DATA_M_AXI_RX"
-            ]
-          },
-          "USER_DATA_S_AXI_TX2_1": {
-            "interface_ports": [
-              "USER_DATA_S_AXI_TX2",
-              "axis_data_fifo_2/S_AXIS"
-            ]
-          },
-          "drp_bridge_0_DRP1": {
-            "interface_ports": [
-              "drp_bridge_0/DRP1",
-              "aurora_8b10b_1/GT0_DRP_IF"
-            ]
-          },
-          "aurora_8b10b_1_CORE_STATUS": {
-            "interface_ports": [
-              "CORE_STATUS1",
-              "aurora_8b10b_1/CORE_STATUS"
-            ]
-          },
-          "drp_bridge_0_DRP0": {
-            "interface_ports": [
-              "aurora_8b10b_0/GT0_DRP_IF",
-              "drp_bridge_0/DRP0"
-            ]
-          },
-          "Conn8": {
-            "interface_ports": [
-              "GT_SERIAL_TX3",
-              "aurora_8b10b_3/GT_SERIAL_TX"
-            ]
-          },
-          "drp_bridge_0_DRP3": {
-            "interface_ports": [
-              "drp_bridge_0/DRP3",
-              "aurora_8b10b_3/GT0_DRP_IF"
-            ]
-          },
           "drp_bridge_0_DRP2": {
             "interface_ports": [
               "drp_bridge_0/DRP2",
               "aurora_8b10b_2/GT0_DRP_IF"
             ]
           },
-          "GT_SERIAL_RX2_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX2",
-              "aurora_8b10b_2/GT_SERIAL_RX"
-            ]
-          },
-          "Conn2": {
-            "interface_ports": [
-              "USER_DATA_M_AXI_RX1",
-              "aurora_8b10b_1/USER_DATA_M_AXI_RX"
-            ]
-          },
-          "GT_REFCLK1_1": {
-            "interface_ports": [
-              "GT_DIFF_REFCLK_125",
-              "aurora_8b10b_0/GT_DIFF_REFCLK1"
-            ]
-          },
-          "Conn9": {
-            "interface_ports": [
-              "S_AXI",
-              "drp_bridge_0/S_AXI"
-            ]
-          },
-          "Conn4": {
-            "interface_ports": [
-              "USER_DATA_M_AXI_RX3",
-              "aurora_8b10b_3/USER_DATA_M_AXI_RX"
-            ]
-          },
           "Conn3": {
             "interface_ports": [
               "USER_DATA_M_AXI_RX2",
               "aurora_8b10b_2/USER_DATA_M_AXI_RX"
-            ]
-          },
-          "Conn7": {
-            "interface_ports": [
-              "GT_SERIAL_TX2",
-              "aurora_8b10b_2/GT_SERIAL_TX"
-            ]
-          },
-          "Conn5": {
-            "interface_ports": [
-              "GT_SERIAL_TX",
-              "aurora_8b10b_0/GT_SERIAL_TX"
-            ]
-          },
-          "drp_bridge_0_DRP4": {
-            "interface_ports": [
-              "GTX_DRP4",
-              "drp_bridge_0/DRP4"
-            ]
-          },
-          "aurora_8b10b_0_CORE_STATUS": {
-            "interface_ports": [
-              "CORE_STATUS",
-              "aurora_8b10b_0/CORE_STATUS"
-            ]
-          },
-          "aurora_8b10b_2_CORE_STATUS": {
-            "interface_ports": [
-              "CORE_STATUS2",
-              "aurora_8b10b_2/CORE_STATUS"
-            ]
-          },
-          "Conn6": {
-            "interface_ports": [
-              "GT_SERIAL_TX1",
-              "aurora_8b10b_1/GT_SERIAL_TX"
-            ]
-          },
-          "GT_SERIAL_RX_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX",
-              "aurora_8b10b_0/GT_SERIAL_RX"
-            ]
-          },
-          "GT_SERIAL_RX1_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX1",
-              "aurora_8b10b_1/GT_SERIAL_RX"
-            ]
-          },
-          "axis_data_fifo_3_M_AXIS": {
-            "interface_ports": [
-              "axis_data_fifo_3/M_AXIS",
-              "aurora_8b10b_3/USER_DATA_S_AXI_TX"
-            ]
-          },
-          "axis_data_fifo_2_M_AXIS": {
-            "interface_ports": [
-              "axis_data_fifo_2/M_AXIS",
-              "aurora_8b10b_2/USER_DATA_S_AXI_TX"
             ]
           },
           "GT_SERIAL_RX3_1": {
@@ -1497,6 +1359,144 @@
             "interface_ports": [
               "USER_DATA_S_AXI_TX3",
               "axis_data_fifo_3/S_AXIS"
+            ]
+          },
+          "Conn8": {
+            "interface_ports": [
+              "GT_SERIAL_TX3",
+              "aurora_8b10b_3/GT_SERIAL_TX"
+            ]
+          },
+          "Conn2": {
+            "interface_ports": [
+              "USER_DATA_M_AXI_RX1",
+              "aurora_8b10b_1/USER_DATA_M_AXI_RX"
+            ]
+          },
+          "GT_SERIAL_RX1_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX1",
+              "aurora_8b10b_1/GT_SERIAL_RX"
+            ]
+          },
+          "drp_bridge_0_DRP0": {
+            "interface_ports": [
+              "aurora_8b10b_0/GT0_DRP_IF",
+              "drp_bridge_0/DRP0"
+            ]
+          },
+          "GT_REFCLK1_1": {
+            "interface_ports": [
+              "GT_DIFF_REFCLK_125",
+              "aurora_8b10b_0/GT_DIFF_REFCLK1"
+            ]
+          },
+          "aurora_8b10b_3_CORE_STATUS": {
+            "interface_ports": [
+              "CORE_STATUS3",
+              "aurora_8b10b_3/CORE_STATUS"
+            ]
+          },
+          "drp_bridge_0_DRP3": {
+            "interface_ports": [
+              "drp_bridge_0/DRP3",
+              "aurora_8b10b_3/GT0_DRP_IF"
+            ]
+          },
+          "GT_SERIAL_RX2_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX2",
+              "aurora_8b10b_2/GT_SERIAL_RX"
+            ]
+          },
+          "Conn9": {
+            "interface_ports": [
+              "S_AXI",
+              "drp_bridge_0/S_AXI"
+            ]
+          },
+          "aurora_8b10b_0_CORE_STATUS": {
+            "interface_ports": [
+              "CORE_STATUS",
+              "aurora_8b10b_0/CORE_STATUS"
+            ]
+          },
+          "Conn4": {
+            "interface_ports": [
+              "USER_DATA_M_AXI_RX3",
+              "aurora_8b10b_3/USER_DATA_M_AXI_RX"
+            ]
+          },
+          "drp_bridge_0_DRP1": {
+            "interface_ports": [
+              "drp_bridge_0/DRP1",
+              "aurora_8b10b_1/GT0_DRP_IF"
+            ]
+          },
+          "USER_DATA_S_AXI_TX2_1": {
+            "interface_ports": [
+              "USER_DATA_S_AXI_TX2",
+              "axis_data_fifo_2/S_AXIS"
+            ]
+          },
+          "Conn5": {
+            "interface_ports": [
+              "GT_SERIAL_TX",
+              "aurora_8b10b_0/GT_SERIAL_TX"
+            ]
+          },
+          "GT_SERIAL_RX_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX",
+              "aurora_8b10b_0/GT_SERIAL_RX"
+            ]
+          },
+          "axis_data_fifo_2_M_AXIS": {
+            "interface_ports": [
+              "axis_data_fifo_2/M_AXIS",
+              "aurora_8b10b_2/USER_DATA_S_AXI_TX"
+            ]
+          },
+          "aurora_8b10b_1_CORE_STATUS": {
+            "interface_ports": [
+              "CORE_STATUS1",
+              "aurora_8b10b_1/CORE_STATUS"
+            ]
+          },
+          "aurora_8b10b_2_CORE_STATUS": {
+            "interface_ports": [
+              "CORE_STATUS2",
+              "aurora_8b10b_2/CORE_STATUS"
+            ]
+          },
+          "Conn7": {
+            "interface_ports": [
+              "GT_SERIAL_TX2",
+              "aurora_8b10b_2/GT_SERIAL_TX"
+            ]
+          },
+          "Conn1": {
+            "interface_ports": [
+              "USER_DATA_M_AXI_RX",
+              "aurora_8b10b_0/USER_DATA_M_AXI_RX"
+            ]
+          },
+          "drp_bridge_0_DRP4": {
+            "interface_ports": [
+              "GTX_DRP4",
+              "drp_bridge_0/DRP4"
+            ]
+          },
+          "Conn6": {
+            "interface_ports": [
+              "GT_SERIAL_TX1",
+              "aurora_8b10b_1/GT_SERIAL_TX"
+            ]
+          },
+          "axis_data_fifo_3_M_AXIS": {
+            "interface_ports": [
+              "axis_data_fifo_3/M_AXIS",
+              "aurora_8b10b_3/USER_DATA_S_AXI_TX"
             ]
           }
         },
@@ -2570,16 +2570,22 @@
               "m03_couplers/M_AXI"
             ]
           },
-          "xbar_to_m00_couplers": {
-            "interface_ports": [
-              "xbar/M00_AXI",
-              "m00_couplers/S_AXI"
-            ]
-          },
           "m00_couplers_to_microblaze_0_axi_periph_1": {
             "interface_ports": [
               "M00_AXI",
               "m00_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m06_couplers": {
+            "interface_ports": [
+              "xbar/M06_AXI",
+              "m06_couplers/S_AXI"
+            ]
+          },
+          "m01_couplers_to_microblaze_0_axi_periph_1": {
+            "interface_ports": [
+              "M01_AXI",
+              "m01_couplers/M_AXI"
             ]
           },
           "xbar_to_m05_couplers": {
@@ -2594,10 +2600,10 @@
               "m02_couplers/M_AXI"
             ]
           },
-          "microblaze_0_axi_periph_1_to_s00_couplers": {
+          "xbar_to_m00_couplers": {
             "interface_ports": [
-              "S00_AXI",
-              "s00_couplers/S_AXI"
+              "xbar/M00_AXI",
+              "m00_couplers/S_AXI"
             ]
           },
           "m04_couplers_to_microblaze_0_axi_periph_1": {
@@ -2624,16 +2630,10 @@
               "xbar/S00_AXI"
             ]
           },
-          "m01_couplers_to_microblaze_0_axi_periph_1": {
+          "microblaze_0_axi_periph_1_to_s00_couplers": {
             "interface_ports": [
-              "M01_AXI",
-              "m01_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m06_couplers": {
-            "interface_ports": [
-              "xbar/M06_AXI",
-              "m06_couplers/S_AXI"
+              "S00_AXI",
+              "s00_couplers/S_AXI"
             ]
           },
           "m05_couplers_to_microblaze_0_axi_periph_1": {
@@ -2923,132 +2923,6 @@
           "axi_lite_generic_reg/s00_axi"
         ]
       },
-      "axi_uartlite_0_UART": {
-        "interface_ports": [
-          "uart_rtl",
-          "DummyUART/UART"
-        ]
-      },
-      "CELL_CCW_GT_RX_1": {
-        "interface_ports": [
-          "CELL_CCW_GT_RX",
-          "Aurora/GT_SERIAL_RX2"
-        ]
-      },
-      "microblaze_0_axi_periph_1_M05_AXI": {
-        "interface_ports": [
-          "microblaze_0_axi_periph_1/M05_AXI",
-          "BRAM_BPM_SETPOINTS/S_AXI"
-        ]
-      },
-      "BPM_CW_RX_1": {
-        "interface_ports": [
-          "BPM_CW_GT_RX",
-          "Aurora/GT_SERIAL_RX1"
-        ]
-      },
-      "microblaze_0_ilmb_1": {
-        "interface_ports": [
-          "microblaze_0/ILMB",
-          "microblaze_0_local_memory/ILMB"
-        ]
-      },
-      "Aurora_USER_DATA_M_AXI_RX2": {
-        "interface_ports": [
-          "CELL_CCW_AXI_STREAM_RX",
-          "Aurora/USER_DATA_M_AXI_RX2"
-        ]
-      },
-      "microblaze_0_debug": {
-        "interface_ports": [
-          "mdm_1/MBDEBUG_0",
-          "microblaze_0/DEBUG"
-        ]
-      },
-      "Aurora_GT_SERIAL_TX3": {
-        "interface_ports": [
-          "CELL_CW_GT_TX",
-          "Aurora/GT_SERIAL_TX3"
-        ]
-      },
-      "CELL_CW_GT_RX_1": {
-        "interface_ports": [
-          "CELL_CW_GT_RX",
-          "Aurora/GT_SERIAL_RX3"
-        ]
-      },
-      "Aurora_CORE_STATUS2": {
-        "interface_ports": [
-          "CELL_CCW_AuroraCoreStatus",
-          "Aurora/CORE_STATUS2"
-        ]
-      },
-      "aurora_8b10b_0_CORE_STATUS": {
-        "interface_ports": [
-          "BPM_CW_AuroraCoreStatus",
-          "Aurora/CORE_STATUS1"
-        ]
-      },
-      "microblaze_0_M_AXI_DP": {
-        "interface_ports": [
-          "microblaze_0/M_AXI_DP",
-          "microblaze_0_axi_periph_1/S00_AXI"
-        ]
-      },
-      "Aurora_USER_DATA_M_AXI_RX": {
-        "interface_ports": [
-          "BPM_CCW_AXI_STREAM_RX",
-          "Aurora/USER_DATA_M_AXI_RX"
-        ]
-      },
-      "Aurora_USER_DATA_M_AXI_RX3": {
-        "interface_ports": [
-          "CELL_CW_AXI_STREAM_RX",
-          "Aurora/USER_DATA_M_AXI_RX3"
-        ]
-      },
-      "Aurora_CORE_STATUS3": {
-        "interface_ports": [
-          "CELL_CW_AuroraCoreStatus",
-          "Aurora/CORE_STATUS3"
-        ]
-      },
-      "Aurora_GT_SERIAL_TX2": {
-        "interface_ports": [
-          "CELL_CCW_GT_TX",
-          "Aurora/GT_SERIAL_TX2"
-        ]
-      },
-      "BPM_CCW_GT_RX_1": {
-        "interface_ports": [
-          "BPM_CCW_GT_RX",
-          "Aurora/GT_SERIAL_RX"
-        ]
-      },
-      "Aurora_USER_DATA_M_AXI_RX1": {
-        "interface_ports": [
-          "BPM_CW_AXI_STREAM_RX",
-          "Aurora/USER_DATA_M_AXI_RX1"
-        ]
-      },
-      "microblaze_0_axi_periph_1_M01_AXI": {
-        "interface_ports": [
-          "microblaze_0_axi_periph_1/M01_AXI",
-          "evr_axi_0/s00_axi"
-        ]
-      },
-      "aurora_8b10b_1_CORE_STATUS": {
-        "interface_ports": [
-          "BPM_CCW_AuroraCoreStatus",
-          "Aurora/CORE_STATUS"
-        ]
-      },
-      "aurora_8b10b_0_GT_SERIAL_TX": {
-        "interface_ports": [
-          "BPM_CW_GT_TX",
-          "Aurora/GT_SERIAL_TX1"
-        ]
-      },
       "GT_DIFF_REFCLK_125_0_1": {
         "interface_ports": [
           "GT_DIFF_REFCLK_125",
@@ -3061,10 +2935,34 @@
           "Aurora/GTX_DRP4"
         ]
       },
-      "microblaze_0_axi_periph_1_M04_AXI": {
+      "Aurora_USER_DATA_M_AXI_RX1": {
         "interface_ports": [
-          "microblaze_0_axi_periph_1/M04_AXI",
-          "DummyUART/S_AXI"
+          "BPM_CW_AXI_STREAM_RX",
+          "Aurora/USER_DATA_M_AXI_RX1"
+        ]
+      },
+      "aurora_8b10b_1_CORE_STATUS": {
+        "interface_ports": [
+          "BPM_CCW_AuroraCoreStatus",
+          "Aurora/CORE_STATUS"
+        ]
+      },
+      "CELL_CCW_GT_RX_1": {
+        "interface_ports": [
+          "CELL_CCW_GT_RX",
+          "Aurora/GT_SERIAL_RX2"
+        ]
+      },
+      "Aurora_USER_DATA_M_AXI_RX3": {
+        "interface_ports": [
+          "CELL_CW_AXI_STREAM_RX",
+          "Aurora/USER_DATA_M_AXI_RX3"
+        ]
+      },
+      "Aurora_GT_SERIAL_TX2": {
+        "interface_ports": [
+          "CELL_CCW_GT_TX",
+          "Aurora/GT_SERIAL_TX2"
         ]
       },
       "microblaze_0_axi_periph_1_M02_AXI": {
@@ -3073,16 +2971,112 @@
           "xadc_wiz_0/s_axi_lite"
         ]
       },
+      "aurora_8b10b_1_GT_SERIAL_TX": {
+        "interface_ports": [
+          "BPM_CCW_GT_TX",
+          "Aurora/GT_SERIAL_TX"
+        ]
+      },
+      "aurora_8b10b_0_GT_SERIAL_TX": {
+        "interface_ports": [
+          "BPM_CW_GT_TX",
+          "Aurora/GT_SERIAL_TX1"
+        ]
+      },
+      "BPM_CCW_GT_RX_1": {
+        "interface_ports": [
+          "BPM_CCW_GT_RX",
+          "Aurora/GT_SERIAL_RX"
+        ]
+      },
+      "Aurora_USER_DATA_M_AXI_RX": {
+        "interface_ports": [
+          "BPM_CCW_AXI_STREAM_RX",
+          "Aurora/USER_DATA_M_AXI_RX"
+        ]
+      },
+      "CELL_CW_GT_RX_1": {
+        "interface_ports": [
+          "CELL_CW_GT_RX",
+          "Aurora/GT_SERIAL_RX3"
+        ]
+      },
+      "BPM_CW_RX_1": {
+        "interface_ports": [
+          "BPM_CW_GT_RX",
+          "Aurora/GT_SERIAL_RX1"
+        ]
+      },
+      "axi_uartlite_0_UART": {
+        "interface_ports": [
+          "uart_rtl",
+          "DummyUART/UART"
+        ]
+      },
+      "Aurora_CORE_STATUS2": {
+        "interface_ports": [
+          "CELL_CCW_AuroraCoreStatus",
+          "Aurora/CORE_STATUS2"
+        ]
+      },
+      "microblaze_0_debug": {
+        "interface_ports": [
+          "mdm_1/MBDEBUG_0",
+          "microblaze_0/DEBUG"
+        ]
+      },
+      "microblaze_0_M_AXI_DP": {
+        "interface_ports": [
+          "microblaze_0/M_AXI_DP",
+          "microblaze_0_axi_periph_1/S00_AXI"
+        ]
+      },
+      "Aurora_USER_DATA_M_AXI_RX2": {
+        "interface_ports": [
+          "CELL_CCW_AXI_STREAM_RX",
+          "Aurora/USER_DATA_M_AXI_RX2"
+        ]
+      },
+      "Aurora_CORE_STATUS3": {
+        "interface_ports": [
+          "CELL_CW_AuroraCoreStatus",
+          "Aurora/CORE_STATUS3"
+        ]
+      },
+      "microblaze_0_axi_periph_1_M06_AXI": {
+        "interface_ports": [
+          "microblaze_0_axi_periph_1/M06_AXI",
+          "Aurora/S_AXI"
+        ]
+      },
+      "aurora_8b10b_0_CORE_STATUS": {
+        "interface_ports": [
+          "BPM_CW_AuroraCoreStatus",
+          "Aurora/CORE_STATUS1"
+        ]
+      },
+      "microblaze_0_ilmb_1": {
+        "interface_ports": [
+          "microblaze_0/ILMB",
+          "microblaze_0_local_memory/ILMB"
+        ]
+      },
+      "Aurora_GT_SERIAL_TX3": {
+        "interface_ports": [
+          "CELL_CW_GT_TX",
+          "Aurora/GT_SERIAL_TX3"
+        ]
+      },
       "CELL_CW_AXI_STREAM_SLAVE_1": {
         "interface_ports": [
           "CELL_CW_AXI_STREAM_TX",
           "Aurora/USER_DATA_S_AXI_TX3"
         ]
       },
-      "aurora_8b10b_1_GT_SERIAL_TX": {
+      "microblaze_0_axi_periph_1_M05_AXI": {
         "interface_ports": [
-          "BPM_CCW_GT_TX",
-          "Aurora/GT_SERIAL_TX"
+          "microblaze_0_axi_periph_1/M05_AXI",
+          "BRAM_BPM_SETPOINTS/S_AXI"
         ]
       },
       "microblaze_0_dlmb_1": {
@@ -3091,10 +3085,16 @@
           "microblaze_0_local_memory/DLMB"
         ]
       },
-      "microblaze_0_axi_periph_1_M06_AXI": {
+      "microblaze_0_axi_periph_1_M01_AXI": {
         "interface_ports": [
-          "microblaze_0_axi_periph_1/M06_AXI",
-          "Aurora/S_AXI"
+          "microblaze_0_axi_periph_1/M01_AXI",
+          "evr_axi_0/s00_axi"
+        ]
+      },
+      "microblaze_0_axi_periph_1_M04_AXI": {
+        "interface_ports": [
+          "microblaze_0_axi_periph_1/M04_AXI",
+          "DummyUART/S_AXI"
         ]
       },
       "CELL_CCW_AXI_STREAM_SLAVE_1": {

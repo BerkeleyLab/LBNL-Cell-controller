@@ -319,6 +319,7 @@ wire busmux_reset;
 wire busmux_reset_i;
 IOBUF iobuf_sw_rst(.T(~busmux_reset), .I(1'b0), .O(busmux_reset_i), .IO(TWI_SW_RST));
 
+reg qsfp_freeze=1'b0;
 `ifdef QSFP_DEBUG_BUS
 //////////////////////////////////////////////////////////////////////////////
 // SCRAP Debug Memory Interface
@@ -365,7 +366,6 @@ scrap_dev #(
 
 wire [7:0] qsfp_lb_dout;
 reg qsfp_run_cmd;
-reg qsfp_freeze;
 reg [7:0] scrap_rdata_hi;
 initial begin
   qsfp_run_cmd = 1'b1;
@@ -387,7 +387,6 @@ always @(posedge sysClk) begin
     default: scrap_rdata_hi <= 8'h00;
   endcase
 end
-`endif
 
 assign PMOD2_0 = qsfp_run_cmd;
 assign PMOD2_1 = i2c_run_stat;
@@ -397,6 +396,16 @@ assign PMOD2_4 = qsfp_scl_mon;
 assign PMOD2_5 = qsfp_sda_mon;
 assign PMOD2_6 = i2c_updated;
 assign PMOD2_7 = 1'b0;
+`else
+assign PMOD2_0 = 1'b0;
+assign PMOD2_1 = 1'b0;
+assign PMOD2_2 = 1'b0;
+assign PMOD2_3 = 1'b0;
+assign PMOD2_4 = 1'b0;
+assign PMOD2_5 = 1'b0;
+assign PMOD2_6 = 1'b0;
+assign PMOD2_7 = 1'b0;
+`endif
 
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring

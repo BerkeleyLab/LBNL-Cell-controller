@@ -19,19 +19,18 @@ module qsfpMarble #(
   input                           clk,
   // Bus interface
   input  [$clog2(QSFP_COUNT)+7:0] readAddress,  // QSFP register to read
-  output                    [7:0] readData      // Data read from QSFP register
-`ifndef SIMULERP
+  output                    [7:0] readData,     // Data read from QSFP register
+  input                           freeze,       // i2c_chunk freeze
+  output                          run_stat,     // i2c_chunk run status
+  output                          updated,      // i2c_chunk updated flag
   // I2C physical pins
-  ,inout                           SCL,
+  inout                           SCL,
   inout                           SDA,
   output                          scl_mon,
   output                          sda_mon,
   // Diagnostic led should blink if program is running (and program
   // sets/clearn hw_config)
 `ifdef QSFP_DEBUG_BUS
-  input                           freeze,       // i2c_chunk freeze
-  output                          run_stat,     // i2c_chunk run status
-  output                          updated,      // i2c_chunk updated flag
   input                           bus_claim,
   input [11:0]                    lb_addr,
   input  [7:0]                    lb_din,
@@ -41,7 +40,6 @@ module qsfpMarble #(
 `endif
   output                          led,
   output                          busmux_reset
-`endif
 );
 
 // ====================== GPIO bus ========================
@@ -93,15 +91,25 @@ assign sda_mon = sda_i;
 
 // ====================== Localbus ========================
 localparam I2C_CHUNK_RESULTS_OFFSET = 12'h800;
+
 `ifdef SIMULERP
-wire [11:0] i2c_lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
 assign readData = ram[i2c_lb_addr];
 `else
+assign readData = lb_dout;
+`endif // SIMULERP
+
 `ifdef QSFP_DEBUG_BUS
 wire [11:0] i2c_lb_addr = bus_claim ? lb_addr : I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
-assign readData = lb_dout;
+`else
+reg bus_claim=1'b0;
+reg [11:0] lb_addr=0;
+reg [7:0] lb_din=0;
+wire [7:0] lb_dout;
+reg lb_write=1'b0;
+reg run_cmd=1'b0;
+wire [11:0] i2c_lb_addr = I2C_CHUNK_RESULTS_OFFSET | offset_decoded;
 `endif // QSFP_DEBUG_BUS
-`endif // SIMULERP
+
 // ====================== I2C Memory ======================
 localparam TICK_SCALE = $clog2(CLOCK_RATE/(14*BIT_RATE));
 

@@ -5,11 +5,18 @@ VERILATOR = verilator
 MODS=../modules
 SW_SRC=../../software/src
 
+BEDROCK=../submodules/bedrock
+I2CBRIDGE=$(BEDROCK)/peripheral_drivers/i2cbridge
+DSP=$(BEDROCK)/dsp
+
+include $(I2CBRIDGE)/i2cbridge_rules.mk
 SOURCES = $(MODS)/qsfpMarble.v
+SOURCES+= $(addprefix $(I2CBRIDGE)/,$(filter-out dpram.v, $(I2CBRIDGE_V)))
+SOURCES+= $(DSP)/dpram.v
 
 C_SOURCES=$(SW_SRC)/qsfp.c
 
-SIM_DEFINES =-DSIMULERP -DMARBLE
+SIM_DEFINES = -DMARBLE
 INCLUDES=-I$(HERE) -I$(SW_SRC) -I$(MODS)
 TB_DIR = .
 

@@ -158,13 +158,11 @@ VFLAGS_DEP += -y$(TOP_LVL_DIR)
 VFLAGS_DEP += -y$(PLATFORM_7SERIES_DIR)
 VFLAGS_DEP += $(addprefix -y, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -y, $(BD_SRCS_DIRS))
-VFLAGS_DEP += -y$(SCRAP_DIR)/src
 
 # Local directories for include searching
 VFLAGS_DEP += -I.
 VFLAGS_DEP += -I$(TOP_LVL_DIR)
 VFLAGS_DEP += -I$(MODULES_DIR)
-VFLAGS_DEP += -I$(SCRAP_DIR)/inc
 VFLAGS_DEP += $(addprefix -I, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
 
@@ -256,15 +254,18 @@ $(I2C_DAT):$(I2C_SCRIPT)
 # TODO - Do I need to explicitly add this to bit dependency list?
 $(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 
-# Lucas - comment out this block to build without the SCRAP device
 # ================ SCRAP =======================
-# TODO - Submodule this?
+SYNTH_OPT ?=
+ifneq (,$(SCRAP))
 SCRAP_DIR=/home/kpenney/repos/scrap
 include $(SCRAP_DIR)/scrap_rules.mk
-SYNTH_OPT ?=
+VFLAGS_DEP += -y$(SCRAP_DIR)/src
 SYNTH_OPT+=-DQSFP_DEBUG_BUS
 SYNTH_OPT+=-DSCRAPE
 SYNTH_OPT+=-DSCRAP_SHARED_BUS
+else
+SCRAP_DIR=
+endif
 
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
