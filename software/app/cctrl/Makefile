@@ -82,7 +82,7 @@ __SRC_BWUDP_FILES = \
 	bwudp.c
 SRC_BWUDP_FILES = $(addprefix $(SW_SRC_DIR)/bwudp/, $(__SRC_BWUDP_FILES))
 
-ifeq ($(PLATFORM),marble)
+ifeq ($(TARGET),cctrl_marble)
 SRC_FILES += $(SRC_BWUDP_FILES)
 else
 SRC_FILES += $(SRC_BMB7UDP_FILES)
@@ -150,7 +150,7 @@ vpath *.mmi $(GW_CCTRL_TGT_DIR)
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
-ifeq ($(PLATFORM),marble)
+ifeq ($(TARGET),cctrl_marble)
 XSA_FILE=$(GW_CCTRL_TGT_DIR)/system_marble.xsa
 else
 XSA_FILE=$(GW_CCTRL_TGT_DIR)/system.xsa
