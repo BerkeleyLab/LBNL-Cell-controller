@@ -243,13 +243,14 @@ vpath %.tcl $(GW_SCRIPTS_DIR)
 vpath %.sh $(GW_SCRIPTS_DIR)
 
 # ================= I2C Bridge ==================
+I2C_PATH=$(PROJECTS_DIR)/test_marble_family/i2c:$(PERIPH_DRIVERS_DIR)
 I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c_prog.py
 I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
 $(I2C_VH):$(I2C_SCRIPT)
-	PYTHONPATH=$(GW_SCRIPTS_DIR) python3 $< v > $@
+	PYTHONPATH=$(I2C_PATH) python3 $< v > $@
 
 $(I2C_DAT):$(I2C_SCRIPT)
-	PYTHONPATH=$(GW_SCRIPTS_DIR) python3 $< > $@
+	PYTHONPATH=$(I2C_PATH) python3 $< > $@
 
 # TODO - Do I need to explicitly add this to bit dependency list?
 $(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
