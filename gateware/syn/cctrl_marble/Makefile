@@ -258,7 +258,7 @@ $(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
 # ================ SCRAP =======================
 SYNTH_OPT ?=
 ifneq (,$(SCRAP))
-SCRAP_DIR=/home/kpenney/repos/scrap
+SCRAP_DIR=$(SUBMODULES_DIR)/scrap/scrap
 include $(SCRAP_DIR)/scrap_rules.mk
 VFLAGS_DEP += -y$(SCRAP_DIR)/src
 SYNTH_OPT+=-DQSFP_DEBUG_BUS

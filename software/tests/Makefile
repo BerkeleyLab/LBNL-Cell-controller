@@ -40,7 +40,7 @@ $(BUILD_DIR)/$(PROJECT_NAME): $(OBJECTS)
 # Removes everything in the output directory
 .PHONY: clean
 clean:
-	$(RM) -r $(BUILD_DIR)/*
+	$(RM) -rf $(BUILD_DIR)
 	$(RM) src/rev.h
 
 .PHONY: run

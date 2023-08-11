@@ -8,5 +8,3 @@ void vtb_Out32(uint32_t val);
 #define GPIO_WRITE(i,x) vtb_Out32((x))
 
 #endif // _GPIO_VTB_H_
-
-

@@ -79,6 +79,7 @@ int main(int argc, char *argv[]) {
   rc = doTests();
   if (rc != 0) {
     printf("Tests failed: %d\r\n", rc);
+    return 1;
   } else {
     printf("Tests passed\r\n");
   }

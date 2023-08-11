@@ -46,16 +46,11 @@ INCLUDES= . \
 					$(TOP_DIR)/$(MARBLE_DIR) \
 					$(TOP_DIR)/$(BWUDP_DIR)
 
-$(info "SOURCES =" $(SOURCES))
-
 # Translate this list of sources into a list of required objects
 # in the output directory
 objects = $(patsubst %.c,%.o,$(patsubst %.S,%.o,$(patsubst %.s,%.o,$(SOURCES))))
 
-#OBJECTS=$(addprefix $(BUILD_DIR)/,$(foreach var,$(objects),$(addprefix $(lastword $(subst /, ,$(dir $(var))))/,$(notdir $(var)))))
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(objects))
-
-$(info "OBJECTS =" $(OBJECTS2))
 
 .PHONY: all
 all:$(BUILD_DIR)/$(PROJECT_NAME)
@@ -73,7 +68,7 @@ $(BUILD_DIR)/$(PROJECT_NAME): $(OBJECTS)
 #
 .PHONY: clean
 clean:
-	$(RM) -r $(BUILD_DIR)/*
+	$(RM) -rf $(BUILD_DIR)
 	$(RM) src/rev.h
 
 .PHONY: run

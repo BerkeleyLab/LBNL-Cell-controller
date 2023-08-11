@@ -1,23 +1,22 @@
 # A quick Makefile
 
-HERE=./.
+MAKEF_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEF_DIR := $(dir $(MAKEF_PATH))
+include $(MAKEF_DIR)/../../dir_list.mk
 VERILATOR = verilator
-MODS=../modules
-SW_SRC=../../software/src
 
-BEDROCK=../submodules/bedrock
-I2CBRIDGE=$(BEDROCK)/peripheral_drivers/i2cbridge
-DSP=$(BEDROCK)/dsp
+I2CBRIDGE=$(BEDROCK_DIR)/peripheral_drivers/i2cbridge
+DSP=$(BEDROCK_DIR)/dsp
 
 include $(I2CBRIDGE)/i2cbridge_rules.mk
-SOURCES = $(MODS)/qsfpMarble.v
+SOURCES = $(MODULES_DIR)/qsfpMarble.v
 SOURCES+= $(addprefix $(I2CBRIDGE)/,$(filter-out dpram.v, $(I2CBRIDGE_V)))
 SOURCES+= $(DSP)/dpram.v
 
-C_SOURCES=$(SW_SRC)/qsfp.c
+C_SOURCES=$(SW_SRC_DIR)/qsfp.c
 
 SIM_DEFINES = -DMARBLE
-INCLUDES=-I$(HERE) -I$(SW_SRC) -I$(MODS)
+INCLUDES=-I$(MAKEF_DIR) -I$(SW_SRC_DIR) -I$(MODULES_DIR)
 TB_DIR = .
 
 # ================================ Verilator ==================================
@@ -44,15 +43,14 @@ VERILATED_TOP = $(VERILATOR_OBJ_DIR)/V$(VROOT)
 $(VERILATOR_OBJ_DIR):
 	mkdir -p $@
 
-VL_CFLAGS_L=-I/home/kpenney/repos/cell-controller/gateware/tb \
-			 -I/home/kpenney/repos/cell-controller/software/src \
+VL_CFLAGS_L=-I$(abspath $(GATEWARE_DIR)/tb) \
+			 -I$(abspath $(SW_SRC_DIR)) \
 			 -DMARBLE \
 			 -DSIMULERP
 VL_CFLAGS=$(addprefix -CFLAGS ,$(VL_CFLAGS_L))
 verilate: $(VL_SIM) $(VL_WRAPPER) $(C_SOURCES) $(SOURCES_NO_TB)
 	mkdir -p $(VERILATOR_OBJ_DIR)
 	$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(SIM_DEFINES) $(INCLUDES) $^ $(VL_CFLAGS)
-#$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(SIM_DEFINES) $(INCLUDES) $^ -CFLAGS -I/home/kpenney/repos/cell-controller/gateware/tb -CFLAGS -I/home/kpenney/repos/cell-controller/software/src -CFLAGS -DMARBLE
 
 ifdef VROOT
 vl_run: $(VERILATED_TOP)
@@ -64,4 +62,6 @@ endif
 
 CLEANS+=$(VERILATOR_OBJ_DIR)
 
+clean:
+	rm -rf $(CLEANS)
 

@@ -80,7 +80,7 @@ SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
 __SRC_BWUDP_FILES = \
 	badger.c \
 	bwudp.c
-SRC_BWUDP_FILES = $(addprefix $(SW_SRC_DIR)/bwudp/, $(__SRC_BWUDP_FILES))
+SRC_BWUDP_FILES = $(addprefix $(BWUDP_DIR)/, $(__SRC_BWUDP_FILES))
 
 ifeq ($(TARGET),cctrl_marble)
 SRC_FILES += $(SRC_BWUDP_FILES)
@@ -158,8 +158,6 @@ endif
 
 $(TARGET):
 	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(XSA_FILE) $(CPU_NAME)
-
-#	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_CCTRL_TGT_DIR)/system.xsa $(CPU_NAME)
 
 $(TARGET).elf: $(HDR_FILES) $(HDR_GEN_FILES) $(OBJ_FILES) $(LINKER_FILES)
 	$(CC) $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) $(LIB_FLAGS) $(LD_FLAGS) -o $@ $(filter %.o, $^) $(LIBS)

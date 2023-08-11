@@ -62,7 +62,7 @@ int epicsInit(void) {
 #ifdef MARBLE
 static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
     // Handle the packet
-    handleNonce = handle; // I don't know what this is
+    handleNonce = handle;
     parseCmd((struct ccProtocolPacket *)payload, length);
     return;
 }

@@ -42,31 +42,20 @@ module cctrl_marble_top #(
     R3/R4   P1/P2   X0Y0  MGT0 Bank 115 4:9         2-3         2-2             FOFB power supply chain tail (Rx)
 */
 
-//  inout  wire        QSFP_SCL,
-//  inout  wire        QSFP_SDA,
-//  input  wire        QSFP1_PRESENT_N,
-//  output wire        QSFP1_LPMODE, QSFP1_RESET_N, QSFP1_MODSEL_N,
   input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
   output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
-//  input  wire        QSFP2_PRESENT_N,
-//  output wire        QSFP2_LPMODE, QSFP2_RESET_N, QSFP2_MODSEL_N,
-//  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
-//  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
   input  wire  [1:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
   output wire  [1:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
-//  inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA, // DONE - Not implemented in marble
-//  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N, // DONE - Not implemented in marble port
   inout TWI_SDA,
   inout TWI_SCL,
   inout TWI_SW_RST,
-//`ifdef SCRAP_DEBUG
   // Pinout to match PmodUSBUART (strangely, not Pmod UART standard)
   input PMOD1_0,  // SCRAP ~CTS from USB-UART ~RTS (Unused)
   output PMOD1_1, // SCRAP TxD to USB-UART RxD
   input PMOD1_2,  // SCRAP RxD from USB-UART TxD
   output PMOD1_3, // SCRAP ~RTS to USB-UART ~CTS (Unused)
-//`endif
+
   output PMOD2_0,
   output PMOD2_1,
   output PMOD2_2,
@@ -143,108 +132,6 @@ IBUFGDS ibufgds_i (
   .O  (clkIn125),
   .I  (DDR_REF_CLK_P),
   .IB (DDR_REF_CLK_N)
-);
-
-/*
-wire clkIn125_buf;
-
-BUFG bufg_i_clkin125 (
-  .I  (clkIn125),
-  .O  (clkIn125_buf)
-);
-*/
-
-/*
-IBUFDS_GTE2 #(
-   .CLKCM_CFG("TRUE"),   // Reserved
-   .CLKRCV_TRST("TRUE"), // Reserved
-   .CLKSWING_CFG(2'b11)  // Reserved
-)
-IBUFDS_GTE2_inst (
-   .O(clkIn125),        // 1-bit output: @ f_in
-   .ODIV2(),            // 1-bit output: @ f_in/2
-   .CEB(1'b0),          // 1-bit input: Low-True clock enable (asynch)
-   .I(MGT_CLK_0_P),     // 1-bit input: Clk_p
-   .IB(MGT_CLK_0_N)     // 1-bit input: Clk_n
-);
-*/
-/*
-IBUFDS_GTE2
-IBUFDS_GTE2_inst (
-   .O(clkIn125),        // 1-bit output: @ f_in
-   .CEB(1'b0),          // 1-bit input: Low-True clock enable (asynch)
-   .I(DDR_REF_CLK_P),   // 1-bit input: Clk_p
-   .IB(DDR_REF_CLK_N)   // 1-bit input: Clk_n
-);
-*/
-
-/*
-wire mmcme_clkfb, mmcme_clkfb_buf;
-
-BUFG bufg_i_clkfb (
-  .I  (mmcme_clkfb),
-  .O  (mmcme_clkfb_buf)
-);
-
-wire mmcme_locked;
-MMCME2_BASE #(
-  .BANDWIDTH("OPTIMIZED"),   // Jitter programming (OPTIMIZED, HIGH, LOW)
-  .CLKFBOUT_MULT_F(8.0),     // Multiply value for all CLKOUT (2.000-64.000).
-  .CLKFBOUT_PHASE(0.0),      // Phase offset in degrees of CLKFB (-360.000-360.000).
-  .CLKIN1_PERIOD(1000_000_000/FREQ_CLKIN_HZ),     // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
-  // CLKOUT0_DIVIDE - CLKOUT6_DIVIDE: Divide amount for each CLKOUT (1-128)
-  .CLKOUT1_DIVIDE(8),   // 125 MHz 90deg
-  .CLKOUT2_DIVIDE(5),   // 200 MHz
-  .CLKOUT3_DIVIDE(10),  // 100 MHz
-  .CLKOUT4_DIVIDE(20),  //  50 MHz
-  .CLKOUT5_DIVIDE(1),   // Unused
-  .CLKOUT6_DIVIDE(1),   // Unused
-  .CLKOUT0_DIVIDE_F(8.0),    // Divide amount for CLKOUT0 (1.000-128.000).
-  // CLKOUT0_DUTY_CYCLE - CLKOUT6_DUTY_CYCLE: Duty cycle for each CLKOUT (0.01-0.99).
-  .CLKOUT0_DUTY_CYCLE(0.5),
-  .CLKOUT1_DUTY_CYCLE(0.5),
-  .CLKOUT2_DUTY_CYCLE(0.5),
-  .CLKOUT3_DUTY_CYCLE(0.5),
-  .CLKOUT4_DUTY_CYCLE(0.5),
-  .CLKOUT5_DUTY_CYCLE(0.5),
-  .CLKOUT6_DUTY_CYCLE(0.5),
-  // CLKOUT0_PHASE - CLKOUT6_PHASE: Phase offset for each CLKOUT (-360.000-360.000).
-  .CLKOUT0_PHASE(0.0),
-  .CLKOUT1_PHASE(90.0), // 90deg shift from CLKOUT0
-  .CLKOUT2_PHASE(0.0),
-  .CLKOUT3_PHASE(0.0),
-  .CLKOUT4_PHASE(0.0),
-  .CLKOUT5_PHASE(0.0),  // Unused
-  .CLKOUT6_PHASE(0.0),  // Unused
-  .CLKOUT4_CASCADE("FALSE"), // Cascade CLKOUT4 counter with CLKOUT6 (FALSE, TRUE)
-  .DIVCLK_DIVIDE(1),         // Master division value (1-106)
-  .REF_JITTER1(0.0),         // Reference input jitter in UI (0.000-0.999).
-  .STARTUP_WAIT("FALSE")     // Delays DONE until MMCM is locked (FALSE, TRUE)
-  ) MMCME2_BASE_inst (
-  // Clock Outputs: 1-bit (each) output: User configurable clock outputs
-  .CLKOUT0(badgerRefClk125),
-  .CLKOUT0B(),
-  .CLKOUT1(badgerRefClk125d90),
-  .CLKOUT1B(),
-  .CLKOUT2(clk200),
-  .CLKOUT2B(),
-  .CLKOUT3(sysClk_ubuf),
-  .CLKOUT3B(),
-  .CLKOUT4(clk50),
-  .CLKOUT5(), // Unused
-  .CLKOUT6(), // Unused
-  // Feedback Clocks: 1-bit (each) output: Clock feedback ports
-  .CLKFBOUT(mmcme_clkfb),
-  .CLKFBOUTB(),
-  // Status Ports: 1-bit (each) output: MMCM status ports
-  .LOCKED(mmcme_locked),  // 1-bit output: LOCK
-  // Clock Inputs: 1-bit (each) input: Clock input
-  .CLKIN1(clkIn125_buf),      // 1-bit input: Clock
-  // Control Ports: 1-bit (each) input: MMCM control ports
-  .PWRDWN(1'b0),          // 1-bit input: Power-down
-  .RST(1'b0),             // 1-bit input: Reset
-  // Feedback Clocks: 1-bit (each) input: Clock feedback ports
-  .CLKFBIN(mmcme_clkfb_buf)   // 1-bit input: Feedback clock
 );
 
 BUFG bufmr_i_sysclk (
@@ -1035,51 +922,6 @@ errorConvert errorConvert (
 `endif // `ifdef INCLUDE_FOFB
 
 /////////////////////////////////////////////////////////////////////////////
-// Pilot tone reference
-/*
-wire pilotToneReference;
-OBUFDS pilotToneRefBuf(.I(pilotToneReference),
-                    .O(PILOT_TONE_REFCLK_P), .OB(PILOT_TONE_REFCLK_N));
-
-pilotToneReference # (
-    .DIRECT_OUTPUT_ENABLE(PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE),
-    .DEBUG("false"))
-  pilotToneRef(
-    .sysClk(sysClk),
-    .csrStrobe(GPIO_STROBES[GPIO_IDX_PILOT_TONE_REFERENCE]),
-    .GPIO_OUT(GPIO_OUT),
-    .csr(GPIO_IN[GPIO_IDX_PILOT_TONE_REFERENCE]),
-    .evrClk(evrClk),
-    .pilotToneReference(pilotToneReference));
-/////////////////////////////////////////////////////////////////////////////
-// Pilot tone generator (and errant electron beam interlock)
-wire PILOT_TONE_I2C_SCL_o, PILOT_TONE_I2C_SCL_t;
-wire PILOT_TONE_I2C_SDA_o, PILOT_TONE_I2C_SDA_t;
-pilotToneI2C #(.dbg("false"),
-               .SYSCLK_FREQUENCY(SYSCLK_RATE),
-               .I2C_RATE(100000))
-            pilotToneI2C (.clk(sysClk),
-                          .writeData(GPIO_OUT),
-                          .writeStrobe(GPIO_STROBES[GPIO_IDX_PILOT_TONE_I2C]),
-                          .status(GPIO_IN[GPIO_IDX_PILOT_TONE_I2C]),
-                          .SCL_BUF_o(PILOT_TONE_I2C_SCL_o),
-                          .SCL_BUF_t(PILOT_TONE_I2C_SCL_t),
-                          .SDA_BUF_o(PILOT_TONE_I2C_SDA_o),
-                          .SDA_BUF_t(PILOT_TONE_I2C_SDA_t));
-IOBUF IOBUF_PILOT_TONE_SCL(.O(PILOT_TONE_I2C_SCL_o),
-                           .T(1'b0),
-                           .I(PILOT_TONE_I2C_SCL_t),
-                           .IO(PILOT_TONE_I2C_SCL));
-IOBUF IOBUF_PILOT_TONE_SDA(.O(PILOT_TONE_I2C_SDA_o),
-                           .T(PILOT_TONE_I2C_SDA_t),
-                           .I(1'b0),
-                           .IO(PILOT_TONE_I2C_SDA));
-assign GPIO_IN[GPIO_IDX_PILOT_TONE_CSR] = { 16'b0,
-                                ~INTLK_RELAY_NO,
-                                {16-1{1'b0}} };
-*/
-
-/////////////////////////////////////////////////////////////////////////////
 // Frequency counters
 reg   [2:0] frequencyMonitorSelect;
 wire [29:0] measuredFrequency;
@@ -1184,14 +1026,6 @@ badger badger_i (
 // Block design (MicroBlaze)
 
 wire DUMMY_UART_LOOPBACK;
-
-/*
-in clkIn125
-out badgerRefClk125
-out badgerRefClk125d90
-out clk200
-out sysClk_ubuf
-*/
 
   system_marble system_i (
         .clkIn125(clkIn125), // input
