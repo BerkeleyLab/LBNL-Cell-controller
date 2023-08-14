@@ -268,10 +268,19 @@ else
 SCRAP_DIR=
 endif
 
+# ================ BWUDP =======================
+MERGED_FILE = $(MODULES_DIR)/badgerMerged.v
+# Packet Badger synthesizable code
+RTEFI_CLIENT_LIST = hello.v
+include $(BADGER_DIR)/rules.mk
+
+$(MERGED_FILE): $(RTEFI_V)
+	iverilog -E -o $@ $^
+
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MERGED_FILE) $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
@@ -377,6 +386,7 @@ CLEAN += psu_init*
 CLEAN += ipcores_repos.tcl
 CLEAN += prio_xci_files.tcl
 CLEAN += $(TARGET)_top.mmi
+CLEAN += $(RTEFI_CLEAN) $(MERGED_FILE)
 CLEAN_DIRS +=  _xilinx .Xil .ip_user_files .hbs $(IP_CORES_CUSTOM_TARGET_DIRS)
 CLEAN_DIRS += _gen
 

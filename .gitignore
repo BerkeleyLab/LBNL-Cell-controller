@@ -176,6 +176,9 @@ bwUDP
 *aggregate.v
 *gitHash.vh
 gateware/modules/badgerMerged.v
+gateware/syn/cctrl_marble/construct_tx_table.v
+gateware/syn/cctrl_marble/rtefi_blob.v
+gateware/syn/cctrl_marble/rtefi_preblob.vh
 
 # Verilator testbench files
 gateware/tb/obj_dir
