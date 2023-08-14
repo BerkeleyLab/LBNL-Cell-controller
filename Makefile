@@ -15,9 +15,7 @@ all: bit sw bundle
 
 bit:
 	make -C $(GW_DIR) TARGET=$(TARGET) $(TARGET)_top.bit
-
-foo:
-	make -C $(GW_TGT_DIR) TARGET=$(TARGET) $(TARGET)_top.mmi
+	make -C $(GW_DIR) TARGET=$(TARGET) $(TARGET)_top.mmi
 
 sw:
 	make -C $(SW_DIR) TARGET=$(TARGET) BIT=$(BIT) all
