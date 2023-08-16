@@ -11,15 +11,21 @@ include ../../../dir_list.mk
 TARGET   ?= cctrl_bmb7
 GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
 BIT      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.bit
-DEPLOY_BIT ?= $(THIS_DIR)/download.bit
+DEPLOY_BIT ?= $(THIS_DIR)/download_$(TARGET).bit
 MMI      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.mmi
 ELF 	 ?= $(THIS_DIR)/$(TARGET).elf
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
+ifeq ($(TARGET), cctrl_bmb7)
 BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+else
+BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+endif
 
-all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
+all: $(TARGET) $(TARGET).elf $(TARGET).elf.size
+
+bundle: $(DEPLOY_BIT)
 
 __SRC_FILES = \
 	aurora.c \
@@ -71,7 +77,16 @@ __SRC_BMB7UDP_FILES = \
 	bmb7_udp.c
 SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
 
+__SRC_BWUDP_FILES = \
+	badger.c \
+	bwudp.c
+SRC_BWUDP_FILES = $(addprefix $(BWUDP_DIR)/, $(__SRC_BWUDP_FILES))
+
+ifeq ($(TARGET),cctrl_marble)
+SRC_FILES += $(SRC_BWUDP_FILES)
+else
 SRC_FILES += $(SRC_BMB7UDP_FILES)
+endif
 
 __HDR_BMB7UDP_FILES = \
 	bmb7_udp.h
@@ -101,17 +116,23 @@ LIB_DIRS = $(BSP_DIR)/lib
 LIB_FLAGS = $(addprefix -L, $(LIB_DIRS))
 LIBS = -Wl,--start-group,-lxil,-lgcc,-lc,--end-group
 
-ifeq ($(TARGET),cctrl_bmb7)
-	USER_FLAGS += -D__TARGET_CCTRL_BMB7__
-else
-	USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
-endif
-
 INCLUDE_DIRS = \
 	$(SW_SRC_DIR) \
 	$(TARGET_DIR) \
-	$(BMB7UDP_DIR) \
 	$(BSP_DIR)/include
+
+ifeq ($(TARGET),cctrl_bmb7)
+USER_FLAGS += -D__TARGET_CCTRL_BMB7__
+INCLUDE_DIRS += $(BMB7UDP_DIR)
+else ifeq ($(TARGET),cctrl_marble)
+USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
+USER_FLAGS += -DMARBLE
+USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H
+INCLUDE_DIRS += $(SW_SRC_DIR)/bwudp
+else
+USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
+endif
+
 INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 
 .PHONY: all clean bsp
@@ -129,8 +150,14 @@ vpath *.mmi $(GW_CCTRL_TGT_DIR)
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
+ifeq ($(TARGET),cctrl_marble)
+XSA_FILE=$(GW_CCTRL_TGT_DIR)/system_marble.xsa
+else
+XSA_FILE=$(GW_CCTRL_TGT_DIR)/system.xsa
+endif
+
 $(TARGET):
-	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(GW_CCTRL_TGT_DIR)/system.xsa $(CPU_NAME)
+	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(XSA_FILE) $(CPU_NAME)
 
 $(TARGET).elf: $(HDR_FILES) $(HDR_GEN_FILES) $(OBJ_FILES) $(LINKER_FILES)
 	$(CC) $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) $(LIB_FLAGS) $(LD_FLAGS) -o $@ $(filter %.o, $^) $(LIBS)

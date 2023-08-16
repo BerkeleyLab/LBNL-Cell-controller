@@ -1,64 +1,139 @@
-module cctrl_bmb7_top #(
+module cctrl_marble_top #(
   parameter PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE = "false"
   ) (
-  input  wire        S6_TO_K7_CLK_1,
+  input              DDR_REF_CLK_P, // 125 MHz
+  input              DDR_REF_CLK_N, // 125 MHz (complement)
+  //input              MGT_CLK_0_P, // 125 MHz
+  //input              MGT_CLK_0_N, // 125 MHz (complement)
+  //output             VCXO_EN,
+  output             PHY_RSTN,
 
-  output wire  [5:0] kintexLEDs,
+  input  wire        FPGA_TxD,
+  output wire        FPGA_RxD,
 
-  input  wire        consoleRxD,
-  output wire        consoleTxD,
+// TODO: Gateware currently expects MGT_CLK_1_P/N = 312.5 MHz? Formerly 
+  input wire         MGT_CLK_1_N, MGT_CLK_1_P,
+// TODO: Gateware currently expects MGT_CLK_2_P/N = 125 MHz
+  input wire         MGT_CLK_2_N, MGT_CLK_2_P,
+  //input wire         MGT_CLK_3_N, MGT_CLK_3_P,
 
-  input  wire        GTX_REF_312_3_N, GTX_REF_312_3_P,
-  input  wire        GTX_REF_125_N, GTX_REF_125_P,
-  output wire        SIT9122_ENABLE,
+  input              RGMII_RX_CLK,
+  input              RGMII_RX_CTRL,
+  input        [3:0] RGMII_RXD,
+  output wire        RGMII_TX_CLK,
+  output wire        RGMII_TX_CTRL,
+  output wire  [3:0] RGMII_TXD,
 
-  inout  wire        QSFP_SCL,
-  inout  wire        QSFP_SDA,
-  input  wire        QSFP1_PRESENT_N,
-  output wire        QSFP1_LPMODE, QSFP1_RESET_N, QSFP1_MODSEL_N,
-  input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P,
-  output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P,
-  input  wire        QSFP2_PRESENT_N,
-  output wire        QSFP2_LPMODE, QSFP2_RESET_N, QSFP2_MODSEL_N,
-  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P,
-  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P,
+/*
+  Transceiver Assignments (Kintex-7):
+  -----------------------------------
+    This is copied directly from
+      https://controls.als.lbl.gov/alscg/beampositionmonitor/BPM_CC/Documents/HardwareNotes.html
 
-  input   wire       epicsUDPrxData,
-  output  wire       epicsUDPtxData,
+    RX N/P  TX N/P  Tile  MGT           Fiber Pair  QSFP (BMB7) QSFP (Marble)  Desc.
+    --------------------------------------------------------------------------------
+    C3/C4   B1/B2   X0Y6  MGT2 Bank 116 1:12        1-0         1-1             EVR
+    B5/B6   A3/A4   X0Y7  MGT3 Bank 116 2:11        1-1         1-3             BPM CCW
+    E3/E4   D1/D2   X0Y5  MGT1 Bank 116 3:10        1-2         1-0             BPM CW
+    G3/G4   F1/F2   X0Y4  MGT0 Bank 116 4:9         1-3         1-2             (Unused)
+    L3/L4   K1/K2   X0Y2  MGT2 Bank 115 1:12        2-0         2-1             Cell CCW
+    J3/J4   H1/H2   X0Y3  MGT3 Bank 115 2:11        2-1         2-3             Cell CW
+    N3/N4   M1/M2   X0Y1  MGT1 Bank 115 3:10        2-2         2-0             FOFB power supply chain head (Tx)
+    R3/R4   P1/P2   X0Y0  MGT0 Bank 115 4:9         2-3         2-2             FOFB power supply chain tail (Rx)
+*/
 
-  output wire  [9:0] K7_EXT_IO,
+  input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
+  output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
+  input  wire  [1:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+  output wire  [1:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
-  inout  wire        PILOT_TONE_I2C_SCL,PILOT_TONE_I2C_SDA,
-  output wire        PILOT_TONE_REFCLK_P, PILOT_TONE_REFCLK_N,
-  input  wire        INTLK_RELAY_NO,
-  output wire        INTLK_RELAY_CTL,
-  input  wire        INTLK_RESET_BUTTON_N,
+  inout TWI_SDA,
+  inout TWI_SCL,
+  inout TWI_SW_RST,
+  // Pinout to match PmodUSBUART (strangely, not Pmod UART standard)
+  input PMOD1_0,  // SCRAP ~CTS from USB-UART ~RTS (Unused)
+  output PMOD1_1, // SCRAP TxD to USB-UART RxD
+  input PMOD1_2,  // SCRAP RxD from USB-UART TxD
+  output PMOD1_3, // SCRAP ~RTS to USB-UART ~CTS (Unused)
 
-  output wire        FP_LED0_RED, FP_LED0_GRN,
-  output wire        FP_LED1_RED, FP_LED1_GRN,
-  output wire        FP_LED2_RED, FP_LED2_GRN,
-  output wire        FP_TEST_POINT,
+  output PMOD2_0,
+  output PMOD2_1,
+  output PMOD2_2,
+  output PMOD2_3,
+  output PMOD2_4,
+  output PMOD2_5,
+  output PMOD2_6,
+  output PMOD2_7,
 
-  input   wire       ffbUDPrxData,
-  output  wire       ffbUDPtxData,
+  output wire        MARBLE_LD16,
+  output wire        MARBLE_LD17
+);
 
-  input   wire       spareUDPrxData,
-  output  wire       spareUDPtxData
-  );
+wire gtReset = 1'b0;
+wire INTLK_RELAY_NO = 1'b0;
+wire INTLK_RELAY_CTL;
+wire INTLK_RESET_BUTTON_N = 1'b0;
+
+wire FP_LED0_RED, FP_LED0_GRN;  // TODO - Will these exist on marble port?
+wire FP_LED1_RED, FP_LED1_GRN;  // TODO - Will these exist on marble port?
+wire FP_LED2_RED, FP_LED2_GRN;  // TODO - Will these exist on marble port?
+assign PHY_RSTN = 1'b1; // Release the ethernet PHY from reset
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Static outputs
-assign SIT9122_ENABLE = 1'b1;
-assign ffbUDPtxData = 1'b1;
-assign spareUDPtxData = 1'b1;
 
 //////////////////////////////////////////////////////////////////////////////
 // The clock domains
 // Net names starting with 'evr' are in the event receiver clock domain.
 // Net names starting with 'aurora' are in the Aurora user clock domain.
-parameter SYSCLK_RATE = 100000000;
-wire sysClk, evrClk, auroraUserClk, clk200, ethRefClk125;
+
+wire evrClk;    // Recovered Rx clock from EVR MGT block
+wire auroraUserClk; // ?? MHz (generated by Aurora block in 'system' BD)
+
+parameter SYSCLK_RATE   = 100_000_000;
+parameter FREQ_CLKIN_HZ = 125_000_000;
+wire clkIn125;  // Input clock (125 MHz) from U20
+wire sysClk;    // 100 MHz sysclk
+wire clk200;    // 200 MHz clock
+wire ethRefClk125;
+wire badgerRefClk125, badgerRefClk125d90; // 125 MHz ethernet clock (and 90-deg shifted copy)
 wire sysReset_n;
+//assign clkIn125 = ethRefClk125;
+
+/*
+ * 600MHz <= F_VCO <= 1200 MHz
+ * F_VCO  = F_CLKIN * CLKFBOUT_MULT_F/DIVCLK_DIVIDE
+ * F_OUTx = F_VCO/CLKOUTx_DIVIDE
+ *
+ * Cell-controller bmb7 port wants 3 output frequencies:
+ *   50 MHz, 100 MHz, 200 MHz
+ * Ethernet RGMII wants 125 MHz
+ * Input is 125MHz
+ *
+ * Least Common Multiple (LCM) = 1000 MHz
+ * F_CLKIN = 125MHz
+ *  F_VCO = LCM = 1000 MHz
+ *  CLKFBOUT_MULT_F = 8
+ *
+ * CLKOUT0 = 125 MHz 0deg     => badgerRefClk125
+ *  CLKOUT0_DIVIDE = 8
+ * CLKOUT1 = 125 MHz 90deg    => badgerRefClk125d90
+ *  CLKOUT1_DIVIDE = 8
+ * CLKOUT2 = 200 MHz 0deg     => clk200
+ *  CLKOUT2_DIVIDE = 5
+ * CLKOUT3 = 100 MHz 0deg     => sysClk
+ *  CLKOUT3_DIVIDE = 10
+ * CLKOUT4 =  50 MHz 0deg     => clk50
+ *  CLKOUT4_DIVIDE = 20
+ */
+
+IBUFGDS ibufgds_i (
+  .O  (clkIn125),
+  .I  (DDR_REF_CLK_P),
+  .IB (DDR_REF_CLK_N)
+);
+
 
 //////////////////////////////////////////////////////////////////////////////
 // General-purpose I/O block
@@ -117,32 +192,148 @@ forwardData #(.DATA_WIDTH(64))
               .outClk(sysClk),
               .outData(sysTimestamp));
 
+wire i2c_run_stat;
+wire qsfp_led;
+wire qsfp_scl_mon;
+wire qsfp_sda_mon;
+wire busmux_reset;
+wire busmux_reset_i;
+IOBUF iobuf_sw_rst(.T(~busmux_reset), .I(1'b0), .O(busmux_reset_i), .IO(TWI_SW_RST));
+
+reg qsfp_freeze=1'b0;
+`ifdef QSFP_DEBUG_BUS
+//////////////////////////////////////////////////////////////////////////////
+// SCRAP Debug Memory Interface
+
+// Bypass hardware flow control
+assign PMOD1_3 = 1'b0; // SCRAP ~RTS to USB-UART ~CTS
+
+localparam F_BAUD = 115200;
+localparam SCRAP_ADDRESS_WIDTH = 16;
+localparam SCRAP_DATA_WIDTH = 8;
+wire ext_uart_txd_out;
+wire ext_uart_rxd_in = PMOD1_2;
+assign PMOD1_1 = ext_uart_txd_out;
+wire [SCRAP_ADDRESS_WIDTH-1:0] scrap_addr;
+wire [SCRAP_DATA_WIDTH-1:0] scrap_rdata;
+wire [SCRAP_DATA_WIDTH-1:0] scrap_wdata;
+wire scrap_we;
+wire scrap_bus_claim;
+wire scrap_bus_claimed = scrap_bus_claim; // SCRAP dev has priority
+scrap_dev #(
+  .F_CLK_IN(SYSCLK_RATE),
+  .F_BAUD(F_BAUD),
+  .ADDRESS_WIDTH(SCRAP_ADDRESS_WIDTH),
+  .DATA_WIDTH(SCRAP_DATA_WIDTH),
+  .LATCH_CYCLES(2)
+) scrap_dev_inst (
+  .clk(sysClk),
+  .rst(1'b0),
+  // PHY interface
+  .uart_rxd(ext_uart_rxd_in),   // input
+  .uart_txd(ext_uart_txd_out),  // output
+  // Memory interface
+  .addr(scrap_addr),    // output [ADDRESS_WIDTH-1:0]
+  .rdata(scrap_rdata),  // input [DATA_WIDTH-1:0]
+  .wdata(scrap_wdata),  // output [DATA_WIDTH-1:0]
+  .we(scrap_we),
+  .op(),
+  // Shared bus
+  .bus_claim(scrap_bus_claim),  // output
+  .bus_claimed(scrap_bus_claimed),  // input
+  // Status
+  .error_count()
+);
+
+wire [7:0] qsfp_lb_dout;
+reg qsfp_run_cmd;
+reg [7:0] scrap_rdata_hi;
+initial begin
+  qsfp_run_cmd = 1'b1;
+  qsfp_freeze = 1'b0;
+  scrap_rdata_hi = 0;
+end
+// Memory map
+wire qsfp_we = scrap_addr[12] ? 1'b0 : scrap_we;
+assign scrap_rdata = scrap_addr[12] ? scrap_rdata_hi : qsfp_lb_dout;
+
+always @(posedge sysClk) begin
+  if (scrap_we) begin
+    case (scrap_addr)
+      'h1000 : {qsfp_freeze, qsfp_run_cmd} <= scrap_wdata[1:0];
+    endcase
+  end
+  case (scrap_addr)
+    'h1000 : scrap_rdata_hi <= {5'h0, busmux_reset_i, qsfp_buffer_freeze, i2c_run_stat};
+    default: scrap_rdata_hi <= 8'h00;
+  endcase
+end
+
+assign PMOD2_0 = qsfp_run_cmd;
+assign PMOD2_1 = i2c_run_stat;
+assign PMOD2_2 = scrap_we;
+assign PMOD2_3 = qsfp_led;
+assign PMOD2_4 = qsfp_scl_mon;
+assign PMOD2_5 = qsfp_sda_mon;
+assign PMOD2_6 = i2c_updated;
+assign PMOD2_7 = 1'b0;
+`else
+assign PMOD2_0 = 1'b0;
+assign PMOD2_1 = 1'b0;
+assign PMOD2_2 = 1'b0;
+assign PMOD2_3 = 1'b0;
+assign PMOD2_4 = 1'b0;
+assign PMOD2_5 = 1'b0;
+assign PMOD2_6 = 1'b0;
+assign PMOD2_7 = 1'b0;
+`endif
+
 //////////////////////////////////////////////////////////////////////////////
 // QSFP monitoring
 parameter QSFP_COUNT = 2;
-reg [$clog2(QSFP_COUNT)+6:0] qsfpReadAddress;
-wire [15:0] qsfpReadData;
-assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{16-QSFP_COUNT{1'b0}},
-                                     QSFP2_PRESENT_N, QSFP1_PRESENT_N,
-                                     qsfpReadData};
+reg [$clog2(QSFP_COUNT)+7:0] qsfpReadAddress;
+reg i2c_buffer_freeze;
+initial begin
+  qsfpReadAddress = 0;
+  i2c_buffer_freeze = 1'b0;
+end
+wire [7:0] qsfpReadData;
+wire i2c_updated;
+assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{22{1'b0}}, i2c_updated, i2c_run_stat, qsfpReadData};
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_QSFP_IIC]) begin
-        qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+6:0];
+        qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+7:0];
+        i2c_buffer_freeze <= GPIO_OUT[16];
     end
 end
-qsfpReadout #(.QSFP_COUNT(QSFP_COUNT),
-              .dbg("false"),
-              .CLOCK_RATE(SYSCLK_RATE),
-              .BIT_RATE(100000)) qsfpReadout (
-                             .clk(sysClk),
-                             .readAddress(qsfpReadAddress),
-                             .readData(qsfpReadData),
-                             .PRESENT_n({QSFP2_PRESENT_N, QSFP1_PRESENT_N}),
-                             .RESET_n({QSFP2_RESET_N, QSFP1_RESET_N}),
-                             .MODSEL_n({QSFP2_MODSEL_N, QSFP1_MODSEL_N}),
-                             .LPMODE({QSFP2_LPMODE, QSFP1_LPMODE}),
-                             .SCL(QSFP_SCL),
-                             .SDA(QSFP_SDA));
+
+wire qsfp_buffer_freeze = qsfp_freeze | i2c_buffer_freeze;
+qsfpMarble #(
+  .QSFP_COUNT(QSFP_COUNT),
+  .CLOCK_RATE(SYSCLK_RATE),
+  .BIT_RATE(100000)
+  ) qsfpMarble_i (
+  .clk(sysClk), // input
+  .readAddress(qsfpReadAddress), // input [$clog2(QSFP_COUNT)+7:0]
+  .readData(qsfpReadData), // output [7:0]
+  .freeze(qsfp_buffer_freeze), // input
+  .run_stat(i2c_run_stat), // output
+  .updated(i2c_updated), // output
+  .SCL(TWI_SCL), // inout
+  .SDA(TWI_SDA), // inout
+  .scl_mon(qsfp_scl_mon),
+  .sda_mon(qsfp_sda_mon),
+`ifdef QSFP_DEBUG_BUS
+  .bus_claim(scrap_bus_claim),
+  .lb_addr(scrap_addr[11:0]), // input [11:0]
+  .lb_din(scrap_wdata),
+  .lb_dout(qsfp_lb_dout),
+  .lb_write(qsfp_we),
+  .run_cmd(qsfp_run_cmd),
+`endif
+  .led(qsfp_led),
+  .busmux_reset(busmux_reset)
+);
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver
@@ -214,9 +405,19 @@ wire  [8:0] evr_mgt_drp_daddr;
 (* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
 (* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
 
+`ifndef INCLUDE_FOFB
+  // Need to provide refclk for evr_mgt_top since not shared with fofb
+  IBUFDS_GTE2 ibufds_gtrefclk_top_i (
+    .I(MGT_CLK_2_P),                         // input MGT_CLK_3_P
+    .IB(MGT_CLK_2_N),                        // input MGT_CLK_3_N
+    .CEB(1'b0),
+    .O(ethRefClk125)                          // output gtrefclk_i
+  );
+`endif // `ifndef INCLUDE_FOFB
+
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
-         .ref_clk(ethRefClk125),
+         .ref_clk(ethRefClk125),  // Comes from bank 115
          .drp_clk(sysClk),
          .drp_den(evr_mgt_drp_den),
          .drp_dwe(evr_mgt_drp_dwe),
@@ -224,8 +425,8 @@ evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .drp_di(evr_mgt_drp_di),
          .drp_drdy(evr_mgt_drp_drdy),
          .drp_do(evr_mgt_drp_do),
-         .rx_in_n(QSFP1_RX_N[0]),
-         .rx_in_p(QSFP1_RX_P[0]),
+         .rx_in_n(QSFP1_RX_N[0]), // Bank 116!
+         .rx_in_p(QSFP1_RX_P[0]), // Bank 116!
          .rec_clk_out(evrClk),
          .rx_par_data_out(evr_mgt_par_data),
          .chariscomma(evr_mgt_chariscomma),
@@ -528,6 +729,7 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .SETPOINT_TLAST(FOFB_SETPOINT_AXIS_TLAST),
     .SETPOINT_TDATA(FOFB_SETPOINT_AXIS_TDATA));
 
+`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
 psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
@@ -575,7 +777,6 @@ wire [31:0] PS_READBACK_AXIS_TDATA;
 wire  [7:0] PS_READBACK_AXIS_TUSER;
 wire        PS_READBACK_AXIS_TVALID;
 
-
 psMUX #(.DEBUG("false"),
         .AXI_WIDTH(32))
   psMUX (.clk(sysClk),
@@ -620,12 +821,12 @@ fofbEthernet #(
     .pcs_pma_shared(pcs_pma_shared),
     .ethNonce(ethNonce),
     .clk200(clk200),
-    .ETH_REF_N(GTX_REF_125_N),
-    .ETH_REF_P(GTX_REF_125_P),
-    .ETH_RX_N(QSFP2_RX_N[2]),
-    .ETH_RX_P(QSFP2_RX_P[2]),
-    .ETH_TX_N(QSFP2_TX_N[2]),
-    .ETH_TX_P(QSFP2_TX_P[2]));
+    .ETH_REF_N(MGT_CLK_2_N),  // D5 Bank 116
+    .ETH_REF_P(MGT_CLK_2_P),  // D6 Bank 116
+    .ETH_RX_N(QSFP2_RX_N[2]), // R3  MGT_RX_4_N  MGT_RX_4_QSFP_N   QSFP2_RX_3_N Bank 115
+    .ETH_RX_P(QSFP2_RX_P[2]), // R4  MGT_RX_4_P  MGT_RX_4_QSFP_P   QSFP2_RX_3_P Bank 115
+    .ETH_TX_N(QSFP2_TX_N[2]), // P1  MGT_TX_4_N  MGT_TX_4_QSFP_N   QSFP2_TX_3_N Bank 115
+    .ETH_TX_P(QSFP2_TX_P[2]));// P2  MGT_TX_4_P  MGT_TX_4_QSFP_P   QSFP2_TX_3_P Bank 115
 
 fofbEthernet #(
     .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
@@ -649,12 +850,12 @@ fofbEthernet #(
     .pcs_pma_shared(pcs_pma_shared),
     .ethNonce(ethNonce),
     .clk200(clk200),
-    .ETH_REF_N(GTX_REF_125_N),
-    .ETH_REF_P(GTX_REF_125_P),
-    .ETH_RX_N(QSFP2_RX_N[3]),
-    .ETH_RX_P(QSFP2_RX_P[3]),
-    .ETH_TX_N(QSFP2_TX_N[3]),
-    .ETH_TX_P(QSFP2_TX_P[3]));
+    .ETH_REF_N(1'b0),  // NOTE! UNUSED when PCS_PMA_SHARED_LOGIC_IN_CORE == "false"
+    .ETH_REF_P(1'b0),  // NOTE! UNUSED when PCS_PMA_SHARED_LOGIC_IN_CORE == "false"
+    .ETH_RX_N(QSFP2_RX_N[3]), // J3  MGT_RX_7_N  MGT_RX_7_QSFP_N   QSFP2_RX_4_N Bank 115
+    .ETH_RX_P(QSFP2_RX_P[3]), // J4  MGT_RX_7_P  MGT_RX_7_QSFP_P   QSFP2_RX_4_P Bank 115
+    .ETH_TX_N(QSFP2_TX_N[3]), // H1  MGT_TX_7_N  MGT_TX_7_QSFP_N   QSFP2_TX_4_N Bank 115
+    .ETH_TX_P(QSFP2_TX_P[3]));// H2  MGT_TX_7_P  MGT_TX_7_QSFP_P   QSFP2_TX_4_P Bank 115
 
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
@@ -712,50 +913,7 @@ errorConvert errorConvert (
           .status(GPIO_IN[GPIO_IDX_ERROR_CONVERT_CSR]),
           .resultHi(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_HI]),
           .resultLo(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_LO]));
-
-/////////////////////////////////////////////////////////////////////////////
-// Pilot tone reference
-wire pilotToneReference;
-OBUFDS pilotToneRefBuf(.I(pilotToneReference),
-                    .O(PILOT_TONE_REFCLK_P), .OB(PILOT_TONE_REFCLK_N));
-
-pilotToneReference # (
-    .DIRECT_OUTPUT_ENABLE(PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE),
-    .DEBUG("false"))
-  pilotToneRef(
-    .sysClk(sysClk),
-    .csrStrobe(GPIO_STROBES[GPIO_IDX_PILOT_TONE_REFERENCE]),
-    .GPIO_OUT(GPIO_OUT),
-    .csr(GPIO_IN[GPIO_IDX_PILOT_TONE_REFERENCE]),
-    .evrClk(evrClk),
-    .pilotToneReference(pilotToneReference));
-
-/////////////////////////////////////////////////////////////////////////////
-// Pilot tone generator (and errant electron beam interlock)
-wire PILOT_TONE_I2C_SCL_o, PILOT_TONE_I2C_SCL_t;
-wire PILOT_TONE_I2C_SDA_o, PILOT_TONE_I2C_SDA_t;
-pilotToneI2C #(.dbg("false"),
-               .SYSCLK_FREQUENCY(SYSCLK_RATE),
-               .I2C_RATE(100000))
-            pilotToneI2C (.clk(sysClk),
-                          .writeData(GPIO_OUT),
-                          .writeStrobe(GPIO_STROBES[GPIO_IDX_PILOT_TONE_I2C]),
-                          .status(GPIO_IN[GPIO_IDX_PILOT_TONE_I2C]),
-                          .SCL_BUF_o(PILOT_TONE_I2C_SCL_o),
-                          .SCL_BUF_t(PILOT_TONE_I2C_SCL_t),
-                          .SDA_BUF_o(PILOT_TONE_I2C_SDA_o),
-                          .SDA_BUF_t(PILOT_TONE_I2C_SDA_t));
-IOBUF IOBUF_PILOT_TONE_SCL(.O(PILOT_TONE_I2C_SCL_o),
-                           .T(1'b0),
-                           .I(PILOT_TONE_I2C_SCL_t),
-                           .IO(PILOT_TONE_I2C_SCL));
-IOBUF IOBUF_PILOT_TONE_SDA(.O(PILOT_TONE_I2C_SDA_o),
-                           .T(PILOT_TONE_I2C_SDA_t),
-                           .I(1'b0),
-                           .IO(PILOT_TONE_I2C_SDA));
-assign GPIO_IN[GPIO_IDX_PILOT_TONE_CSR] = { 16'b0,
-                                ~INTLK_RELAY_NO,
-                                {16-1{1'b0}} };
+`endif // `ifdef INCLUDE_FOFB
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
@@ -766,7 +924,7 @@ always @(posedge sysClk) begin
                                         frequencyMonitorSelect <= GPIO_OUT[2:0];
 end
 assign GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR] = { 2'b0, measuredFrequency };
-wire auRefClk;
+wire auRefClk;  // TODO FIXME
 freq_multi_count #(
         .NF(5),  // number of frequency counters in a block
         .NG(1),  // number of frequency counter blocks
@@ -785,7 +943,7 @@ freq_multi_count #(
 // Front panel
 assign FP_LED0_GRN = evrTriggerBus[0];
 assign FP_LED0_RED = 1'b0;
-wire FP_LED1_STATE_RED, FP_LED1_STATE_YELLOW, FP_LED1_STATE_GREEN;
+wire   FP_LED1_STATE_RED, FP_LED1_STATE_YELLOW, FP_LED1_STATE_GREEN;
 assign FP_LED1_STATE_RED = !CELL_CCW_AuroraCoreStatus_channel_up
                         && !CELL_CW_AuroraCoreStatus_channel_up;
 assign FP_LED1_STATE_GREEN = CELL_CCW_AuroraCoreStatus_channel_up
@@ -793,7 +951,8 @@ assign FP_LED1_STATE_GREEN = CELL_CCW_AuroraCoreStatus_channel_up
 assign FP_LED1_STATE_YELLOW = !FP_LED1_STATE_RED && !FP_LED1_STATE_GREEN;
 assign FP_LED1_GRN = FP_LED1_STATE_YELLOW || FP_LED1_STATE_GREEN;
 assign FP_LED1_RED = FP_LED1_STATE_YELLOW || FP_LED1_STATE_RED;
-wire FP_LED2_STATE_RED, FP_LED2_STATE_YELLOW, FP_LED2_STATE_GREEN;
+
+wire   FP_LED2_STATE_RED, FP_LED2_STATE_YELLOW, FP_LED2_STATE_GREEN;
 assign FP_LED2_STATE_RED = !BPM_CCW_AuroraCoreStatus_channel_up
                         && !BPM_CW_AuroraCoreStatus_channel_up;
 assign FP_LED2_STATE_GREEN = BPM_CCW_AuroraCoreStatus_channel_up
@@ -803,19 +962,16 @@ assign FP_LED2_GRN = FP_LED2_STATE_YELLOW || FP_LED2_STATE_GREEN;
 assign FP_LED2_RED = FP_LED2_STATE_YELLOW || FP_LED2_STATE_RED;
 
 /////////////////////////////////////////////////////////////////////////////
-// BMB7 Kintex indicator LEDs
-// { 1_Blue, 1_Green, 1_Red, 0_Blue, 0_Green, 0_Red }
-assign kintexLEDs = ~{ 1'b0,
-                       1'b0,
-                       1'b0,
-                       evrTriggerBus[0],
-                       1'b0,
-                       1'b0 };
+// Marble LEDs
+assign MARBLE_LD16 = evrTriggerBus[0];
+assign MARBLE_LD17 = qsfp_led;
 
 /////////////////////////////////////////////////////////////////////////////
 // Miscellaneous
-`include "firmwareBuildDate.v"
-assign GPIO_IN[GPIO_IDX_FIRMWARE_BUILD_DATE] = FIRMWARE_BUILD_DATE;
+//`include "firmwareBuildDate.v"
+assign GPIO_IN[GPIO_IDX_FIRMWARE_BUILD_DATE] = 0; // Deprecating firmware build date
+`include "gitHash.vh"
+assign GPIO_IN[GPIO_IDX_GITHASH] = GIT_REV_32BIT; // Deprecating firmware build date
 
 /////////////////////////////////////////////////////////////////////////////
 // FIFO/UART console I/O
@@ -825,19 +981,52 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .strobe(GPIO_STROBES[GPIO_IDX_UART_CSR]),
                    .control(GPIO_OUT),
                    .status(GPIO_IN[GPIO_IDX_UART_CSR]),
-                   .TxData(consoleTxD),
-                   .RxData(consoleRxD));
+                   .TxData(FPGA_RxD),
+                   .RxData(FPGA_TxD));
 
 `ifndef SIMULATE
+
+//////////////////////////////////////////////////////////////////////////////
+// Badger Ethernet MAC Interface
+badger badger_i (
+  .sysClk         (sysClk),  // TODO correct?
+  .sysGPIO_OUT    (GPIO_OUT), // [31:0]
+  .sysConfigStrobe(GPIO_STROBES[GPIO_IDX_NET_CONFIG_CSR]),
+  .sysTxStrobe    (GPIO_STROBES[GPIO_IDX_NET_TX_CSR]),
+  .sysRxStrobe    (GPIO_STROBES[GPIO_IDX_NET_RX_CSR]),
+  .sysRxDataStrobe(GPIO_STROBES[GPIO_IDX_NET_RX_DATA]),
+  .sysTxStatus    (GPIO_IN[GPIO_IDX_NET_TX_CSR]), // [31:0]
+  .sysRxStatus    (GPIO_IN[GPIO_IDX_NET_RX_CSR]), // [31:0]
+  .sysRxData      (GPIO_IN[GPIO_IDX_NET_RX_DATA]), // [31:0]
+
+  // Two phases of 125 MHz clock, created by on-board reference
+  .refClk125      (badgerRefClk125),
+  .refClk125d90   (badgerRefClk125d90),
+
+  // Diagnostic outputs (e.g. to frequency counters)
+  .rx_clk         (),
+  .tx_clk         (),
+
+  // RGMII pins
+  .RGMII_RX_CLK   (RGMII_RX_CLK),
+  .RGMII_RX_CTRL  (RGMII_RX_CTRL),
+  .RGMII_RXD      (RGMII_RXD), // [3:0] 
+  .RGMII_TX_CLK   (RGMII_TX_CLK),
+  .RGMII_TX_CTRL  (RGMII_TX_CTRL),
+  .RGMII_TXD      (RGMII_TXD) // [3:0]
+);
+
 //////////////////////////////////////////////////////////////////////////////
 // Block design (MicroBlaze)
 
 wire DUMMY_UART_LOOPBACK;
 
-  system system_i (
-        .S6_TO_K7_CLK_1(S6_TO_K7_CLK_1),
-        .sysClk(sysClk),
-        .clk200(clk200),
+  system_marble system_i (
+        .clkIn125(clkIn125), // input
+        .badgerClk125(badgerRefClk125), // output
+        .badgerClk125d90(badgerRefClk125d90), // output
+        .clk200(clk200),  // output
+        .sysClk(sysClk), // output
         .sysReset_n(sysReset_n),
 
         .auroraUserClk(auroraUserClk),
@@ -845,12 +1034,14 @@ wire DUMMY_UART_LOOPBACK;
         .gt0_qpllrefclklost_out(gt0_qpllrefclklost_out),
         .pll_not_locked_out(pll_not_locked_out),
         .auroraReset(auroraReset),
+        .auroraRefClk(auRefClk),
         .gtxReset(sysGTXreset),
         .gtxResetOut(gtxResetOut),
 
-        .GT_DIFF_REFCLK_312_3_clk_n(GTX_REF_312_3_N),
-        .GT_DIFF_REFCLK_312_3_clk_p(GTX_REF_312_3_P),
-        .auroraRefClk(auRefClk),
+        //.GT_DIFF_REFCLK_312_3_clk_n(MGT_CLK_1_N),
+        //.GT_DIFF_REFCLK_312_3_clk_p(MGT_CLK_1_P),
+        .GT_DIFF_REFCLK_125_clk_n(MGT_CLK_1_N),
+        .GT_DIFF_REFCLK_125_clk_p(MGT_CLK_1_P),
 
         .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata),
         .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast),
@@ -946,9 +1137,6 @@ wire DUMMY_UART_LOOPBACK;
         .evr_mgt_drp_do(evr_mgt_drp_do),
         .evr_mgt_drp_drdy(evr_mgt_drp_drdy),
         .evr_mgt_drp_dwe(evr_mgt_drp_dwe),
-
-        .epicsUDPrxData(epicsUDPrxData),
-        .epicsUDPtxData(epicsUDPtxData),
 
         .BRAM_BPM_SETPOINTS_ADDR(BRAM_BPM_SETPOINTS_ADDR),
         .BRAM_BPM_SETPOINTS_WDATA(BRAM_BPM_SETPOINTS_WDATA),

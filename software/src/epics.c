@@ -1,10 +1,11 @@
 /*
+ * New marble version using bwudp and badger;
  * Accept and act upon commands from IOC
  */
+
 #include <stdio.h>
 #include <string.h>
 #include "aurora.h"
-#include "bmb7_udp.h"
 #include "cellControllerProtocol.h"
 #include "eebi.h"
 #include "epics.h"
@@ -20,18 +21,72 @@
 #include "util.h"
 #include "xadc.h"
 
+#ifdef MARBLE
+#include "bwudp.h"
+#else
+#include "bmb7_udp.h"
+#include <xparameters.h>
+#endif
+
 #define BPM_COUNT_MASK 0x3F
+
 
 static struct ccProtocolPacket reply;
 static int replyCount;
 
-static void
-sendReply(void)
-{
+static void parseCmd(struct ccProtocolPacket *cmd, int length);
+#ifndef MARBLE
+static void pollEPICS(void);
+#else
+static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
+#endif
+
+#ifdef MARBLE
+static const ethernetMAC defaultMAC = {{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}};
+static const ipv4Address defaultIP = {{192, 168, 20, 20}};
+static const ipv4Address defaultNetmask = {{255, 255, 255, 0}};   // Ignored when no client support
+static const ipv4Address defaultGateway = {{0, 0, 0, 0}};         // Ignored when no client support
+static bwudpHandle handleNonce;
+#endif
+
+int epicsInit(void) {
+#ifdef MARBLE
+    int rval = bwudpRegisterInterface(&defaultMAC, &defaultIP, &defaultNetmask, &defaultGateway);
+    rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
+    return rval;
+#else
+    return udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");
+#endif
+}
+
+#ifdef MARBLE
+static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
+    // Handle the packet
+    handleNonce = handle;
+    parseCmd((struct ccProtocolPacket *)payload, length);
+    return;
+}
+#endif
+
+
+static void sendReply(void) {
     if (debugFlags & DEBUGFLAG_EPICS)
         printf("%d REPLY %X %X %X\n", replyCount, reply.magic,
                                             reply.identifier, reply.command);
+#ifdef MARBLE
+    bwudpSend(handleNonce, (const char *)&reply, replyCount);
+#else
     udpTx32(udpEPICS, (uint32_t *)&reply, replyCount);
+#endif
+}
+
+void epicsService(void) {
+#ifdef MARBLE
+    bwudpCrank();
+#else
+    pollEPICS();
+#endif
+    return;
 }
 
 /*
@@ -439,39 +494,51 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         for (i = 0 ; i < replyArgCount ; i++)
             reply.args[i] = __builtin_bswap32(reply.args[i]);
     }
+#ifdef MARBLE
+    replyCount = CC_PROTOCOL_ARG_COUNT_TO_SIZE(replyArgCount);
+#else
     replyCount = CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(replyArgCount);
+#endif
     sendReply();
 }
 
-void
-pollEPICS(void)
-{
+#ifndef MARBLE
+static void pollEPICS(void) {
     int l;
     static struct ccProtocolPacket cmd;
 
     l = udpRxCheck32(udpEPICS, (uint32_t *)&cmd, sizeof cmd/sizeof(int32_t));
-    if (l >= (int)CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(0)) {
+    parseCmd(&cmd, l);
+    return;
+}
+#endif
+
+static void parseCmd(struct ccProtocolPacket *cmd, int length) {
+    if (length >= (int)CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(0)) {
         if (debugFlags & DEBUGFLAG_EPICS)
-            printf("%d CMD %X %X %X\n", l, cmd.magic, cmd.identifier,
-                                                                cmd.command);
-        if ((cmd.magic == reply.magic)
-         && (cmd.identifier == reply.identifier)) {
+            printf("%d CMD %X %X %X\n", length, cmd->magic, cmd->identifier,
+                                                                cmd->command);
+        if ((cmd->magic == reply.magic)
+         && (cmd->identifier == reply.identifier)) {
             sendReply();
         }
         else {
-            int argc = CC_PROTOCOL_U32_COUNT_TO_ARG_COUNT(l);
-            reply.magic = cmd.magic;
-            reply.identifier = cmd.identifier;
-            reply.command = cmd.command;
-            if (cmd.magic == CC_PROTOCOL_MAGIC_SWAPPED) {
+            int argc = CC_PROTOCOL_U32_COUNT_TO_ARG_COUNT(length);
+            reply.magic = cmd->magic;
+            reply.identifier = cmd->identifier;
+            reply.command = cmd->command;
+            if (cmd->magic == CC_PROTOCOL_MAGIC_SWAPPED) {
                 int i;
-                cmd.magic = __builtin_bswap32(cmd.magic);
-                cmd.identifier = __builtin_bswap32(cmd.identifier);
-                cmd.command = __builtin_bswap32(cmd.command);
+                cmd->magic = __builtin_bswap32(cmd->magic);
+                cmd->identifier = __builtin_bswap32(cmd->identifier);
+                cmd->command = __builtin_bswap32(cmd->command);
                 for (i = 0 ; i < argc ; i++)
-                    cmd.args[i] = __builtin_bswap32(cmd.args[i]);
+                    cmd->args[i] = __builtin_bswap32(cmd->args[i]);
             }
-            if (cmd.magic == CC_PROTOCOL_MAGIC) handleCommand(argc, &cmd);
+            if (cmd->magic == CC_PROTOCOL_MAGIC) handleCommand(argc, cmd);
         }
     }
+    return;
 }
+
+

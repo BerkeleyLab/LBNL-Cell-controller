@@ -1,4 +1,4 @@
-HARDWARE = bmb7
+HARDWARE = marble
 PROJECT_PART = xc7k160tffg676-2
 PROJECT_BOARD = none
 XILINX_TOOL := VIVADO
@@ -33,6 +33,8 @@ VIVADO_SYNTH_EXTRA_TCL = prop.tcl ipcores_repos.tcl prio_xci_files.tcl
 
 GPIOIDX_V = gpioIDX.vh
 
+I2C_VH=$(MODULES_DIR)/marble_i2c.vh
+VERILOG_AUTOGEN = $(I2C_VH)
 include $(BUILD_DIR)/top_rules.mk
 
 # ignore xilinx primitives
@@ -47,7 +49,7 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 # custom ip_cores that requires packaging
 include $(MODULES_DIR)/evr_axi_rules.mk
 include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
-include $(MODULES_DIR)/bmb7_udp_rules.mk
+include $(MODULES_DIR)/badger_rules.mk
 include $(MODULES_DIR)/drp_bridge_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply ila_td256_s4096_cap
@@ -112,12 +114,12 @@ IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /hdl, $(IP_CORES_DIRS))
 
-BD += system
-system_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system
-system_TOP = $(system_DIR)/synth/system.v
+BD += system_marble
+system_marble_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system_marble
+system_marble_TOP = $(system_marble_DIR)/synth/system_marble.v
 
-BD_TOP_LVL_SRCS += $(system_TOP)
-BD_DIRS += $(system_DIR)
+BD_TOP_LVL_SRCS += $(system_marble_TOP)
+BD_DIRS += $(system_marble_DIR)
 
 BD_SRCS_DIRS = $(BD_DIRS)
 BD_SRCS_DIRS += $(addsuffix /synth, $(BD_DIRS))
@@ -163,6 +165,9 @@ VFLAGS_DEP += -I$(TOP_LVL_DIR)
 VFLAGS_DEP += -I$(MODULES_DIR)
 VFLAGS_DEP += $(addprefix -I, $(IP_CORES_SRCS_DIRS))
 VFLAGS_DEP += $(addprefix -I, $(BD_SRCS_DIRS))
+
+# Make sure everyone uses the same macro definitions too
+VFLAGS_DEP += $(SYNTH_OPT)
 
 # Files to be treated as library files. This is needed if the filename
 # does not match the module name, which is the case for Xilinx ip cores.
@@ -226,21 +231,57 @@ VFLAGS_COMMAND_FILE += \
 
 VFLAGS_DEP += $(addprefix -c, $(VFLAGS_COMMAND_FILE))
 
-VFLAGS_DEP += -DSIMULATE
+#VFLAGS_DEP += -DSIMULATE
 
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
+vpath %.v $(BWUDP_DIR)
 vpath %.vh $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.vhd $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.xdc $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.tcl $(GW_SCRIPTS_DIR)
 vpath %.sh $(GW_SCRIPTS_DIR)
 
+# ================= I2C Bridge ==================
+I2C_PATH=$(PROJECTS_DIR)/test_marble_family/i2c:$(PERIPH_DRIVERS_DIR)
+I2C_SCRIPT=$(GW_SCRIPTS_DIR)/marble_i2c_prog.py
+I2C_DAT=$(MODULES_DIR)/marble_i2c.dat
+$(I2C_VH):$(I2C_SCRIPT)
+	PYTHONPATH=$(I2C_PATH) python3 $< v > $@
+
+$(I2C_DAT):$(I2C_SCRIPT)
+	PYTHONPATH=$(I2C_PATH) python3 $< > $@
+
+# TODO - Do I need to explicitly add this to bit dependency list?
+$(MODULES_DIR)/qsfpMarble.v: $(I2C_VH) $(I2C_DAT)
+
+# ================ SCRAP =======================
+SYNTH_OPT ?=
+ifneq (,$(SCRAP))
+SCRAP_DIR=$(SUBMODULES_DIR)/scrap
+include $(SCRAP_DIR)/scrap_rules.mk
+VFLAGS_DEP += -y$(SCRAP_DIR)/src
+SYNTH_OPT+=-DQSFP_DEBUG_BUS
+SYNTH_OPT+=-DSCRAPE
+SYNTH_OPT+=-DSCRAP_SHARED_BUS
+else
+SCRAP_DIR=
+endif
+
+# ================ BWUDP =======================
+MERGED_FILE = $(MODULES_DIR)/badgerMerged.v
+# Packet Badger synthesizable code
+RTEFI_CLIENT_LIST = hello.v
+include $(BADGER_DIR)/rules.mk
+
+$(MERGED_FILE): $(RTEFI_V)
+	iverilog -E -o $@ $^
+
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/firmwareBuildDate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MERGED_FILE) $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
 	vivado -mode batch -nojou -nolog -source $(GW_SCRIPTS_DIR)/gen_mem_info.tcl -tclargs $< $@
@@ -253,6 +294,11 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(IP_CORES_XDCS) $(SYSTEM_TOP_TIM_XDC)
 # Generate firmware date and parameters
 %firmwareBuildDate.v: set_firmware_build_date.tcl
 	$(VIVADO_CMD) -source $< -tclargs $@
+
+# This PHONY is causing problems
+#.PHONY: $(TOP_LVL_DIR)/gitHash.vh
+$(TOP_LVL_DIR)/gitHash.vh:
+	sh $(GW_SCRIPTS_DIR)/gitHashVerilog.sh > $@
 
 %/$(GPIOIDX_V): $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
@@ -290,6 +336,14 @@ $(IP_CORES_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).xci
 
 $(BD_TOP_LVL_SRCS): % : $$(basename $$(notdir %)).bd
 	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd.tcl -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
+
+# In case you need to manually generate the Vivado project file
+VIVADO_CREATE_PROJ = $(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/project_proc.tcl $(BUILD_DIR)/vivado_tcl/vivado_project.tcl -tclargs
+# Create $(XPR)
+
+#.PHONY: vproj
+#vproj: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
+#	$(VIVADO_CREATE_PROJ) $(HARDWARE) $* "$(SYNTH_OPT)" $^
 
 # clean generate IP cores files, but the source ones (.xci or .bd)
 clean::
@@ -332,6 +386,7 @@ CLEAN += psu_init*
 CLEAN += ipcores_repos.tcl
 CLEAN += prio_xci_files.tcl
 CLEAN += $(TARGET)_top.mmi
+CLEAN += $(RTEFI_CLEAN) $(MERGED_FILE)
 CLEAN_DIRS +=  _xilinx .Xil .ip_user_files .hbs $(IP_CORES_CUSTOM_TARGET_DIRS)
 CLEAN_DIRS += _gen
 

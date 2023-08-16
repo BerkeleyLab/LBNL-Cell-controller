@@ -7,3 +7,9 @@
 [submodule "gateware/submodules/BMB7UDP"]
 	path = gateware/submodules/BMB7UDP
 	url = ../../alsu-instrumentation/BMB7UDP.git
+[submodule "gateware/submodules/bwudp"]
+	path = gateware/submodules/bwudp
+	url = ../../alsu-instrumentation/bantamweightUDP.git
+[submodule "gateware/submodules/scrap"]
+	path = gateware/submodules/scrap
+	url = ../../kpenney/scrap.git

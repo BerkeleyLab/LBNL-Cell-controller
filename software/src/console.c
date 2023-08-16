@@ -18,6 +18,10 @@
 #include "qsfp.h"
 #include "util.h"
 
+#ifdef SIMULATION
+#include "simplatform.h"
+#endif
+
 #define UART_CSR_TX_FULL    0x80000000
 #define UART_CSR_RX_READY   0x100
 
@@ -84,10 +88,19 @@ cmdDEBUG(int argc, char **argv)
     return 0;
 }
 
+#ifndef MARBLE
 static int
 cmdAD9520(int argc, char **argv)
 {
     ad9520show();
+    return 0;
+}
+#endif
+
+static int
+cmdQSFP(int argc, char **argv)
+{
+    qsfpShowInfo();
     return 0;
 }
 
@@ -352,8 +365,11 @@ struct commandInfo {
     int       (*handler)(int argc, char **argv);
     const char *description;
 };
+
+#ifdef MARBLE
 static struct commandInfo commandTable[] = {
-  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+//  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
   { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
   { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
   { "debug",      cmdDEBUG,      "Set debug flags"                    },
@@ -367,6 +383,25 @@ static struct commandInfo commandTable[] = {
   { "tlog",       cmdTLOG,       "Start timing system event logger"   },
   { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
 };
+#else
+static struct commandInfo commandTable[] = {
+  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
+  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
+  { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
+  { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
+  { "debug",      cmdDEBUG,      "Set debug flags"                    },
+  { "evr",        cmdEVR,        "Show EVR status"                    },
+  { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
+  { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
+  { "log",        cmdREPLAY,     "Replay start up messages"           },
+  { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
+  { "reg",        cmdREG,        "Show GPIO register(s)"              },
+  { "stats",      cmdSTATS,      "Show Aurora link statistics"        },
+  { "tlog",       cmdTLOG,       "Start timing system event logger"   },
+  { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
+};
+#endif
+
 static void
 commandCallback(int argc, char **argv)
 {
@@ -409,6 +444,7 @@ handleLine(char *line)
     int argc;
     char *tokArg, *tokSave;
 
+    // DEBUG
     argc = 0;
     tokArg = line;
     while ((argc < (sizeof argv / sizeof argv[0]) - 1)) {
@@ -434,6 +470,9 @@ consoleCheck(void)
     int c;
     static char line[200];
     static int idx = 0;
+#ifdef SIMULATION
+    simService();
+#endif
 
     if (eyescanCrank()) return;
     c = GPIO_READ(GPIO_IDX_UART_CSR);

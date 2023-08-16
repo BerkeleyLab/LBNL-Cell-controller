@@ -1,0 +1,8 @@
+Development notes for cell-controller firmware pickup
+Keith Penney
+
+230209:
+  I'm going to try to spin up a simulated platform (native-compiled) version of the
+  software, normally intended for the microblaze.
+
+

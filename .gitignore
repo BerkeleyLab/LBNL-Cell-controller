@@ -109,8 +109,15 @@ work/
 !/gateware/platform/xilinx/*/*/udpFIFO/udpFIFO.xci
 /gateware/platform/xilinx/*/*/system/
 !/gateware/platform/xilinx/*/*/system/*.bd
+#/gateware/platform/xilinx/*/*/system_marble/
+/gateware/platform/xilinx/*/*/system_marble/*
+!/gateware/platform/xilinx/*/*/system_marble/*.bd
 /gateware/platform/xilinx/*/*/ila_td256_s4096_cap/
 !/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/ila_td256_s4096_cap.xci
+/gateware/platform/xilinx/*/*/system_marble_old/
+
+gateware/top/*/gpioIDX.vh
+gateware/modules/marble_i2c.vh
 
 # NCO tables
 *csv
@@ -151,6 +158,7 @@ axi_lite_generic_reg
 evr_axi
 bmb7_udp
 drp_bridge
+bwUDP
 
 # Makefile-generated
 *system_top.xdc
@@ -158,12 +166,29 @@ drp_bridge
 *ipcores_repos.tcl
 *.mmi
 *download.bit
+*download_marble.bit
+*download_bmb7.bit
 
 # Script-generated
 *softwareBuildDate.h
 *firmwareBuildDate.v
 *gpioIDX.v
 *aggregate.v
+*gitHash.vh
+gateware/modules/badgerMerged.v
+gateware/syn/cctrl_marble/construct_tx_table.v
+gateware/syn/cctrl_marble/rtefi_blob.v
+gateware/syn/cctrl_marble/rtefi_preblob.vh
+
+# Verilator testbench files
+gateware/tb/obj_dir
+gateware/tb/obj_dir/*
+
+######################
+# Generated native binaries
+######################
+software/target/sim/bin
+software/tests/bin
 
 ######################
 # Vivado files
@@ -179,6 +204,7 @@ drp_bridge
 
 # Vivado/Vitis-generated
 *system.xsa
+*system_marble.xsa
 *psu_init*
 *.bif
 *init.tcl
