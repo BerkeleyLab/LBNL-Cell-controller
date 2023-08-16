@@ -68,7 +68,7 @@ sw_cctrl_bmb7:
     paths:
       - software/app/cctrl/cctrl_bmb7.elf
       - software/app/cctrl/cctrl_bmb7.elf.size
-      - software/app/cctrl/download_bmb7.bit
+      - software/app/cctrl/download_cctrl_bmb7.bit
 
 sw_cctrl_marble:
   before_script:
@@ -86,4 +86,4 @@ sw_cctrl_marble:
     paths:
       - software/app/cctrl/cctrl_marble.elf
       - software/app/cctrl/cctrl_marble.elf.size
-      - software/app/cctrl/download_marble.bit
+      - software/app/cctrl/download_cctrl_marble.bit
