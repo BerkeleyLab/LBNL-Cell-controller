@@ -11,7 +11,7 @@ include ../../../dir_list.mk
 TARGET   ?= cctrl_bmb7
 GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
 BIT      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.bit
-DEPLOY_BIT ?= $(THIS_DIR)/download.bit
+DEPLOY_BIT ?= $(THIS_DIR)/download_$(TARGET).bit
 MMI      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.mmi
 ELF 	 ?= $(THIS_DIR)/$(TARGET).elf
 

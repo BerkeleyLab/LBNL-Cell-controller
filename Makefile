@@ -21,7 +21,7 @@ sw:
 	make -C $(SW_DIR) TARGET=$(TARGET) BIT=$(BIT) all
 
 bundle:
-	make -C $(SW_DIR) TARGET=$(TARGET) BIT=$(BIT) DEPLOY_BIT=$(SW_DIR)/download_$(PLATFORM).bit bundle
+	make -C $(SW_DIR) TARGET=$(TARGET) BIT=$(BIT) bundle
 
 swclean:
 	make -C $(SW_DIR) TARGET=$(TARGET) clean
