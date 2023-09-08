@@ -345,6 +345,11 @@ VIVADO_CREATE_PROJ = $(VIVADO_CMD) -source $(BUILD_DIR)/vivado_tcl/project_proc.
 #vproj: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/badgerMerged.v $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v
 #	$(VIVADO_CREATE_PROJ) $(HARDWARE) $* "$(SYNTH_OPT)" $^
 
+.PHONY: vproj
+vproj: $(XPR)
+%.xpr: $(DEPDIR)/%.bit.d
+	$(VIVADO_SYNTH) $(HARDWARE) $* "$(SYNTH_OPT)" $^
+
 # clean generate IP cores files, but the source ones (.xci or .bd)
 clean::
 	$(foreach ipcore, $(IP_CORES), find $($(ipcore)_DIR)/ -mindepth 1 -not \( -name \*$(ipcore).xci -o -name \*$(ipcore).bd \) -delete $(CMD_SEP))

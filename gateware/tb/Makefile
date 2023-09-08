@@ -19,6 +19,32 @@ SIM_DEFINES = -DMARBLE
 INCLUDES=-I$(MAKEF_DIR) -I$(SW_SRC_DIR) -I$(MODULES_DIR)
 TB_DIR = .
 
+# Copied from bedrock/build-tools/top_rules.mk
+VERILOG = iverilog$(ICARUS_SUFFIX) -Wall -Wno-macro-redefinition
+VG_ALL = -DSIMULATE
+V_TB = -Wno-timescale
+INC_DIR=../top/cctrl_marble
+VFLAGS = ${VFLAGS_$@} -I$(INC_DIR)
+VERILOG_TB = $(VERILOG) $(VG_ALL) $(V_TB) ${VFLAGS} -o $@ $(filter %v, $^)
+
+FOFB_LOOPBACK_SOURCES=axi_stream_loopback.v \
+											bpm_traffic_generator.v \
+											cell_traffic_generator.v \
+											forwardCellLinkMuxSim.v
+MODULES=../modules
+SYNTH_SOURCES=readBPMlinks.v forwardCellLink.v fofbReadLinks.v fofbDSP.v
+SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v fofbCalc.v psSetpointCalc.v
+SYNTH_SOURCES+=reduceWidth.v fofbDataDPRAM.v
+FOFB_LOOPBACK_SOURCES+=$(addprefix $(MODULES)/,$(SYNTH_SOURCES))
+
+vpath %.v ../modules
+
+fofb_loopback_tb: fofb_loopback_tb.v $(FOFB_LOOPBACK_SOURCES)
+	$(VERILOG_TB)
+
+fofb_loopback_tb.vcd: fofb_loopback_tb
+	vvp $< +vcd
+
 # ================================ Verilator ==================================
 # == Note: Verilator header files are in /usr/local/share/verilator
 # ==       There are useful examples there as well

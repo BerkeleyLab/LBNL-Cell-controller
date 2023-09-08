@@ -17,6 +17,63 @@ Aurora clocks:
     2. Generate any other frequency with SI570
   Option 1 sounds easiest.  Any reason why I shouldn't do that?
 
+Aurora packets:
+  | Header (4B) | Data X (4B) | Data Y (4B) | Data S (4B) | CRC (4B) |
+
+           31                16          15         14             10     9      8               0
+  Header: | Magic 0xA5BE (16b) | FOFB Enabled (1b) | Cell Index (5b) | pad (1b) | FOFB Index (9b) |
+  Data XY:| -------------------------------- Beam Position in nm -------------------------------- |
+  Data S: | CRC Fault (1b) | ADC Clipping (1b) | --------------- Sum Value (30b) ---------------- |
+  CRC:    | ---------------------------------- Aurora CRC Word ---------------------------------- |
+
+Aurora Network Path:
+  Modules:
+    fofbReadLink:   Reads BPM/CELL packets from AXI stream and stores X/Y/S data
+                    Clock domain crossing from auroraUserClk to sysClk via dpram
+    fofbReadLinks:  Encapsulates fofbReadLink for both CCW and CW Cell links
+
+  Note: AXI Stream is TDATA (32b), TVALID (1b), TREADY (1b), TLAST (1b)
+   system.bd -> fofbReadLinks
+  | GTX |
+
+  Important Signals:
+    === FAstrobe: Reset data accumulation (from BPM and CELL links) ===
+    [evrSync] evrFAmarker->(cross from evrclk to sysclk)->auroraFAstrobe (rising edge detector) [fofbReadLinks] FAstrobe
+
+  Cell CCW Path:
+    [forwardCellLink] -> AXI Stream -> [fofbReadLinks] auCellCCWlink_
+                                    -> [system.bd] CELL_CCW_AXI_STREAM_TX_
+
+230907:
+  Trying to get a toehold on this Aurora network testing.
+  I'd like to have a testbench which simulates the Aurora loopback.  I think this
+  could be accomplished by:
+    1. Replacing bd with AXI Stream loopback
+    2. Operating at AXI Stream level, not with GTX pins
+
+  AXI Loopback module:
+    Connect input CELL_CCW_AXI_STREAM_TX to output CELL_CCW_AXI_STREAM_RX
+    Connect input CELL_CW_AXI_STREAM_TX  to output CELL_CW_AXI_STREAM_RX
+
+  BPM Traffic Generator:
+    input FAstrobe
+    Generate fake packets from "BPMs" and output on both/alternating BPM_CCW_AXI_STREAM_RX and
+    BPM_CW_AXI_STREAM_RX
+    Generate one packet per BPM in response to FAstrobe
+
+  Cell Traffic Generator:
+    input FAstrobe
+    If BPM Traffic generator not present/enabled:
+      Enable self-increment of packet "Cell Index"
+      Generate one fake packet with "Cell Index" = 0 (this will self-increment when received on the loopback)
+
+  GPIO Bus Controller:
+    Just set outputs to 0 for now.  In the future, perhaps this can be a Verilator module which
+    performs GPIO_OUT transactions in response to UDP commands.
+
+  TODO:
+    forwardCellLink.v needs a simulated version of forwardCellLinkMux
+
 230713:
   Jira task list:
     Get QSFP register readout working

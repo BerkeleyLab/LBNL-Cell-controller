@@ -46,7 +46,7 @@ localparam ST_SUCCESS    = 2'd0,
 
 //
 // Reception state machine
-//
+//  TODO - New packet bytes require new state here
 localparam S_AWAIT_HEADER      = 3'd0,
            S_AWAIT_X           = 3'd1,
            S_AWAIT_Y           = 3'd2,
@@ -76,7 +76,7 @@ always @(posedge auroraClk) begin
         if (updateBPMmapToggle != updateBPMmapToggle_d)
                                          bpmBitmap <= bpmBitmap | packetBPMmap;
         if (TVALID) begin
-            if (TLAST && !state[2]) begin
+            if (TLAST && (state != S_AWAIT_LAST)) begin
                 statusCode <= ST_BAD_SIZE;
                 statusToggle <= !statusToggle;
                 isNewPacket <= 1;
@@ -89,7 +89,7 @@ always @(posedge auroraClk) begin
                         isNewPacket <= 0;
                         packetBPMmap <= 0;
                     end
-                    if (headerMagic == 16'hA5BE) begin
+                    if (headerMagic == 16'hA5BE) begin  // TODO Magic number
                         statusCellIndex <= headerCellIndex;
                         fofbIndex <= headerFOFBindex;
                         statusFOFBenabled <= headerFOFBenabled;
@@ -150,12 +150,15 @@ end
 // Readout DPRAM
 reg [95:0] dpram [0:(1<<FOFB_INDEX_WIDTH)-1];
 reg [95:0] dpramQ;
-assign readoutX = dpramQ[0+:32];
-assign readoutY = dpramQ[32+:32];
-assign readoutS = dpramQ[64+:32];
 always @(posedge auroraClk) begin
     if (writeEnable) dpram[fofbIndex] <= {dataS, dataY, dataX};
 end
+// ===================== auroraClk domain below here =====================
+// Domain crossing only via dpram
+// ======================= sysClk domain below here ======================
+assign readoutX = dpramQ[0+:32];
+assign readoutY = dpramQ[32+:32];
+assign readoutS = dpramQ[64+:32];
 always @(posedge sysClk) begin
     dpramQ <= dpram[readoutAddress];
 end

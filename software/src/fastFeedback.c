@@ -20,6 +20,19 @@
 #endif // ndef SIMULATION
 #include "util.h"
 
+#ifndef MARBLE
+#define NLINK_BPM_CCW       (0)
+#define NLINK_BPM_CW        (1)
+#define NLINK_CELL_CCW      (2)
+#define NLINK_CELL_CW       (3)
+#else
+#warning "**** Check Marble cell link numbers: fastFeedback.c ****"
+#define NLINK_BPM_CCW       (0)
+#define NLINK_BPM_CW        (1)
+#define NLINK_CELL_CCW      (2)
+#define NLINK_CELL_CW       (3)
+#endif
+
 #define BPMLINKS_CSR_W_SWAP_BANKS               0x80000000
 #define BPMLINKS_CSR_R_BANK                     0x80000000
 #define BPMLINKS_CSR_RW_CELL_INDEX_MASK         0x1F000000
@@ -142,22 +155,22 @@ auroraReadoutCount(int link)
     uint32_t m;
 
     switch (link) {
-    case 0:
+    case NLINK_BPM_CCW:
         i = GPIO_IDX_BPMLINKS_CSR;
         s = BPMLINKS_CSR_CCW_PACKET_COUNT_SHIFT;
         m = BPMLINKS_CSR_R_CCW_PACKET_COUNT_MASK;
         break;
-    case 1:
+    case NLINK_BPM_CW:
         i = GPIO_IDX_BPMLINKS_CSR;
         s = BPMLINKS_CSR_CW_PACKET_COUNT_SHIFT;
         m = BPMLINKS_CSR_R_CW_PACKET_COUNT_MASK;
         break;
-    case 2:
+    case NLINK_CELL_CCW:
         i = GPIO_IDX_CELL_COMM_CSR;
         s = CELL_COMM_CSR_CCW_PACKET_COUNT_SHIFT;
         m = CELL_COMM_CSR_R_CCW_PACKET_COUNT_MASK;
         break;
-    case 3:
+    case NLINK_CELL_CW:
         i = GPIO_IDX_CELL_COMM_CSR;
         s = CELL_COMM_CSR_CW_PACKET_COUNT_SHIFT;
         m = CELL_COMM_CSR_R_CW_PACKET_COUNT_MASK;
