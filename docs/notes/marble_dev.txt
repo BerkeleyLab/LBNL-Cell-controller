@@ -72,7 +72,7 @@ Aurora Network Path:
     performs GPIO_OUT transactions in response to UDP commands.
 
   TODO:
-    forwardCellLink.v needs a simulated version of forwardCellLinkMux
+    DONE forwardCellLink.v needs a simulated version of forwardCellLinkMux
 
 230713:
   Jira task list:

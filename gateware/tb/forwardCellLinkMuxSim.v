@@ -55,7 +55,6 @@ always @(posedge S00_AXIS_ACLK) begin
   if (~S00_AXIS_ARESETN) begin
     ip00 <= 0;
     full00 <= 1'b0;
-    op00 <= 0;
   end else begin
     if (S00_AXIS_TVALID) begin
       ram00[ip00] <= {S00_AXIS_TLAST, S00_AXIS_TDATA};
@@ -68,11 +67,6 @@ always @(posedge S00_AXIS_ACLK) begin
       end
     end
     if (opinc00) begin
-      if (op00 == FIFO_DEPTH-1) begin
-        op00 <= 0;
-      end else begin
-        op00 <= op00 + 1;
-      end
     end
   end
 end
@@ -82,7 +76,6 @@ always @(posedge S01_AXIS_ACLK) begin
   if (~S01_AXIS_ARESETN) begin
     ip01 <= 0;
     full01 <= 1'b0;
-    op01 <= 0;
   end else begin
     if (S01_AXIS_TVALID) begin
       ram01[ip01] <= {S01_AXIS_TLAST, S01_AXIS_TDATA};
@@ -94,13 +87,6 @@ always @(posedge S01_AXIS_ACLK) begin
         ip01 <= ip01 + 1;
       end
     end
-    if (opinc01) begin
-      if (op01 == FIFO_DEPTH-1) begin
-        op01 <= 0;
-      end else begin
-        op01 <= op01 + 1;
-      end
-    end
   end
 end
 
@@ -109,16 +95,22 @@ reg sel=1'b0;
 // Currently only toggles when FIFO is empty. Could change this to
 // toggle on TLAST if we want to.
 always @(posedge M00_AXIS_ACLK) begin
-  opinc00 <= 1'b0;
   M00_AXIS_TLAST <= 1'b0;
   M00_AXIS_TVALID <= 1'b0;
-  if (~M00_AXIS_ARESETN) sel <= 1'b0;
-  else if (M00_AXIS_TREADY) begin
+  if (~M00_AXIS_ARESETN) begin
+    op00 <= 0;
+    op01 <= 0;
+    sel <= 1'b0;
+  end else if (M00_AXIS_TREADY) begin
     if (~sel) begin
       if (~empty00) begin
         {M00_AXIS_TLAST, M00_AXIS_TDATA} <= ram00[op00];
         M00_AXIS_TVALID <= 1'b1;
-        opinc00 <= 1'b1;
+        if (op00 == FIFO_DEPTH-1) begin
+          op00 <= 0;
+        end else begin
+          op00 <= op00 + 1;
+        end
       end else begin  // If empty, toggle sel
         if (!S00_ARB_REQ_SUPPRESS) sel <= 1'b1;
       end
@@ -126,7 +118,11 @@ always @(posedge M00_AXIS_ACLK) begin
       if (~empty01) begin
         {M00_AXIS_TLAST, M00_AXIS_TDATA} <= ram01[op01];
         M00_AXIS_TVALID <= 1'b1;
-        opinc01 <= 1'b1;
+        if (op01 == FIFO_DEPTH-1) begin
+          op01 <= 0;
+        end else begin
+          op01 <= op01 + 1;
+        end
       end else begin  // If empty, toggle sel
         if (!S01_ARB_REQ_SUPPRESS) sel <= 1'b0;
       end

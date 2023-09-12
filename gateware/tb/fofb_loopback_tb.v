@@ -7,10 +7,16 @@ module fofb_loopback_tb;
 //////////////////////////////////////////////////////////////////////////////
 // Simulation Controls
 reg gen_traffic_out_ccw=1'b1; // 1 = output on CCW stream, 0 = output on CW stream
+localparam cell_traffic_autoinc = 1'b1;
+reg [4:0] get_traffic_cell_index=0;
 reg [1:0] bpm_traffic_gen_mode; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
 // Enables for traffic generators
 reg bpm_traffic_gen_en=1'b0;
 reg cell_traffic_gen_en=1'b1;
+
+// Tell the traffic generators to go
+reg FAstrobe_cell=1'b0;
+reg FAstrobe_bpm=1'b0;
 
 // Fast Acquisition Strobe
 reg FAstrobe=1'b0;
@@ -26,9 +32,19 @@ end
 
 // ============== Stimulus ===================
 initial begin
+          // Reset statistics
           FAstrobe = 1'b0;
   # 20    FAstrobe = 1'b1;
   # 10    FAstrobe = 1'b0;
+  # 200   // Wait for reset to complete
+          // Send a packet with CELL_INDEX = 0
+          get_traffic_cell_index=0;
+  # 10    FAstrobe_cell = 1'b1;
+  # 10    FAstrobe_cell = 1'b0;
+          // Send a packet with CELL_INDEX = 8
+  # 300   get_traffic_cell_index=8;
+  # 10    FAstrobe_cell = 1'b1;
+  # 10    FAstrobe_cell = 1'b0;
   # 1000  $display("Done");
           $finish();
 end
@@ -67,9 +83,8 @@ always @(posedge sysClk) begin
   sysFAstrobe <= sysFAstrobe_m;
 end
 
-wire FAstrobe_bpm = auFAstrobeDelayed & bpm_traffic_gen_en;
-wire FAstrobe_cell = auFAstrobeDelayed & cell_traffic_gen_en;
-
+//wire FAstrobe_bpm = auFAstrobeDelayed & bpm_traffic_gen_en;
+//wire FAstrobe_cell = auFAstrobeDelayed & cell_traffic_gen_en;
 reg localFOFBcontrol=1'b0; // to readBPMlinks
 reg auroraReset=1'b0;
 // Setpoints read/write bus control
@@ -325,10 +340,13 @@ axi_stream_loopback axi_stream_loopback_i (
   .CELL_CW_AXI_STREAM_RX_tvalid(CELL_CW_AXI_STREAM_RX_tvalid) // output
 );
 
-cell_traffic_generator cell_traffic_generator_i (
+cell_traffic_generator #( 
+  .CELL_INDEX_AUTOINCREMENT(cell_traffic_autoinc)
+) cell_traffic_generator_i (
   .clk(auroraUserClk), // input
   .FAstrobe(FAstrobe_cell), // input
   .out_ccw(gen_traffic_out_ccw), // input
+  .cell_index(get_traffic_cell_index), // input [4:0]
   // CELL CCW AXI Stream TX (input)
   .CELL_CCW_AXI_STREAM_TX_tdata_in(CELL_CCW_AXI_STREAM_TX_tdata), // input [31:0]
   .CELL_CCW_AXI_STREAM_TX_tlast_in(CELL_CCW_AXI_STREAM_TX_tlast), // input

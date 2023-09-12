@@ -45,16 +45,19 @@ reg [8:0] fofb_index=FOFB_INDEX_INIT;
 localparam [31:0] FAKE_CRC = 32'hADADFACE;
 
 reg [PKTW-1:0] pkt_counter=0;
-reg [31:0] pktram [0:PKT_SIZE_WORDS-1];
+// Note pktram is 33-bit registers (MSb is TLAST)
+reg [32:0] pktram [0:PKT_SIZE_WORDS-1];
 integer I;
 initial begin
-  for (I = 0; I < PKT_SIZE_WORDS; I = I + 1) pktram[I] = 32'h0;
-  pktram[0] = {MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
-  pktram[4] = FAKE_CRC;
+  // MSb is TLAST
+  for (I = 0; I < PKT_SIZE_WORDS; I = I + 1) pktram[I] = 33'h0;
+  pktram[0] = {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
+  // NOTE: brittle point - TLAST=1 needs to be placed at pktram[PKT_SIZE_WORDS-1][32]
+  pktram[4] = {1'b1, FAKE_CRC};
 end
 
+
 reg running=1'b0;
-reg phase=1'b0;
 // Use this to determine on which channel the data goes out
 reg alternate=1'b1;
 reg [1:0] ch_bitmap=2'b11;
@@ -73,7 +76,6 @@ always @(posedge clk) begin
   if (!running) begin
     tvalid_ccw <= 1'b0;
     tvalid_cw <= 1'b0;
-    phase <= 1'b0;
     pkt_counter <= 0;
     tdata_ccw <= 0;
     tdata_cw <= 0;
@@ -92,48 +94,33 @@ always @(posedge clk) begin
       fofb_index <= fofb_index + 1;
     end
   end else begin
-    phase <= ~phase;
     tlast_ccw <= 1'b0;
     tlast_cw <= 1'b0;
     tvalid_ccw <= 1'b0;
     tvalid_cw <= 1'b0;
-    if (phase) begin  // Assert data
-      if (ch_bitmap[CCW]) begin
-        tdata_ccw <= pktram[pkt_counter];
-        tvalid_ccw <= 1'b0;
-      end
-      if (ch_bitmap[CW]) begin
-        tdata_cw <= pktram[pkt_counter];
-        tvalid_cw <= 1'b0;
-      end
-    end else begin // ~phase. Assert TVALID and increment counter
-      if (ch_bitmap[CCW]) begin
-        tvalid_ccw <= 1'b1;
-      end
-      if (ch_bitmap[CW]) begin
-        tvalid_cw <= 1'b1;
-      end
-      if (pkt_counter == PKT_SIZE_WORDS - 1) begin
-        if (ch_bitmap[CCW]) begin
-          tlast_ccw <= 1'b1;
-        end
-        if (ch_bitmap[CW]) begin
-          tlast_cw <= 1'b1;
-        end
-        // Done with one packet
-        if (fofb_index == FOFB_INDEX_MAX) begin
-          running <= 1'b0;
-        end else begin
-          // Prepare new packet
-          pktram[0] <= {MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
-          fofb_index <= fofb_index + 1;
-          if (alternate) ch_bitmap <= {ch_bitmap[0], ch_bitmap[1]};
-        end
-        pkt_counter <= 0;
+    // Assert data, assert TVALID, and increment counter
+    if (ch_bitmap[CCW]) begin
+      {tlast_ccw, tdata_ccw} <= pktram[pkt_counter];
+      tvalid_ccw <= 1'b1;
+    end
+    if (ch_bitmap[CW]) begin
+      {tlast_cw, tdata_cw} <= pktram[pkt_counter];
+      tvalid_cw <= 1'b1;
+    end
+    if (pkt_counter == PKT_SIZE_WORDS - 1) begin
+      // Done with one packet
+      if (fofb_index == FOFB_INDEX_MAX) begin
+        running <= 1'b0;
       end else begin
-        // Increment
-        pkt_counter <= pkt_counter + 1;
+        // Prepare new packet
+        pktram[0] <= {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
+        fofb_index <= fofb_index + 1;
+        if (alternate) ch_bitmap <= {ch_bitmap[0], ch_bitmap[1]};
       end
+      pkt_counter <= 0;
+    end else begin
+      // Increment
+      pkt_counter <= pkt_counter + 1;
     end
   end
 end
