@@ -8,21 +8,17 @@ module fofb_loopback_tb;
 // Simulation Controls
 reg gen_traffic_out_ccw=1'b1; // 1 = output on CCW stream, 0 = output on CW stream
 localparam cell_traffic_autoinc = 1'b1;
-reg [4:0] get_traffic_cell_index=0;
+reg [4:0] cell_traffic_cell_index=0;
+reg [4:0] bpm_traffic_cell_index=0;
 reg [1:0] bpm_traffic_gen_mode; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
-// Enables for traffic generators
-reg bpm_traffic_gen_en=1'b0;
-reg cell_traffic_gen_en=1'b1;
 
 // Tell the traffic generators to go
-reg FAstrobe_cell=1'b0;
-reg FAstrobe_bpm=1'b0;
+reg bpm_traffic_trigger=1'b0;
+reg cell_traffic_trigger=1'b0;
 
 // Fast Acquisition Strobe
 reg FAstrobe=1'b0;
 
-// TODO FIXME Continue here
-// VCD dump file for gtkwave
 initial begin
   if ($test$plusargs("vcd")) begin
     $dumpfile("fofb_loopback_tb.vcd");
@@ -30,27 +26,40 @@ initial begin
   end
 end
 
+// =========== Timeout Signal ===============
+localparam TOW = 12;
+localparam TOSET = {TOW{1'b1}};
+reg [TOW-1:0] timeout=0;
+always #10 begin
+  if (timeout > 0) timeout <= timeout - 1;
+end
+wire to = ~(|timeout);
+
 // ============== Stimulus ===================
 initial begin
+  # 10;
+          // Set expected Cell Controller count
+          fofbReadLinks.cellCount = 32;
           // Reset statistics
           FAstrobe = 1'b0;
   # 20    FAstrobe = 1'b1;
   # 10    FAstrobe = 1'b0;
   # 200   // Wait for reset to complete
           // Send a packet with CELL_INDEX = 0
-          get_traffic_cell_index=0;
-  # 10    FAstrobe_cell = 1'b1;
-  # 10    FAstrobe_cell = 1'b0;
-          // Send a packet with CELL_INDEX = 8
-  # 300   get_traffic_cell_index=8;
-  # 10    FAstrobe_cell = 1'b1;
-  # 10    FAstrobe_cell = 1'b0;
-  # 1000  $display("Done");
+          cell_traffic_cell_index=0;
+  # 10    cell_traffic_trigger = 1'b1;
+  # 10    cell_traffic_trigger = 1'b0;
+          // Wait for forwardCellLink to fill
+          timeout = TOSET;
+  # 10    wait (fofbReadLinks.readoutValid || to);
+          if (to) $display("FAIL: Timeout waiting for readoutValid");
+          else $display("PASS");
+  # 500;  // Give me a bit more on the vcd
           $finish();
 end
 
 // =============== Clocks ====================
-// 125 MHz auroraUserClk TODO confirm???
+// 125 MHz auroraUserClk
 reg auroraUserClk=1'b0;
 always #4 auroraUserClk <= ~auroraUserClk;
 // 100 MHz sysClk
@@ -83,8 +92,7 @@ always @(posedge sysClk) begin
   sysFAstrobe <= sysFAstrobe_m;
 end
 
-//wire FAstrobe_bpm = auFAstrobeDelayed & bpm_traffic_gen_en;
-//wire FAstrobe_cell = auFAstrobeDelayed & cell_traffic_gen_en;
+//wire bpm_traffic_trigger = auFAstrobeDelayed & bpm_traffic_gen_en;
 reg localFOFBcontrol=1'b0; // to readBPMlinks
 reg auroraReset=1'b0;
 // Setpoints read/write bus control
@@ -344,9 +352,9 @@ cell_traffic_generator #(
   .CELL_INDEX_AUTOINCREMENT(cell_traffic_autoinc)
 ) cell_traffic_generator_i (
   .clk(auroraUserClk), // input
-  .FAstrobe(FAstrobe_cell), // input
+  .start(cell_traffic_trigger), // input
   .out_ccw(gen_traffic_out_ccw), // input
-  .cell_index(get_traffic_cell_index), // input [4:0]
+  .cell_index(cell_traffic_cell_index), // input [4:0]
   // CELL CCW AXI Stream TX (input)
   .CELL_CCW_AXI_STREAM_TX_tdata_in(CELL_CCW_AXI_STREAM_TX_tdata), // input [31:0]
   .CELL_CCW_AXI_STREAM_TX_tlast_in(CELL_CCW_AXI_STREAM_TX_tlast), // input
@@ -365,10 +373,12 @@ cell_traffic_generator #(
   .CELL_CW_AXI_STREAM_TX_tvalid_out(CELL_CW_AXI_STREAM_TX_tvalid_merged) // output
 );
 
-bpm_traffic_generator bpm_traffic_generator_i (
+bpm_traffic_generator #(
+  ) bpm_traffic_generator_i (
   .clk(auroraUserClk), // input
-  .FAstrobe(FAstrobe_bpm), // input
+  .start(bpm_traffic_trigger), // input
   .mode(bpm_traffic_gen_mode), // input [1:0]
+  .cell_index(bpm_traffic_cell_index), // input [4:0]
   // BPM CCW AXI Stream
   .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata), // output [31:0]
   .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast), // output

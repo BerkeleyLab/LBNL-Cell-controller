@@ -1,16 +1,17 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Mon Sep 11 23:10:41 2023
+[*] Tue Sep 12 18:51:32 2023
 [*]
 [dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/fofb_loopback_tb.vcd"
-[dumpfile_mtime] "Mon Sep 11 22:35:50 2023"
-[dumpfile_size] 88844
+[dumpfile_mtime] "Tue Sep 12 18:48:32 2023"
+[dumpfile_size] 206815
 [savefile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop.gtkw"
-[timestart] 0
+[timestart] 194
 [size] 1920 1016
-[pos] -1971 -24
-*-7.102938 332 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-8.102938 1205 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] fofb_loopback_tb.
+[treeopen] fofb_loopback_tb.fofbReadLinks.
 [treeopen] fofb_loopback_tb.forwardCCWcell.
 [treeopen] fofb_loopback_tb.forwardCWcell.
 [sst_width] 409
@@ -23,7 +24,6 @@ fofb_loopback_tb.auroraUserClk
 fofb_loopback_tb.FAstrobe
 fofb_loopback_tb.auroraFAstrobe
 fofb_loopback_tb.sysFAstrobe
-fofb_loopback_tb.FAstrobe_cell
 @200
 -From cell_traffic_generator CCW side
 @22
@@ -38,9 +38,12 @@ fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tdata[31:0]
 @28
 fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tvalid
 fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tlast
+@22
+fofb_loopback_tb.cell_traffic_generator_i.ccw_pkt_cntr[3:0]
 @200
 -Through cell_traffic_generator CW side
 @22
+fofb_loopback_tb.cell_traffic_generator_i.cw_pkt_cntr[3:0]
 fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tdata_merged[31:0]
 @28
 fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tvalid_merged
@@ -69,10 +72,110 @@ fofb_loopback_tb.CELL_CW_AXI_STREAM_TX_tlast
 @200
 -forwardCCWcell
 @22
+fofb_loopback_tb.forwardCCWcell.mergedCellIndex[4:0]
+@c00022
 fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+@28
+(0)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(1)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(2)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(3)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(4)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(5)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(6)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(7)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(8)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(9)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(10)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(11)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(12)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(13)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(14)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(15)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(16)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(17)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(18)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(19)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(20)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(21)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(22)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(23)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(24)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(25)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(26)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(27)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(28)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(29)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(30)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+(31)fofb_loopback_tb.forwardCCWcell.txBitmap[31:0]
+@1401200
+-group_end
 @200
 -forwardCWcell
 @22
+fofb_loopback_tb.forwardCWcell.mergedCellIndex[4:0]
+@c00022
 fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+@28
+(0)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(1)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(2)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(3)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(4)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(5)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(6)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(7)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(8)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(9)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(10)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(11)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(12)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(13)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(14)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(15)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(16)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(17)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(18)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(19)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(20)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(21)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(22)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(23)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(24)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(25)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(26)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(27)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(28)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(29)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(30)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+(31)fofb_loopback_tb.forwardCWcell.txBitmap[31:0]
+@1401200
+-group_end
+@200
+-fofbReadLinks
+@28
+fofb_loopback_tb.fofbReadLinks.auCWstatusCode[1:0]
+fofb_loopback_tb.fofbReadLinks.auCCWstatusCode[1:0]
+fofb_loopback_tb.fofbReadLinks.mergedTVALID
+fofb_loopback_tb.fofbReadLinks.mergedStatus[1:0]
+@22
+fofb_loopback_tb.fofbReadLinks.cellBitmap[31:0]
+fofb_loopback_tb.fofbReadLinks.cellCount[5:0]
+fofb_loopback_tb.fofbReadLinks.cellCounter[5:0]
+fofb_loopback_tb.fofbReadLinks.fofbCounter[5:0]
+@29
+fofb_loopback_tb.fofbReadLinks.readoutValid
+@28
+fofb_loopback_tb.fofbReadLinks.auCellCWlinkTVALID
+@22
+fofb_loopback_tb.fofbReadLinks.auCellCWlinkTDATA[31:0]
+@28
+fofb_loopback_tb.fofbReadLinks.auCellCWlinkTLAST
+@200
+-readCW
+@28
+fofb_loopback_tb.fofbReadLinks.readCW.state[2:0]
+@22
+fofb_loopback_tb.fofbReadLinks.readCW.headerMagic[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

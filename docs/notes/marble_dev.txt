@@ -22,7 +22,8 @@ Aurora packets:
 
            31                16          15         14             10     9      8               0
   Header: | Magic 0xA5BE (16b) | FOFB Enabled (1b) | Cell Index (5b) | pad (1b) | FOFB Index (9b) |
-  Data XY:| -------------------------------- Beam Position in nm -------------------------------- |
+  Data X: | ------------------------------- Beam X Position in nm ------------------------------- |
+  Data Y: | ------------------------------- Beam Y Position in nm ------------------------------- |
   Data S: | CRC Fault (1b) | ADC Clipping (1b) | --------------- Sum Value (30b) ---------------- |
   CRC:    | ---------------------------------- Aurora CRC Word ---------------------------------- |
 
@@ -43,6 +44,27 @@ Aurora Network Path:
   Cell CCW Path:
     [forwardCellLink] -> AXI Stream -> [fofbReadLinks] auCellCCWlink_
                                     -> [system.bd] CELL_CCW_AXI_STREAM_TX_
+
+Verilator Live Simulator:
+  I want to create a Verilator live simulation which uses UDP ports in place of GTX channels.
+  Then I would make a companion test software in C which emulates the environment of the cell
+  controller (other cell controllers and BPMs).
+  The simulator will operate on AXI Streams rather than on the Aurora encoded GTX bitstream.
+  Once the software is done, I could emulate on hardware with an ethernet switch with SFP/QSFP
+  fiber ports by adding an Aurora codec layer.
+  (Directions below are wrt the simulator, not the companion software)
+  Ports:
+    Name        Directions  Notes
+    BPM CCW     in          Input from BPMs on CCW ring
+    BPM CW      in          Input from BPMs on CW ring
+    CELL CCW    in/out
+    CELL CW     in/out
+    GPIO        in/out      Emulate Microblaze transactions on "GPIO_OUT" and "GPIO_IN"
+
+230911:
+  The cell controller loop seems to be working well in the testbench.
+  Added an incrementing feature to the traffic generator which increments the cell_index
+  in any packets that pass through.
 
 230907:
   Trying to get a toehold on this Aurora network testing.

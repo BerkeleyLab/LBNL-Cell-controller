@@ -2,13 +2,13 @@
  */
 
 module bpm_traffic_generator #(
-  parameter [4:0] CELL_INDEX = 0,
   parameter [8:0] FOFB_INDEX_INIT = 0,
   parameter [8:0] FOFB_INDEX_MAX = 7
 ) (
   input clk,  // Domain?
-  input FAstrobe,
+  input start,
   input [1:0] mode, // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
+  input [4:0] cell_index,
   // BPM CCW AXI Stream
   output [31:0] BPM_CCW_AXI_STREAM_RX_tdata,
   output BPM_CCW_AXI_STREAM_RX_tlast,
@@ -23,7 +23,7 @@ localparam PKT_SIZE_WORDS = 5;
 localparam PKTW = $clog2(PKT_SIZE_WORDS+1);
 localparam [15:0] MAGIC = 16'hA5BE;
 
-// When FAstrobe received,
+// When start received,
 //  Generate 1 fake packet for each BPM
 //  Send each fake packet either A) over both links or B) alternating links
 
@@ -39,7 +39,6 @@ Aurora packets:
   CRC:    | ---------------------------------- Aurora CRC Word ---------------------------------- |
 */
 
-reg [4:0] cell_index=CELL_INDEX;
 reg [8:0] fofb_index=FOFB_INDEX_INIT;
 
 localparam [31:0] FAKE_CRC = 32'hADADFACE;
@@ -69,17 +68,17 @@ reg [31:0] tdata_ccw=0, tdata_cw=0;
 reg tvalid_ccw=1'b0, tvalid_cw=1'b0;
 reg tlast_ccw=1'b0, tlast_cw=1'b0;
 
-reg FAstrobe_r=1'b0;
-wire FAstrobe_re = FAstrobe & ~FAstrobe_r;
+reg start_r=1'b0;
+wire start_re = start & ~start_r;
 always @(posedge clk) begin
-  FAstrobe_r <= FAstrobe;
+  start_r <= start;
   if (!running) begin
     tvalid_ccw <= 1'b0;
     tvalid_cw <= 1'b0;
     pkt_counter <= 0;
     tdata_ccw <= 0;
     tdata_cw <= 0;
-    if (FAstrobe_re) begin
+    if (start_re) begin
       if (mode == 0) begin
         alternate <= 1'b1;
         ch_bitmap <= 2'b01;

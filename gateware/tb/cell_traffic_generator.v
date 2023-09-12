@@ -1,5 +1,5 @@
 /* Cell Controller Interposer and Traffic Generator for testing/simulation
- * Generates a single packet locally in response to rising edge on 'FAstrobe'
+ * Generates a single packet locally in response to rising edge on 'start'
  * which goes out on the CCW link if 'out_ccw' (otherwise the CW link)
  * After the first packet goes out, it becomes a transparent feedthrough
  * on both the CCW and CW links.
@@ -9,7 +9,7 @@ module cell_traffic_generator #(
   parameter [0:0] CELL_INDEX_AUTOINCREMENT = 1'b1
 ) (
   input clk,  // Domain?
-  input FAstrobe,
+  input start,
   input out_ccw, // 1 = output on CCW stream, 0 = output on CW stream
   input [4:0] cell_index,
   // CELL CCW AXI Stream TX (input)
@@ -34,7 +34,7 @@ localparam PKT_SIZE_WORDS = 5;
 localparam PKTW = $clog2(PKT_SIZE_WORDS+1);
 localparam [15:0] MAGIC = 16'hA5BE;
 
-// When FAstrobe received,
+// When start received,
 //   If BPM Traffic generator not present/enabled:
 //     Enable self-increment of packet "Cell Index"
 //     Generate one fake packet with "Cell Index" = 0 (this will self-increment when received on the loopback)
@@ -84,10 +84,10 @@ reg [31:0] tdata=0;
 reg tvalid=1'b0;
 reg tlast=1'b0;
 
-reg FAstrobe_r=1'b0;
-wire FAstrobe_re = FAstrobe & ~FAstrobe_r;
+reg start_r=1'b0;
+wire start_re = start & ~start_r;
 always @(posedge clk) begin
-  FAstrobe_r <= FAstrobe;
+  start_r <= start;
   tlast <= 1'b0;
   if (!running) begin
     tvalid <= 1'b0;
@@ -96,7 +96,7 @@ always @(posedge clk) begin
     stop <= 1'b0;
     // Prepare new packet
     pktram[0] <= {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
-    if (FAstrobe_re) begin
+    if (start_re) begin
       //{tlast, tdata} <= pktram[0];
       out_ccw_r <= out_ccw;
       running <= 1'b1;

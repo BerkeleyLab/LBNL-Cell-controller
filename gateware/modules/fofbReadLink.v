@@ -71,6 +71,7 @@ always @(posedge auroraClk) begin
         state <= S_AWAIT_HEADER;
         isNewPacket <= 1;
         cellCounter <= 0;
+        statusCode <= ST_SUCCESS;
     end
     else begin
         if (updateBPMmapToggle != updateBPMmapToggle_d)
@@ -90,6 +91,7 @@ always @(posedge auroraClk) begin
                         packetBPMmap <= 0;
                     end
                     if (headerMagic == 16'hA5BE) begin  // TODO Magic number
+                        statusCode <= ST_SUCCESS;
                         statusCellIndex <= headerCellIndex;
                         fofbIndex <= headerFOFBindex;
                         statusFOFBenabled <= headerFOFBenabled;
@@ -119,24 +121,21 @@ always @(posedge auroraClk) begin
                         packetBPMmap[fofbIndex] <= 1;
                         if (!allBPMpresent) writeToggle <= !writeToggle;
                     end
-                    if (TLAST) begin
-                        isNewPacket <= 1;
-                        if (TDATA[30]) begin
-                            statusCode <= ST_BAD_PACKET;
-                        end
-                        else begin
-                            if (!allBPMpresent) 
-                                      updateBPMmapToggle <= !updateBPMmapToggle;
-                            statusCode <= ST_SUCCESS;
-                            cellCounter <= cellCounter + 1;
-                        end
-                        statusToggle <= !statusToggle;
+                    if (TDATA[30]) begin
+                        statusCode <= ST_BAD_PACKET;
                     end
-                    state <= S_AWAIT_HEADER;
+                    state <= S_AWAIT_LAST;
                 end
 
                 S_AWAIT_LAST: begin
                     if (TLAST) begin
+                        isNewPacket <= 1;
+                        if (statusCode == ST_SUCCESS) begin
+                            if (!allBPMpresent) 
+                                      updateBPMmapToggle <= !updateBPMmapToggle;
+                            cellCounter <= cellCounter + 1;
+                        end
+                        statusToggle <= !statusToggle;
                         state <= S_AWAIT_HEADER;
                     end
                 end

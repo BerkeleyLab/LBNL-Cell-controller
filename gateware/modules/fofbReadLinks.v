@@ -168,6 +168,28 @@ fofbReadLinksMux fofbReadLinksMux (
     .M00_AXIS_TUSER(mergedTUSER),
     .S00_ARB_REQ_SUPPRESS(1'b0),
     .S01_ARB_REQ_SUPPRESS(1'b0));
+`else
+fofbReadLinksMuxSim fofbReadLinksMuxSim (
+    .ACLK(auClk),
+    .ARESETN(~auReset),
+    .S00_AXIS_ACLK(auClk),
+    .S01_AXIS_ACLK(auClk),
+    .S00_AXIS_ARESETN(1'b1),
+    .S01_AXIS_ARESETN(1'b1),
+    .S00_AXIS_TVALID(auCCWstatusStrobe),
+    .S00_AXIS_TDATA({LINK_CCW, auCCWstatusCode, auCCWcellIndex}),
+    .S00_AXIS_TUSER(auCCWstatusFOFBenabled),
+    .S01_AXIS_TVALID(auCWstatusStrobe),
+    .S01_AXIS_TDATA({LINK_CW, auCWstatusCode, auCWcellIndex}),
+    .S01_AXIS_TUSER(auCWstatusFOFBenabled),
+    .M00_AXIS_ACLK(sysClk),
+    .M00_AXIS_ARESETN(1'b1),
+    .M00_AXIS_TVALID(mergedTVALID),
+    .M00_AXIS_TREADY(1'b1),
+    .M00_AXIS_TDATA(mergedTDATA),
+    .M00_AXIS_TUSER(mergedTUSER),
+    .S00_ARB_REQ_SUPPRESS(1'b0),
+    .S01_ARB_REQ_SUPPRESS(1'b0));
 `endif
 
 //
