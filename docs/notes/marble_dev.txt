@@ -18,13 +18,13 @@ Aurora clocks:
   Option 1 sounds easiest.  Any reason why I shouldn't do that?
 
 Aurora packets:
-  | Header (4B) | Data X (4B) | Data Y (4B) | Data S (4B) | CRC (4B) |
-
+  | Header (4B) | Data X (4B) | Data Y (4B) | Data S (4B) | ( CRC (4B) |)
            31                16          15         14             10     9      8               0
   Header: | Magic 0xA5BE (16b) | FOFB Enabled (1b) | Cell Index (5b) | pad (1b) | FOFB Index (9b) |
-  Data X: | ------------------------------- Beam X Position in nm ------------------------------- |
-  Data Y: | ------------------------------- Beam Y Position in nm ------------------------------- |
+  Data X: | -------------------------- Beam Position along X axis in nm ------------------------- |
+  Data Y: | -------------------------- Beam Position along Y axis in nm ------------------------- |
   Data S: | CRC Fault (1b) | ADC Clipping (1b) | --------------- Sum Value (30b) ---------------- |
+  // The CRC below is automatically generated and consumed by the Aurora encoder/decoder
   CRC:    | ---------------------------------- Aurora CRC Word ---------------------------------- |
 
 Aurora Network Path:

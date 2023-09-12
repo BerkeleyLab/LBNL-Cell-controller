@@ -10,7 +10,7 @@ reg gen_traffic_out_ccw=1'b1; // 1 = output on CCW stream, 0 = output on CW stre
 localparam cell_traffic_autoinc = 1'b1;
 reg [4:0] cell_traffic_cell_index=0;
 reg [4:0] bpm_traffic_cell_index=0;
-reg [1:0] bpm_traffic_gen_mode; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
+reg [1:0] bpm_traffic_gen_mode=0; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
 
 // Tell the traffic generators to go
 reg bpm_traffic_trigger=1'b0;
@@ -19,12 +19,31 @@ reg cell_traffic_trigger=1'b0;
 // Fast Acquisition Strobe
 reg FAstrobe=1'b0;
 
+/*
 initial begin
   if ($test$plusargs("vcd")) begin
     $dumpfile("fofb_loopback_tb.vcd");
     $dumpvars;
   end
 end
+*/
+
+// VCD dump file for gtkwave
+reg [64*8-1:0] dumpfile; // 64-chars max
+reg do_cell_loopback_test=1'b0;
+reg do_bpm_loopback_test=1'b0;
+initial begin
+  if (! $value$plusargs("df=%s", dumpfile)) begin
+    $display("No dumpfile name supplied; Wave data will not be saved.");
+  end else begin
+    $dumpfile(dumpfile);
+    $dumpvars;
+  end
+  #1;
+  if      (dumpfile == "cell_loop_check.vcd") do_cell_loopback_test=1'b1;
+  else if (dumpfile == "bpm_loop_check.vcd")  do_bpm_loopback_test =1'b1;
+end
+
 
 // =========== Timeout Signal ===============
 localparam TOW = 12;
@@ -45,17 +64,32 @@ initial begin
   # 20    FAstrobe = 1'b1;
   # 10    FAstrobe = 1'b0;
   # 200   // Wait for reset to complete
+  if (do_cell_loopback_test) begin
+          $display("Running Cell Controller Loopback test");
           // Send a packet with CELL_INDEX = 0
           cell_traffic_cell_index=0;
-  # 10    cell_traffic_trigger = 1'b1;
-  # 10    cell_traffic_trigger = 1'b0;
+    # 10  cell_traffic_trigger = 1'b1;
+    # 10  cell_traffic_trigger = 1'b0;
           // Wait for forwardCellLink to fill
           timeout = TOSET;
-  # 10    wait (fofbReadLinks.readoutValid || to);
+    # 10  wait (fofbReadLinks.readoutValid || to);
           if (to) $display("FAIL: Timeout waiting for readoutValid");
           else $display("PASS");
-  # 500;  // Give me a bit more on the vcd
-          $finish();
+    # 500;// Give me a bit more on the vcd
+          $finish(0);
+  end else if (do_bpm_loopback_test) begin
+          $display("Running BPM Loopback test");
+          // Start the BPM traffic generator with CELL_INDEX = 0
+          bpm_traffic_cell_index=0;
+    # 10  bpm_traffic_trigger = 1'b1;
+    # 10  bpm_traffic_trigger = 1'b0;
+    # 1000;
+          $display("Done for now");
+          $finish(0);
+  end else begin
+          $display("Nothing to do");
+          $stop(0);
+  end
 end
 
 // =============== Clocks ====================

@@ -22,6 +22,7 @@ all: $(TARGET)_top.bit $(TARGET)_top.mmi
 # Search for .v files here
 vpath %.v $(DSP_DIR)
 vpath %.v $(MODULES_DIR)
+vpath %.v $(TESTBENCH_DIR)
 
 TOP_LVL_DIR = ../../top/$(TARGET)
 

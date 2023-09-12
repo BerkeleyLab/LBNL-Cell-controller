@@ -1,14 +1,14 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Sep 12 18:51:32 2023
+[*] Tue Sep 12 22:05:38 2023
 [*]
-[dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/fofb_loopback_tb.vcd"
-[dumpfile_mtime] "Tue Sep 12 18:48:32 2023"
-[dumpfile_size] 206815
-[savefile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop.gtkw"
+[dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop_check.vcd"
+[dumpfile_mtime] "Tue Sep 12 22:04:31 2023"
+[dumpfile_size] 180736
+[savefile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop_check.gtkw"
 [timestart] 194
 [size] 1920 1016
-[pos] -1 -1
+[pos] -1921 26
 *-8.102938 1205 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] fofb_loopback_tb.
 [treeopen] fofb_loopback_tb.fofbReadLinks.
@@ -17,7 +17,7 @@
 [sst_width] 409
 [signals_width] 358
 [sst_expanded] 1
-[sst_vpaned_height] 289
+[sst_vpaned_height] 280
 @28
 fofb_loopback_tb.sysClk
 fofb_loopback_tb.auroraUserClk

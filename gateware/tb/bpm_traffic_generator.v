@@ -19,7 +19,7 @@ module bpm_traffic_generator #(
   output BPM_CW_AXI_STREAM_RX_tvalid
 );
 
-localparam PKT_SIZE_WORDS = 5;
+localparam PKT_SIZE_WORDS = 4;
 localparam PKTW = $clog2(PKT_SIZE_WORDS+1);
 localparam [15:0] MAGIC = 16'hA5BE;
 
@@ -29,7 +29,7 @@ localparam [15:0] MAGIC = 16'hA5BE;
 
 /*
 Aurora packets:
-  | Header (4B) | Data X (4B) | Data Y (4B) | Data S (4B) | CRC (4B) |
+  | Header (4B) | Data X (4B) | Data Y (4B) | Data S (4B) |( CRC (4B) |)
 
            31                16          15         14             10     9      8               0
   Header: | Magic 0xA5BE (16b) | FOFB Enabled (1b) | Cell Index (5b) | pad (1b) | FOFB Index (9b) |
@@ -50,11 +50,13 @@ integer I;
 initial begin
   // MSb is TLAST
   for (I = 0; I < PKT_SIZE_WORDS; I = I + 1) pktram[I] = 33'h0;
-  pktram[0] = {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
+  pktram[0] = {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};  // Header
+  // Dummy data
+  pktram[1] = {1'b0, 32'h000000ff}; // Pos X
+  pktram[2] = {1'b0, 32'h0000ff00}; // Pos Y
   // NOTE: brittle point - TLAST=1 needs to be placed at pktram[PKT_SIZE_WORDS-1][32]
-  pktram[4] = {1'b1, FAKE_CRC};
+  pktram[3] = {1'b1, 32'h00ff0000}; // CRC fault, ADC clipping, Sum
 end
-
 
 reg running=1'b0;
 // Use this to determine on which channel the data goes out
@@ -69,17 +71,19 @@ reg tvalid_ccw=1'b0, tvalid_cw=1'b0;
 reg tlast_ccw=1'b0, tlast_cw=1'b0;
 
 reg start_r=1'b0;
+reg last_pkt=1'b0;
 wire start_re = start & ~start_r;
 always @(posedge clk) begin
   start_r <= start;
   if (!running) begin
+    last_pkt <= 1'b0;
     tvalid_ccw <= 1'b0;
     tvalid_cw <= 1'b0;
     pkt_counter <= 0;
     tdata_ccw <= 0;
     tdata_cw <= 0;
     if (start_re) begin
-      if (mode == 0) begin
+      if (mode == 2'b00) begin
         alternate <= 1'b1;
         ch_bitmap <= 2'b01;
       end else begin
@@ -108,9 +112,10 @@ always @(posedge clk) begin
     end
     if (pkt_counter == PKT_SIZE_WORDS - 1) begin
       // Done with one packet
-      if (fofb_index == FOFB_INDEX_MAX) begin
+      if (last_pkt) begin
         running <= 1'b0;
       end else begin
+        if (fofb_index == FOFB_INDEX_MAX) last_pkt <= 1'b1;
         // Prepare new packet
         pktram[0] <= {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
         fofb_index <= fofb_index + 1;

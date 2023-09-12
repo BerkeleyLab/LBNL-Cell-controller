@@ -43,8 +43,12 @@ vpath %.v ../modules
 fofb_loopback_tb: fofb_loopback_tb.v $(FOFB_LOOPBACK_SOURCES)
 	$(VERILOG_TB)
 
-fofb_loopback_tb.vcd: fofb_loopback_tb
-	vvp $< +vcd
+cell_loop_check.vcd: fofb_loopback_tb
+	vvp $< +df=$@
+
+bpm_loop_check.vcd: fofb_loopback_tb
+	vvp $< +df=$@
+
 
 # ================================ Verilator ==================================
 # == Note: Verilator header files are in /usr/local/share/verilator

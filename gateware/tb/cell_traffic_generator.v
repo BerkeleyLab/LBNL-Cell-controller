@@ -30,7 +30,7 @@ module cell_traffic_generator #(
   output CELL_CW_AXI_STREAM_TX_tvalid_out
 );
 
-localparam PKT_SIZE_WORDS = 5;
+localparam PKT_SIZE_WORDS = 4;
 localparam PKTW = $clog2(PKT_SIZE_WORDS+1);
 localparam [15:0] MAGIC = 16'hA5BE;
 
@@ -48,13 +48,12 @@ Aurora packets:
   Data X: | -------------------------- Beam Position along X axis in nm ------------------------- |
   Data Y: | -------------------------- Beam Position along Y axis in nm ------------------------- |
   Data S: | CRC Fault (1b) | ADC Clipping (1b) | --------------- Sum Value (30b) ---------------- |
+  // The CRC below is automatically generated and consumed by the Aurora encoder/decoder
   CRC:    | ---------------------------------- Aurora CRC Word ---------------------------------- |
 */
 
 //reg [4:0] cell_index=CELL_INDEX;
 localparam [8:0] fofb_index=0;
-
-localparam [31:0] FAKE_CRC = 32'hADADFACE;
 
 reg [PKTW-1:0] pkt_counter=0;
 // Note pktram is 33-bit registers (MSb is TLAST)
@@ -63,13 +62,12 @@ integer I;
 initial begin
   // MSb is TLAST
   for (I = 0; I < PKT_SIZE_WORDS; I = I + 1) pktram[I] = 33'h0;
-  pktram[0] = {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};
+  pktram[0] = {1'b0, MAGIC, 1'b1, cell_index, 1'b0, fofb_index};  // Header
   // Dummy data
-  pktram[1] = {1'b0, 32'h000000ff};
-  pktram[2] = {1'b0, 32'h0000ff00};
-  pktram[3] = {1'b0, 32'h00ff0000};
+  pktram[1] = {1'b0, 32'h000000ff}; // Pos X
+  pktram[2] = {1'b0, 32'h0000ff00}; // Pos Y
   // NOTE: brittle point - TLAST=1 needs to be placed at pktram[PKT_SIZE_WORDS-1][32]
-  pktram[4] = {1'b1, FAKE_CRC};
+  pktram[3] = {1'b1, 32'h00ff0000}; // CRC fault, ADC clipping, Sum
 end
 
 reg running=1'b0;

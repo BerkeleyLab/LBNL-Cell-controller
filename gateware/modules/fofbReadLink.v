@@ -46,7 +46,6 @@ localparam ST_SUCCESS    = 2'd0,
 
 //
 // Reception state machine
-//  TODO - New packet bytes require new state here
 localparam S_AWAIT_HEADER      = 3'd0,
            S_AWAIT_X           = 3'd1,
            S_AWAIT_Y           = 3'd2,
@@ -71,13 +70,13 @@ always @(posedge auroraClk) begin
         state <= S_AWAIT_HEADER;
         isNewPacket <= 1;
         cellCounter <= 0;
-        statusCode <= ST_SUCCESS;
     end
     else begin
         if (updateBPMmapToggle != updateBPMmapToggle_d)
                                          bpmBitmap <= bpmBitmap | packetBPMmap;
         if (TVALID) begin
-            if (TLAST && (state != S_AWAIT_LAST)) begin
+            if (TLAST && (state != S_AWAIT_LAST) && (state != S_AWAIT_S)) begin
+                $display("Bad size");
                 statusCode <= ST_BAD_SIZE;
                 statusToggle <= !statusToggle;
                 isNewPacket <= 1;
@@ -98,6 +97,7 @@ always @(posedge auroraClk) begin
                         state <= S_AWAIT_X;
                     end
                     else begin
+                        $display("Bad header");
                         statusCode <= ST_BAD_HEADER;
                         statusToggle <= !statusToggle;
                         isNewPacket <= 1;
@@ -121,21 +121,25 @@ always @(posedge auroraClk) begin
                         packetBPMmap[fofbIndex] <= 1;
                         if (!allBPMpresent) writeToggle <= !writeToggle;
                     end
-                    if (TDATA[30]) begin
-                        statusCode <= ST_BAD_PACKET;
-                    end
-                    state <= S_AWAIT_LAST;
-                end
-
-                S_AWAIT_LAST: begin
+                    // TLAST should always be asserted here
                     if (TLAST) begin
                         isNewPacket <= 1;
-                        if (statusCode == ST_SUCCESS) begin
+                        if (TDATA[30]) begin
+                            statusCode <= ST_BAD_PACKET;
+                        end
+                        else begin
                             if (!allBPMpresent) 
                                       updateBPMmapToggle <= !updateBPMmapToggle;
                             cellCounter <= cellCounter + 1;
                         end
                         statusToggle <= !statusToggle;
+                    end else begin
+                    end
+                    state <= S_AWAIT_HEADER;
+                end
+
+                S_AWAIT_LAST: begin
+                    if (TLAST) begin
                         state <= S_AWAIT_HEADER;
                     end
                 end

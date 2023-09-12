@@ -1,0 +1,31 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Tue Sep 12 22:25:37 2023
+[*]
+[dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/bpm_loop_check.vcd"
+[dumpfile_mtime] "Tue Sep 12 22:23:15 2023"
+[dumpfile_size] 92310
+[savefile] "/home/kpenney/repos/cell-controller/gateware/tb/bpm_loop_check.gtkw"
+[timestart] 0
+[size] 1920 1016
+[pos] -1971 -24
+*-7.573521 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 409
+[signals_width] 294
+[sst_expanded] 1
+[sst_vpaned_height] 289
+@28
+fofb_loopback_tb.auroraUserClk
+fofb_loopback_tb.sysClk
+fofb_loopback_tb.BPM_CCW_AXI_STREAM_RX_tvalid
+@22
+fofb_loopback_tb.BPM_CCW_AXI_STREAM_RX_tdata[31:0]
+@28
+fofb_loopback_tb.BPM_CCW_AXI_STREAM_RX_tlast
+fofb_loopback_tb.BPM_CW_AXI_STREAM_RX_tvalid
+@22
+fofb_loopback_tb.BPM_CW_AXI_STREAM_RX_tdata[31:0]
+@29
+fofb_loopback_tb.BPM_CW_AXI_STREAM_RX_tlast
+[pattern_trace] 1
+[pattern_trace] 0
