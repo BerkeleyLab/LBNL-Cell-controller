@@ -191,7 +191,7 @@ readBPMlink #(.dbg("false")) readCWlink (
               .outputData(cwLinkData),
               .statusStrobe(CWstatusStrobe),
               .statusCode(CWstatusCode));
-`ifndef SIMULATE
+
 readBPMlinksMux readBPMlinksMux (.ACLK(auroraUserClk),
                                  .ARESETN(1'b1),
                                  .S00_AXIS_ACLK(auroraUserClk),
@@ -209,25 +209,6 @@ readBPMlinksMux readBPMlinksMux (.ACLK(auroraUserClk),
                                  .M00_AXIS_TDATA(mergedLinkTDATA),
                                  .S00_ARB_REQ_SUPPRESS(1'b0),
                                  .S01_ARB_REQ_SUPPRESS(1'b0));
-`else
-readBPMlinksMuxSim readBPMlinksMuxSim (.ACLK(auroraUserClk),
-                                 .ARESETN(1'b1),
-                                 .S00_AXIS_ACLK(auroraUserClk),
-                                 .S01_AXIS_ACLK(auroraUserClk),
-                                 .S00_AXIS_ARESETN(1'b1),
-                                 .S01_AXIS_ARESETN(1'b1),
-                                 .S00_AXIS_TVALID(ccwLinkStrobe),
-                                 .S01_AXIS_TVALID(cwLinkStrobe),
-                                 .S00_AXIS_TDATA(ccwLinkData),
-                                 .S01_AXIS_TDATA(cwLinkData),
-                                 .M00_AXIS_ACLK(auroraUserClk),
-                                 .M00_AXIS_ARESETN(1'b1),
-                                 .M00_AXIS_TVALID(mergedLinkTVALID),
-                                 .M00_AXIS_TREADY(mergedLinkTREADY),
-                                 .M00_AXIS_TDATA(mergedLinkTDATA),
-                                 .S00_ARB_REQ_SUPPRESS(1'b0),
-                                 .S01_ARB_REQ_SUPPRESS(1'b0));
-`endif
 
 // Dissect merged data word
 wire                 [15:0] mergedDataHeader;

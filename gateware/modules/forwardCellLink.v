@@ -116,7 +116,6 @@ end
 
 // Merge incoming and local streams
 // 256-deep packet-mode FIFO on incoming cell stream and on local stream
-`ifndef SIMULATE
 forwardCellLinkMux forwardCellLinkMux (.ACLK(auroraUserClk),
                                        .ARESETN(~muxReset),
                                        .S00_AXIS_ACLK(auroraUserClk),
@@ -137,27 +136,5 @@ forwardCellLinkMux forwardCellLinkMux (.ACLK(auroraUserClk),
                                        .M00_AXIS_TLAST(mergedRxTLAST),
                                        .S00_ARB_REQ_SUPPRESS(1'b0),
                                        .S01_ARB_REQ_SUPPRESS(1'b0));
-`else
-forwardCellLinkMuxSim forwardCellLinkMuxSim (.ACLK(auroraUserClk),
-                                       .ARESETN(~muxReset),
-                                       .S00_AXIS_ACLK(auroraUserClk),
-                                       .S01_AXIS_ACLK(auroraUserClk),
-                                       .S00_AXIS_ARESETN(~muxReset),
-                                       .S01_AXIS_ARESETN(~muxReset),
-                                       .S00_AXIS_TVALID(cellLinkRxTVALID),
-                                       .S00_AXIS_TDATA(cellLinkRxForwardData),
-                                       .S00_AXIS_TLAST(cellLinkRxTLAST),
-                                       .S01_AXIS_TVALID(localRxTVALID),
-                                       .S01_AXIS_TDATA(localRxTDATA),
-                                       .S01_AXIS_TLAST(localRxTLAST),
-                                       .M00_AXIS_ACLK(auroraUserClk),
-                                       .M00_AXIS_ARESETN(~muxReset),
-                                       .M00_AXIS_TVALID(mergedRxTVALID),
-                                       .M00_AXIS_TREADY(1'b1),
-                                       .M00_AXIS_TDATA(mergedRxTDATA),
-                                       .M00_AXIS_TLAST(mergedRxTLAST),
-                                       .S00_ARB_REQ_SUPPRESS(1'b0),
-                                       .S01_ARB_REQ_SUPPRESS(1'b0));
-`endif
 
 endmodule

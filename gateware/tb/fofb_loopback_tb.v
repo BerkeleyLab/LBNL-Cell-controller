@@ -43,7 +43,7 @@ localparam MAX_BPMS_PER_CELL  = 32;
 localparam SETPOINT_ADDR_WIDTH = $clog2(2*MAX_BPMS_PER_CELL);
 integer I;
 initial begin
-  for (I = 0; I < (1<<SETPOINT_ADDR_WIDTH)-1; I = I + 1) readBPMlinks.dpram[I] = 0;
+  for (I = 0; I < (1<<(1+SETPOINT_ADDR_WIDTH))-1; I = I + 1) readBPMlinks.dpram[I] = 0;
 end
 
 // =========== Timeout Signal ===============

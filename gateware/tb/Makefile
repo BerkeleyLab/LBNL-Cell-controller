@@ -30,9 +30,10 @@ VERILOG_TB = $(VERILOG) $(VG_ALL) $(V_TB) ${VFLAGS} -o $@ $(filter %v, $^)
 FOFB_LOOPBACK_SOURCES=axi_stream_loopback.v \
 											bpm_traffic_generator.v \
 											cell_traffic_generator.v \
-											forwardCellLinkMuxSim.v \
-											fofbReadLinksMuxSim.v \
-											readBPMlinksMuxSim.v
+											stream_mux.v \
+											forwardCellLinkMux.v \
+											fofbReadLinksMux.v \
+											readBPMlinksMux.v
 MODULES=../modules
 SYNTH_SOURCES=readBPMlinks.v forwardCellLink.v fofbReadLinks.v fofbDSP.v
 SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v fofbCalc.v psSetpointCalc.v
@@ -48,6 +49,12 @@ cell_loop_check.vcd: fofb_loopback_tb
 	vvp $< +df=$@
 
 bpm_loop_check.vcd: fofb_loopback_tb
+	vvp $< +df=$@
+
+fifo_tb: fifo_tb.v forwardCellLinkMux.v stream_mux.v
+	$(VERILOG_TB)
+
+fifo_tb.vcd: fifo_tb
 	vvp $< +df=$@
 
 
