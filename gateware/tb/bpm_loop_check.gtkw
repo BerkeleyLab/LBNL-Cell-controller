@@ -1,17 +1,16 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Thu Sep 14 00:08:48 2023
+[*] Thu Sep 14 19:31:47 2023
 [*]
 [dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/bpm_loop_check.vcd"
-[dumpfile_mtime] "Thu Sep 14 00:08:36 2023"
-[dumpfile_size] 200296
+[dumpfile_mtime] "Thu Sep 14 19:18:21 2023"
+[dumpfile_size] 196930
 [savefile] "/home/kpenney/repos/cell-controller/gateware/tb/bpm_loop_check.gtkw"
-[timestart] 0
+[timestart] 505
 [size] 1920 1016
 [pos] -1 -1
-*-7.573521 580 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-5.573521 587 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] fofb_loopback_tb.
-[treeopen] fofb_loopback_tb.readBPMlinks.
 [sst_width] 409
 [signals_width] 438
 [sst_expanded] 1
@@ -59,16 +58,30 @@ fofb_loopback_tb.localBPMs_tvalid
 fofb_loopback_tb.localBPMs_tdata[31:0]
 @28
 fofb_loopback_tb.localBPMs_tlast
+@200
+-forwardCCWcell
+@28
+fofb_loopback_tb.forwardCCWcell.mergedRxTVALID
 @22
-fofb_loopback_tb.readBPMlinks.txXerror[31:0]
-fofb_loopback_tb.readBPMlinks.txYerror[31:0]
-fofb_loopback_tb.readBPMlinks.readoutSetpointData[31:0]
-fofb_loopback_tb.readBPMlinks.auAddr[6:0]
+fofb_loopback_tb.forwardCCWcell.mergedRxTDATA[31:0]
 @28
-fofb_loopback_tb.readBPMlinks.readoutSetpointBank
-@23
-fofb_loopback_tb.readBPMlinks.mergedDataBPMindex[4:0]
+fofb_loopback_tb.forwardCCWcell.localRxTLAST
+fofb_loopback_tb.forwardCCWcell.mergedRxTLAST
+fofb_loopback_tb.forwardCCWcell.cellLinkRxTVALID
+fofb_loopback_tb.forwardCCWcell.cellLinkRxTLAST
+@22
+fofb_loopback_tb.forwardCCWcell.cellLinkRxTDATA[31:0]
+@200
+-cell_traffic_generator
 @28
-fofb_loopback_tb.readBPMlinks.auroraFAstrobe
+fofb_loopback_tb.cell_traffic_generator_i.CELL_CCW_AXI_STREAM_TX_tvalid_in
+fofb_loopback_tb.cell_traffic_generator_i.CELL_CCW_AXI_STREAM_TX_tlast_in
+@22
+fofb_loopback_tb.cell_traffic_generator_i.CELL_CCW_AXI_STREAM_TX_tdata_in[31:0]
+@200
+-forwardCWcell
+@22
+fofb_loopback_tb.forwardCWcell.cellLinkTxTDATA[31:0]
+fofb_loopback_tb.forwardCWcell.mergedRxTDATA[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

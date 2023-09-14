@@ -4,11 +4,7 @@
  * M00_AXIS_TREADY is asserted
  */
 
-module forwardCellLinkMux #(
-  // PACKET_MODE==1: Toggles FIFO on TLAST
-  // PACKET_MODE==0: Toggles FIFO on empty
-  parameter [0:0] PACKET_MODE=1'b1 
-) (
+module forwardCellLinkMux (
   input ACLK, // unused
   input ARESETN, // unused
   input S00_AXIS_ACLK,
