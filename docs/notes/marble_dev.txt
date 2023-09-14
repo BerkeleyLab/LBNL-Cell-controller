@@ -61,6 +61,13 @@ Verilator Live Simulator:
     CELL CW     in/out
     GPIO        in/out      Emulate Microblaze transactions on "GPIO_OUT" and "GPIO_IN"
 
+230912:
+  TODO:
+    * Need to fill in readBPMlinks.dpram somehow (either by bus transactions or $readmemh)
+  There is a dedicated bram on memory map (not the GPIO_OUT/IN bus) which is written to
+  in [software/fastFeedback.c]: ffbStashSetpoints() in response to [epics.c] handleCommand()
+  when (command & CC_PROTOCOL_CMD_MASK_HI) == CC_PROTOCOL_CMD_HI_I32ARRAY_OUT.
+
 230911:
   The cell controller loop seems to be working well in the testbench.
   Added an incrementing feature to the traffic generator which increments the cell_index

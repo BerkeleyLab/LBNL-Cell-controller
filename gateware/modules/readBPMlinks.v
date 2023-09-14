@@ -91,9 +91,9 @@ parameter FOFB_INDEX_WIDTH    = 9;
 // Cell settings from IOC -- updated at beginning of transfer session
 // This ensures consistent set of BPM count and setpoints.
 //
-reg                         sysCsrSetpointBank;
+reg                         sysCsrSetpointBank=1'b0;
 reg  [CELL_INDEX_WIDTH-1:0] sysCsrCellIndex;
-reg   [BPM_COUNT_WIDTH-1:0] sysCsrBPMcount;
+reg   [BPM_COUNT_WIDTH-1:0] sysCsrBPMcount=0;
 wire  [BPM_COUNT_WIDTH-1:0] sysReadoutBPMcount;
 reg                         sysCCWinhibit = 0;
 reg                         sysCWinhibit = 0;
@@ -102,7 +102,7 @@ wire [CELL_INDEX_WIDTH-1:0] auCellIndex;
 wire  [BPM_COUNT_WIDTH-1:0] auBPMcount;
 wire                        auCCWinhibit;
 wire                        auCWinhibit;
-reg                         readoutSetpointBank;
+reg                         readoutSetpointBank=1'b0;
 reg  [CELL_INDEX_WIDTH-1:0] readoutCellIndex;
 reg   [BPM_COUNT_WIDTH-1:0] readoutBPMcount, readoutBPMcounter;
 reg                         readoutCCWinhibit;
@@ -209,6 +209,24 @@ readBPMlinksMux readBPMlinksMux (.ACLK(auroraUserClk),
                                  .M00_AXIS_TDATA(mergedLinkTDATA),
                                  .S00_ARB_REQ_SUPPRESS(1'b0),
                                  .S01_ARB_REQ_SUPPRESS(1'b0));
+`else
+readBPMlinksMuxSim readBPMlinksMuxSim (.ACLK(auroraUserClk),
+                                 .ARESETN(1'b1),
+                                 .S00_AXIS_ACLK(auroraUserClk),
+                                 .S01_AXIS_ACLK(auroraUserClk),
+                                 .S00_AXIS_ARESETN(1'b1),
+                                 .S01_AXIS_ARESETN(1'b1),
+                                 .S00_AXIS_TVALID(ccwLinkStrobe),
+                                 .S01_AXIS_TVALID(cwLinkStrobe),
+                                 .S00_AXIS_TDATA(ccwLinkData),
+                                 .S01_AXIS_TDATA(cwLinkData),
+                                 .M00_AXIS_ACLK(auroraUserClk),
+                                 .M00_AXIS_ARESETN(1'b1),
+                                 .M00_AXIS_TVALID(mergedLinkTVALID),
+                                 .M00_AXIS_TREADY(mergedLinkTREADY),
+                                 .M00_AXIS_TDATA(mergedLinkTDATA),
+                                 .S00_ARB_REQ_SUPPRESS(1'b0),
+                                 .S01_ARB_REQ_SUPPRESS(1'b0));
 `endif
 
 // Dissect merged data word
@@ -275,6 +293,7 @@ always @(posedge auroraUserClk) begin
 
         FWST_SEND_HEADER: begin
             if (mergedLinkTVALID) begin
+                $display("receivedBitmap[%d] = %d", mergedDataBPMindex, receivedBitmap[mergedDataBPMindex]);
                 if (receivedBitmap[mergedDataBPMindex] == 0) begin
                     receivedBitmap[mergedDataBPMindex] <= 1;
                     readoutBPMcounter <= readoutBPMcounter + 1;

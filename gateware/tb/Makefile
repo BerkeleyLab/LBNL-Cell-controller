@@ -31,7 +31,8 @@ FOFB_LOOPBACK_SOURCES=axi_stream_loopback.v \
 											bpm_traffic_generator.v \
 											cell_traffic_generator.v \
 											forwardCellLinkMuxSim.v \
-											fofbReadLinksMuxSim.v
+											fofbReadLinksMuxSim.v \
+											readBPMlinksMuxSim.v
 MODULES=../modules
 SYNTH_SOURCES=readBPMlinks.v forwardCellLink.v fofbReadLinks.v fofbDSP.v
 SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v fofbCalc.v psSetpointCalc.v

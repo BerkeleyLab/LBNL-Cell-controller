@@ -7,10 +7,12 @@ module fofb_loopback_tb;
 //////////////////////////////////////////////////////////////////////////////
 // Simulation Controls
 reg gen_traffic_out_ccw=1'b1; // 1 = output on CCW stream, 0 = output on CW stream
-localparam cell_traffic_autoinc = 1'b1;
+localparam cell_traffic_autoinc=1'b1;
 reg [4:0] cell_traffic_cell_index=0;
 reg [4:0] bpm_traffic_cell_index=0;
 reg [1:0] bpm_traffic_gen_mode=0; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
+localparam [8:0] bpm_traffic_fofb_init=0;
+localparam [8:0] bpm_traffic_fofb_max=7;
 
 // Tell the traffic generators to go
 reg bpm_traffic_trigger=1'b0;
@@ -18,15 +20,6 @@ reg cell_traffic_trigger=1'b0;
 
 // Fast Acquisition Strobe
 reg FAstrobe=1'b0;
-
-/*
-initial begin
-  if ($test$plusargs("vcd")) begin
-    $dumpfile("fofb_loopback_tb.vcd");
-    $dumpvars;
-  end
-end
-*/
 
 // VCD dump file for gtkwave
 reg [64*8-1:0] dumpfile; // 64-chars max
@@ -44,6 +37,14 @@ initial begin
   else if (dumpfile == "bpm_loop_check.vcd")  do_bpm_loopback_test =1'b1;
 end
 
+// ========= Fill BPM Setpoints =============
+// TODO - Initialize with useful values (currently just ensuring no X's in sim)
+localparam MAX_BPMS_PER_CELL  = 32;
+localparam SETPOINT_ADDR_WIDTH = $clog2(2*MAX_BPMS_PER_CELL);
+integer I;
+initial begin
+  for (I = 0; I < (1<<SETPOINT_ADDR_WIDTH)-1; I = I + 1) readBPMlinks.dpram[I] = 0;
+end
 
 // =========== Timeout Signal ===============
 localparam TOW = 12;
@@ -59,6 +60,10 @@ initial begin
   # 10;
           // Set expected Cell Controller count
           fofbReadLinks.cellCount = 32;
+          // Set expected BPM count
+          readBPMlinks.sysCsrCellIndex = 0; // TODO - Is this ok?  Should it not be == cell_traffic_cell_index?
+          readBPMlinks.sysCsrBPMcount = bpm_traffic_fofb_max - bpm_traffic_fofb_init + 1;
+          readBPMlinks.sysCsrSetpointBank = 1'b0;
           // Reset statistics
           FAstrobe = 1'b0;
   # 20    FAstrobe = 1'b1;
@@ -79,6 +84,12 @@ initial begin
           $finish(0);
   end else if (do_bpm_loopback_test) begin
           $display("Running BPM Loopback test");
+          // Need to send a second FAstrobe because readBPMlinks discards
+          // the first set of BPM data
+          FAstrobe = 1'b0;
+  # 20    FAstrobe = 1'b1;
+  # 10    FAstrobe = 1'b0;
+  # 200   // Wait for reset to complete
           // Start the BPM traffic generator with CELL_INDEX = 0
           bpm_traffic_cell_index=0;
     # 10  bpm_traffic_trigger = 1'b1;
@@ -132,7 +143,7 @@ reg auroraReset=1'b0;
 // Setpoints read/write bus control
 reg [31:0] bpm_setpoints_wdata=0;
 reg [15:0] bpm_setpoints_addr=0;
-reg bpm_setpoints_wenable;
+reg bpm_setpoints_wenable=1'b0;
 wire [31:0] bpm_setpoints_rdata;
 
 // These can be exercised for testing
@@ -408,6 +419,8 @@ cell_traffic_generator #(
 );
 
 bpm_traffic_generator #(
+  .FOFB_INDEX_INIT(bpm_traffic_fofb_init),
+  .FOFB_INDEX_MAX(bpm_traffic_fofb_max)
   ) bpm_traffic_generator_i (
   .clk(auroraUserClk), // input
   .start(bpm_traffic_trigger), // input

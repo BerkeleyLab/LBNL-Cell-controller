@@ -1,4 +1,7 @@
 /* Simulated version of forwardCellLinkMux.v
+ * First-word-fallthrough FIFO: data is available on M00_AXIS_TDATA/TVALID
+ * whenever the FIFO is not empty, but the FIFO will not increment unless
+ * M00_AXIS_TREADY is asserted
  */
 
 module forwardCellLinkMuxSim (
@@ -19,10 +22,10 @@ module forwardCellLinkMuxSim (
   // Output Stream
   input M00_AXIS_ACLK,
   input M00_AXIS_ARESETN,
-  output reg M00_AXIS_TVALID=0,
+  output M00_AXIS_TVALID,
   input M00_AXIS_TREADY,
-  output reg [31:0] M00_AXIS_TDATA=0,
-  output reg M00_AXIS_TLAST=0,
+  output [31:0] M00_AXIS_TDATA,
+  output M00_AXIS_TLAST,
   input S00_ARB_REQ_SUPPRESS,
   input S01_ARB_REQ_SUPPRESS
 );
@@ -45,6 +48,13 @@ reg [FIFO_CW-1:0] ip01=0; // Input pointer
 reg [FIFO_CW-1:0] op01=0; // Output pointer
 reg full01=1'b0; // One extra bit
 wire empty01 = (ip01 == op01) & ~full01;
+integer I;
+initial begin
+  for (I = 0; I < FIFO_DEPTH-1; I = I + 1) begin
+    ram00[I] = 0;
+    ram01[I] = 0;
+  end
+end
 
 // FIFO_00 Input
 always @(posedge S00_AXIS_ACLK) begin
@@ -84,41 +94,59 @@ always @(posedge S01_AXIS_ACLK) begin
   end
 end
 
+wire f00_tlast;
+wire [31:0] f00_tdata;
+assign {f00_tlast, f00_tdata} = ram00[op00];
+wire f00_tvalid = ~empty00;
+
+wire f01_tlast;
+wire [31:0] f01_tdata;
+assign {f01_tlast, f01_tdata} = ram01[op01];
+wire f01_tvalid = ~empty01;
+
 reg sel=1'b0;
+assign M00_AXIS_TDATA = sel ? f01_tdata : f00_tdata;
+assign M00_AXIS_TVALID = sel ? f01_tvalid : f00_tvalid;
+assign M00_AXIS_TLAST = sel ? f01_tlast : f00_tlast;
+
 // Output of FIFO_00 and FIFO_01
 // Currently only toggles when FIFO is empty. Could change this to
 // toggle on TLAST if we want to.
 always @(posedge M00_AXIS_ACLK) begin
-  M00_AXIS_TLAST <= 1'b0;
-  M00_AXIS_TVALID <= 1'b0;
   if (~M00_AXIS_ARESETN) begin
     op00 <= 0;
     op01 <= 0;
     sel <= 1'b0;
-  end else if (M00_AXIS_TREADY) begin
+  end else begin
     if (~sel) begin
       if (~empty00) begin
-        {M00_AXIS_TLAST, M00_AXIS_TDATA} <= ram00[op00];
-        M00_AXIS_TVALID <= 1'b1;
-        if (op00 == FIFO_DEPTH-1) begin
-          op00 <= 0;
-        end else begin
-          op00 <= op00 + 1;
+        if (M00_AXIS_TREADY) begin
+          if (op00 == FIFO_DEPTH-1) begin
+            op00 <= 0;
+          end else begin
+            op00 <= op00 + 1;
+          end
         end
       end else begin  // If empty, toggle sel
-        if (!S00_ARB_REQ_SUPPRESS) sel <= 1'b1;
+        if ((~S00_ARB_REQ_SUPPRESS) && ~empty01) begin
+          sel <= 1'b1;
+          //$display("Toggling to 01");
+        end
       end
     end else begin // if (sel)
       if (~empty01) begin
-        {M00_AXIS_TLAST, M00_AXIS_TDATA} <= ram01[op01];
-        M00_AXIS_TVALID <= 1'b1;
-        if (op01 == FIFO_DEPTH-1) begin
-          op01 <= 0;
-        end else begin
-          op01 <= op01 + 1;
+        if (M00_AXIS_TREADY) begin
+          if (op01 == FIFO_DEPTH-1) begin
+            op01 <= 0;
+          end else begin
+            op01 <= op01 + 1;
+          end
         end
       end else begin  // If empty, toggle sel
-        if (!S01_ARB_REQ_SUPPRESS) sel <= 1'b0;
+        if ((~S01_ARB_REQ_SUPPRESS) && ~empty00) begin
+          sel <= 1'b0;
+          //$display("Toggling to 00");
+        end
       end
     end
   end

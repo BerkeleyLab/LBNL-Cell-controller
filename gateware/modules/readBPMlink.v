@@ -47,11 +47,12 @@ always @(posedge clk) begin
         else begin
             case (state)
             S_AWAIT_HEADER: begin
-                if (TDATA[31:16] == 16'hA5BE) begin
+                if (TDATA[31:16] == 16'hA5BE) begin // TODO magic number
                     outputData[96+:16] <= TDATA[15:0];
                     state <= S_AWAIT_X;
                 end
                 else begin
+                    $display("Bad header");
                     statusCode <= ST_BAD_HEADER;
                     statusToggle <= !statusToggle;
                     state <= S_AWAIT_LAST;
@@ -72,6 +73,7 @@ always @(posedge clk) begin
                 outputData[0+:32] <= { TDATA[31], 1'b0, TDATA[29:0] };
                 if (TLAST) begin
                     if (CRC_VALID && CRC_PASS && !TDATA[31]) begin
+                        $display("Success");
                         if (!inhibit) outputToggle <= !outputToggle;
                         statusCode <= ST_SUCCESS;
                     end
@@ -81,6 +83,7 @@ always @(posedge clk) begin
                     state <= S_AWAIT_HEADER;
                 end
                 else begin
+                    $display("Bad size");
                     statusCode <= ST_BAD_SIZE;
                     state <= S_AWAIT_LAST;
                 end
