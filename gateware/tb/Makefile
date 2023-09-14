@@ -21,7 +21,7 @@ TB_DIR = .
 
 # Copied from bedrock/build-tools/top_rules.mk
 VERILOG = iverilog$(ICARUS_SUFFIX) -Wall -Wno-macro-redefinition
-VG_ALL = -DSIMULATE
+VG_ALL = -DSIMULOOPS
 V_TB = -Wno-timescale
 INC_DIR=../top/cctrl_marble
 VFLAGS = ${VFLAGS_$@} -I$(INC_DIR)
@@ -36,7 +36,8 @@ FOFB_LOOPBACK_SOURCES=axi_stream_loopback.v \
 											readBPMlinksMux.v
 MODULES=../modules
 SYNTH_SOURCES=readBPMlinks.v forwardCellLink.v fofbReadLinks.v fofbDSP.v
-SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v fofbCalc.v psSetpointCalc.v
+#SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v fofbCalc.v psSetpointCalc.v
+SYNTH_SOURCES+=forwardData.v readBPMlink.v fofbReadLink.v
 SYNTH_SOURCES+=reduceWidth.v fofbDataDPRAM.v
 FOFB_LOOPBACK_SOURCES+=$(addprefix $(MODULES)/,$(SYNTH_SOURCES))
 

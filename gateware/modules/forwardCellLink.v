@@ -116,6 +116,7 @@ end
 
 // Merge incoming and local streams
 // 256-deep packet-mode FIFO on incoming cell stream and on local stream
+`ifndef SIMULATE
 forwardCellLinkMux forwardCellLinkMux (.ACLK(auroraUserClk),
                                        .ARESETN(~muxReset),
                                        .S00_AXIS_ACLK(auroraUserClk),
@@ -136,5 +137,6 @@ forwardCellLinkMux forwardCellLinkMux (.ACLK(auroraUserClk),
                                        .M00_AXIS_TLAST(mergedRxTLAST),
                                        .S00_ARB_REQ_SUPPRESS(1'b0),
                                        .S01_ARB_REQ_SUPPRESS(1'b0));
+`endif
 
 endmodule

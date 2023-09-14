@@ -76,6 +76,8 @@ always @(posedge clk) begin
     end
 end
 
+// FIXME Temporary hack around "SIMULATE" usage
+`ifndef SIMULOOPS
 // Fast orbit feedback corrector setpoint calculation
 wire                                                  fofbToggle;
 wire[(RESULT_COUNT*MATRIX_MULTIPLY_RESULT_WIDTH)-1:0] fofbData;
@@ -129,5 +131,6 @@ psSetpointCalc #(
     .SETPOINT_TVALID(SETPOINT_TVALID),
     .SETPOINT_TLAST(SETPOINT_TLAST),
     .SETPOINT_TDATA(SETPOINT_TDATA));
+`endif
 
 endmodule
