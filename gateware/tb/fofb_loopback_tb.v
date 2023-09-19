@@ -11,8 +11,12 @@ localparam cell_traffic_autoinc=1'b1;
 reg [4:0] cell_traffic_cell_index=0;
 reg [4:0] bpm_traffic_cell_index=0;
 reg [1:0] bpm_traffic_gen_mode=0; // 0 = alternate, 1 = CCW only, 2 = CW only, 3 = both
+reg loopback_close_loop_ccw=1'b1;
+reg loopback_close_loop_cw=1'b1;
 localparam [8:0] bpm_traffic_fofb_init=0;
 localparam [8:0] bpm_traffic_fofb_max=7;
+
+reg [31:0] expectedRxBitmap=((1 << (bpm_traffic_fofb_max+1))-1) << bpm_traffic_fofb_init;
 
 // Tell the traffic generators to go
 reg bpm_traffic_trigger=1'b0;
@@ -68,20 +72,20 @@ initial begin
           FAstrobe = 1'b0;
   # 20    FAstrobe = 1'b1;
   # 10    FAstrobe = 1'b0;
-  # 200   // Wait for reset to complete
+  wait (auFAstrobeDelayed); // Wait for reset to complete
   if (do_cell_loopback_test) begin
           $display("Running Cell Controller Loopback test");
           // Send a packet with CELL_INDEX = 0
+          loopback_close_loop_ccw=1'b1;
+          loopback_close_loop_cw=1'b1;
           cell_traffic_cell_index=0;
     # 10  cell_traffic_trigger = 1'b1;
     # 10  cell_traffic_trigger = 1'b0;
           // Wait for forwardCellLink to fill
           timeout = TOSET;
     # 10  wait (fofbReadLinks.readoutValid || to);
-          if (to) $display("FAIL: Timeout waiting for readoutValid");
-          else $display("PASS");
-    # 500;// Give me a bit more on the vcd
-          $finish(0);
+          if (to) begin $display("FAIL: Timeout waiting for readoutValid"); $stop(0); end
+          else begin $display("PASS"); $finish(0); end
   end else if (do_bpm_loopback_test) begin
           $display("Running BPM Loopback test");
           // Need to send a second FAstrobe because readBPMlinks discards
@@ -89,14 +93,26 @@ initial begin
           FAstrobe = 1'b0;
   # 20    FAstrobe = 1'b1;
   # 10    FAstrobe = 1'b0;
-  # 200   // Wait for reset to complete
+  wait (auFAstrobeDelayed); // Wait for reset to complete
           // Start the BPM traffic generator with CELL_INDEX = 0
           bpm_traffic_cell_index=0;
-    # 10  bpm_traffic_trigger = 1'b1;
-    # 10  bpm_traffic_trigger = 1'b0;
-    # 1000;
-          $display("Done for now");
-          $finish(0);
+  # 10    bpm_traffic_trigger = 1'b1;
+  # 10    bpm_traffic_trigger = 1'b0;
+          timeout = TOSET;
+  # 10 wait (localBPMs_tlast || to);
+          if (to) begin $display("FAIL: Timeout waiting for localBPMs_tlast"); $stop(0); end
+          // Send another FAstrobe to transfer readBPMlinks.rxBitmap to sysRxBitmap
+          FAstrobe = 1'b0;
+  # 20    FAstrobe = 1'b1;
+  # 10    FAstrobe = 1'b0;
+  wait (auFAstrobeDelayed); // Wait for reset to complete
+  # 10    if (sysRxBitmap != expectedRxBitmap) begin
+            $display("FAIL: RxBitmap 0x%x != 0x%x", sysRxBitmap, expectedRxBitmap);
+            $stop(0);
+          end else begin
+            $display("PASS");
+            $finish(0);
+          end
   end else begin
           $display("Nothing to do");
           $stop(0);
@@ -137,7 +153,6 @@ always @(posedge sysClk) begin
   sysFAstrobe <= sysFAstrobe_m;
 end
 
-//wire bpm_traffic_trigger = auFAstrobeDelayed & bpm_traffic_gen_en;
 reg localFOFBcontrol=1'b0; // to readBPMlinks
 reg auroraReset=1'b0;
 // Setpoints read/write bus control
@@ -155,6 +170,9 @@ reg CELL_CCW_AuroraCoreStatus_crc_valid=1'b1;
 reg CELL_CCW_AuroraCoreStatus_crc_pass_fail=1'b1;
 reg CELL_CW_AuroraCoreStatus_crc_valid=1'b1;
 reg CELL_CW_AuroraCoreStatus_crc_pass_fail=1'b1;
+
+// Capturing data for simulation
+wire [31:0] sysRxBitmap;
 
 wire [31:0] CELL_CCW_AXI_STREAM_TX_tdata;
 wire CELL_CCW_AXI_STREAM_TX_tlast;
@@ -210,7 +228,7 @@ readBPMlinks #(.faStrobeDebug("false"),
          .GPIO_OUT(32'h0), // input [31:0]
          .sysCsr(), // output [31:0]
          .sysAdditionalStatus(), // output [31:0]
-         .sysRxBitmap(), // output [31:0]
+         .sysRxBitmap(sysRxBitmap), // output [31:0]
          .sysLocalFOFBenabled(localFOFBcontrol),  // input
          .sysSetpointWriteData(bpm_setpoints_wdata), // input [31:0]
          .sysSetpointAddress(bpm_setpoints_addr), // input [15:0]
@@ -253,8 +271,8 @@ wire auCCWcellInhibit, auCWcellInhibit;
 wire auCCWcellStreamValid = CELL_CCW_AXI_STREAM_RX_tvalid && !auCCWcellInhibit;
 wire auCWcellStreamValid  = CELL_CW_AXI_STREAM_RX_tvalid  && !auCWcellInhibit;
 forwardCellLink #(.dbg("false")) forwardCCWcell (
-       .auroraUserClk(auroraUserClk),
-       .auroraFAstrobe(auroraFAstrobe),
+       .auroraUserClk(auroraUserClk), // input
+       .auroraFAstrobe(auroraFAstrobe), // input
 
        .cellLinkRxTVALID(auCCWcellStreamValid), // input
        .cellLinkRxTLAST(CELL_CCW_AXI_STREAM_RX_tlast),  // input
@@ -273,8 +291,8 @@ forwardCellLink #(.dbg("false")) forwardCCWcell (
 );
 
 forwardCellLink #(.dbg("false")) forwardCWcell (
-       .auroraUserClk(auroraUserClk),
-       .auroraFAstrobe(auroraFAstrobe),
+       .auroraUserClk(auroraUserClk), // input
+       .auroraFAstrobe(auroraFAstrobe), // input
 
        .cellLinkRxTVALID(auCWcellStreamValid),  // input
        .cellLinkRxTLAST(CELL_CW_AXI_STREAM_RX_tlast), // input
@@ -375,6 +393,8 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
 // Loopback
 
 axi_stream_loopback axi_stream_loopback_i (
+  .close_loop_ccw(loopback_close_loop_ccw),
+  .close_loop_cw(loopback_close_loop_cw),
   // CELL CCW AXI Stream TX (input)
   .CELL_CCW_AXI_STREAM_TX_tdata(CELL_CCW_AXI_STREAM_TX_tdata_merged), // input [31:0]
   .CELL_CCW_AXI_STREAM_TX_tlast(CELL_CCW_AXI_STREAM_TX_tlast_merged), // input

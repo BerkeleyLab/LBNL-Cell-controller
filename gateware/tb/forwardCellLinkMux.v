@@ -38,7 +38,10 @@ assign {M00_AXIS_TLAST, M00_AXIS_TDATA} = m00_tdata;
 stream_mux #(
   .DW(DW),
   .PACKET_MODE(1'b1),
-  .TLAST_BIT(DW-1)
+  .TLAST_BIT(DW-1),
+  .IDLE_CYCLE_TIMEOUT(2000),
+  .NAME("forwardCellLinkMux"),
+  .TALK(1'b0)
 ) mux (
   .aclk(ACLK), // input
   .aresetn(ARESETN), // input
@@ -54,7 +57,7 @@ stream_mux #(
   .m00_aresetn(M00_AXIS_ARESETN), // input
   .m00_tvalid(M00_AXIS_TVALID), // output
   .m00_tready(M00_AXIS_TREADY), // input
-  .m00_tdata(m00_tdata), // output [31:0]
+  .m00_tdata(m00_tdata), // output [DW-1:0]
   .s00_arb_req_suppress(S00_ARB_REQ_SUPPRESS), // input
   .s01_arb_req_suppress(S01_ARB_REQ_SUPPRESS) // input
 );

@@ -197,6 +197,7 @@ wire intClippedTLAST = active[ACTIVE_MSB] && !active[ACTIVE_MSB-1];
 wire floatClippedTVALID, floatClippedTLAST;
 wire [FLOAT_WIDTH-1:0] floatClippedTDATA;
 `ifndef SIMULATE
+`ifndef TESTBENCH
 psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
     .aclk(clk),
     .s_axis_a_tvalid(intClippedTVALID),
@@ -206,10 +207,12 @@ psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
     .m_axis_result_tlast(floatClippedTLAST),
     .m_axis_result_tdata(floatClippedTDATA));
 `endif
+`endif
 
 /////////////////////////////////////////////////////////////////////////////
 // Convert mA*2^-10 to A
 `ifndef SIMULATE
+`ifndef TESTBENCH
 psSetpointCalcConvertToAmps psSetpointCalcConvertToAmps (
     .aclk(clk),
     .s_axis_a_tvalid(floatClippedTVALID),
@@ -220,6 +223,7 @@ psSetpointCalcConvertToAmps psSetpointCalcConvertToAmps (
     .m_axis_result_tvalid(SETPOINT_TVALID),
     .m_axis_result_tlast(SETPOINT_TLAST),
     .m_axis_result_tdata(SETPOINT_TDATA));
+`endif
 `endif
 
 endmodule

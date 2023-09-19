@@ -2,6 +2,8 @@
  */
 
 module axi_stream_loopback (
+  input close_loop_ccw,
+  input close_loop_cw,
   // CELL CCW AXI Stream TX (input)
   input [31:0] CELL_CCW_AXI_STREAM_TX_tdata,
   input CELL_CCW_AXI_STREAM_TX_tlast,
@@ -20,12 +22,12 @@ module axi_stream_loopback (
   output CELL_CW_AXI_STREAM_RX_tvalid
 );
 
-assign CELL_CCW_AXI_STREAM_RX_tdata = CELL_CCW_AXI_STREAM_TX_tdata;
-assign CELL_CCW_AXI_STREAM_RX_tlast = CELL_CCW_AXI_STREAM_TX_tlast;
-assign CELL_CCW_AXI_STREAM_RX_tvalid = CELL_CCW_AXI_STREAM_TX_tvalid;
+assign CELL_CCW_AXI_STREAM_RX_tdata = close_loop_ccw ? CELL_CCW_AXI_STREAM_TX_tdata : 0;
+assign CELL_CCW_AXI_STREAM_RX_tlast = close_loop_ccw ? CELL_CCW_AXI_STREAM_TX_tlast : 0;
+assign CELL_CCW_AXI_STREAM_RX_tvalid = close_loop_ccw ? CELL_CCW_AXI_STREAM_TX_tvalid : 0;
 
-assign CELL_CW_AXI_STREAM_RX_tdata = CELL_CW_AXI_STREAM_TX_tdata;
-assign CELL_CW_AXI_STREAM_RX_tlast = CELL_CW_AXI_STREAM_TX_tlast;
-assign CELL_CW_AXI_STREAM_RX_tvalid = CELL_CW_AXI_STREAM_TX_tvalid;
+assign CELL_CW_AXI_STREAM_RX_tdata = close_loop_cw ? CELL_CW_AXI_STREAM_TX_tdata : 0;
+assign CELL_CW_AXI_STREAM_RX_tlast = close_loop_cw ? CELL_CW_AXI_STREAM_TX_tlast : 0;
+assign CELL_CW_AXI_STREAM_RX_tvalid = close_loop_cw ? CELL_CW_AXI_STREAM_TX_tvalid : 0;
 
 endmodule

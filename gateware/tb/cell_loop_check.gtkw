@@ -1,29 +1,30 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Tue Sep 12 22:05:38 2023
+[*] Mon Sep 18 20:53:41 2023
 [*]
 [dumpfile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop_check.vcd"
-[dumpfile_mtime] "Tue Sep 12 22:04:31 2023"
-[dumpfile_size] 180736
+[dumpfile_mtime] "Mon Sep 18 20:52:33 2023"
+[dumpfile_size] 207059
 [savefile] "/home/kpenney/repos/cell-controller/gateware/tb/cell_loop_check.gtkw"
-[timestart] 194
+[timestart] 0
 [size] 1920 1016
-[pos] -1921 26
-*-8.102938 1205 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-8.162621 1205 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] fofb_loopback_tb.
-[treeopen] fofb_loopback_tb.fofbReadLinks.
 [treeopen] fofb_loopback_tb.forwardCCWcell.
-[treeopen] fofb_loopback_tb.forwardCWcell.
+[treeopen] fofb_loopback_tb.forwardCCWcell.forwardCellLinkMux.
 [sst_width] 409
 [signals_width] 358
 [sst_expanded] 1
-[sst_vpaned_height] 280
+[sst_vpaned_height] 271
 @28
 fofb_loopback_tb.sysClk
 fofb_loopback_tb.auroraUserClk
 fofb_loopback_tb.FAstrobe
 fofb_loopback_tb.auroraFAstrobe
 fofb_loopback_tb.sysFAstrobe
+fofb_loopback_tb.forwardCCWcell.muxReset
+fofb_loopback_tb.forwardCWcell.muxReset
 @200
 -From cell_traffic_generator CCW side
 @22
@@ -163,19 +164,13 @@ fofb_loopback_tb.fofbReadLinks.cellBitmap[31:0]
 fofb_loopback_tb.fofbReadLinks.cellCount[5:0]
 fofb_loopback_tb.fofbReadLinks.cellCounter[5:0]
 fofb_loopback_tb.fofbReadLinks.fofbCounter[5:0]
-@29
-fofb_loopback_tb.fofbReadLinks.readoutValid
 @28
 fofb_loopback_tb.fofbReadLinks.auCellCWlinkTVALID
 @22
 fofb_loopback_tb.fofbReadLinks.auCellCWlinkTDATA[31:0]
 @28
 fofb_loopback_tb.fofbReadLinks.auCellCWlinkTLAST
-@200
--readCW
-@28
-fofb_loopback_tb.fofbReadLinks.readCW.state[2:0]
-@22
-fofb_loopback_tb.fofbReadLinks.readCW.headerMagic[15:0]
+@29
+fofb_loopback_tb.fofbReadLinks.readoutValid
 [pattern_trace] 1
 [pattern_trace] 0

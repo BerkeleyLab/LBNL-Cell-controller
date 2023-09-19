@@ -36,7 +36,9 @@ assign {M00_AXIS_TUSER, M00_AXIS_TDATA} = m00_tdata;
 
 stream_mux #(
   .DW(DW),
-  .PACKET_MODE(1'b0)
+  .PACKET_MODE(1'b0),
+  .NAME("fofbReadLinksMux"),
+  .TALK(1'b0)
 ) mux (
   .aclk(ACLK), // input
   .aresetn(ARESETN), // input

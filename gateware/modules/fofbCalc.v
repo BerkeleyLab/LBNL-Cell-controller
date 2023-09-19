@@ -188,6 +188,7 @@ fofbDataDPRAM #(.DATA_WIDTH(COEFFICIENT_WIDTH)) coefficientDPRAMY (
 wire [PRODUCT_WIDTH-1:0] productY, productX;
 (*mark_debug=MAT_DBG*)reg[ACCUMULATOR_WIDTH-1:0]accumulatorY, accumulatorX;
 `ifndef SIMULATE
+`ifndef TESTBENCH
 fofbCoefficientMul mulX (.CLK(clk),
                          .A(xVal),
                          .B(coefficientX),
@@ -196,6 +197,7 @@ fofbCoefficientMul mulY (.CLK(clk),
                          .A(yVal),
                          .B(coefficientY),
                          .P(productY));
+`endif
 `endif
 
 // Accumulate dot product
@@ -245,6 +247,7 @@ assign fir_reload_TLAST = coefficientWritePlane;
 assign fir_config_TDATA = coefficientWriteValue[7:0];
 assign fir_config_TVALID = firConfigStrobe && (coefficientWriteRow == r);
 `ifndef SIMULATE
+`ifndef TESTBENCH
 fofbSupplyFilter fir (
   .aclk(clk),
   .s_axis_data_tvalid(fir_S_TVALID),
@@ -261,6 +264,7 @@ fofbSupplyFilter fir (
   .m_axis_data_tdata(fir_M_TDATA),
   .event_s_reload_tlast_missing(fir_reload_tlast_missing[r]),
   .event_s_reload_tlast_unexpected(fir_reload_tlast_unexpected[r]));
+`endif
 `endif
 
 // FIR is configured to have output value contain some bits of fraction

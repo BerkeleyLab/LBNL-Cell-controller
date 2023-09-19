@@ -44,8 +44,8 @@ module cctrl_marble_top #(
 
   input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
   output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
-  input  wire  [1:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
-  output wire  [1:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
+  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
   inout TWI_SDA,
   inout TWI_SCL,
@@ -404,6 +404,7 @@ wire  [8:0] evr_mgt_drp_daddr;
 (* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
 (* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
 
+/*
 `ifndef INCLUDE_FOFB
   // Need to provide refclk for evr_mgt_top since not shared with fofb
   IBUFDS_GTE2 ibufds_gtrefclk_top_i (
@@ -413,6 +414,7 @@ wire  [8:0] evr_mgt_drp_daddr;
     .O(ethRefClk125)                          // output gtrefclk_i
   );
 `endif // `ifndef INCLUDE_FOFB
+*/
 
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
@@ -747,7 +749,6 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .SETPOINT_TLAST(FOFB_SETPOINT_AXIS_TLAST),
     .SETPOINT_TDATA(FOFB_SETPOINT_AXIS_TDATA));
 
-`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
 psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
@@ -878,6 +879,7 @@ fofbEthernet #(
     .ETH_TX_N(QSFP2_TX_N[3]), // H1  MGT_TX_7_N  MGT_TX_7_QSFP_N   QSFP2_TX_4_N Bank 115
     .ETH_TX_P(QSFP2_TX_P[3]));// H2  MGT_TX_7_P  MGT_TX_7_QSFP_P   QSFP2_TX_4_P Bank 115
 
+`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
 fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),

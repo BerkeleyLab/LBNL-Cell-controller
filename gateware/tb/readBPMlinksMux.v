@@ -31,7 +31,9 @@ localparam DW = 112; // TDATA
 
 stream_mux #(
   .DW(DW),
-  .PACKET_MODE(1'b0)
+  .PACKET_MODE(1'b0),
+  .NAME("readBPMlinksMux"),
+  .TALK(1'b0)
 ) mux (
   .aclk(ACLK), // input
   .aresetn(ARESETN), // input

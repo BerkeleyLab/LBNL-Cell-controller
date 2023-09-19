@@ -276,7 +276,7 @@ always @(posedge auroraUserClk) begin
 
         FWST_SEND_HEADER: begin
             if (mergedLinkTVALID) begin
-                $display("receivedBitmap[%d] = %d", mergedDataBPMindex, receivedBitmap[mergedDataBPMindex]);
+                //$display("receivedBitmap[%d] = %d", mergedDataBPMindex, receivedBitmap[mergedDataBPMindex]);
                 if (receivedBitmap[mergedDataBPMindex] == 0) begin
                     receivedBitmap[mergedDataBPMindex] <= 1;
                     readoutBPMcounter <= readoutBPMcounter + 1;
