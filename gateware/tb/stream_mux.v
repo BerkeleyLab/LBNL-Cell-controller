@@ -53,7 +53,7 @@ localparam RAM_WIDTH = DW; // {TLAST, TDATA}
 
 // Two FIFOs
 localparam FIFO_DEPTH = 256; // Must be power of 2 for below full/empty scheme to work
-localparam FIFO_CW = $clog2(FIFO_DEPTH+1);
+localparam FIFO_CW = $clog2(FIFO_DEPTH);
 // FIFO_00
 reg [RAM_WIDTH-1:0] ram00 [0:FIFO_DEPTH-1];
 reg [FIFO_CW:0] ipf00=0, opf00=0; // One extra bit for full calculation

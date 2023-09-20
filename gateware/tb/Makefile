@@ -13,10 +13,11 @@ SOURCES = $(MODULES_DIR)/qsfpMarble.v
 SOURCES+= $(addprefix $(I2CBRIDGE)/,$(filter-out dpram.v, $(I2CBRIDGE_V)))
 SOURCES+= $(DSP)/dpram.v
 
-C_SOURCES=$(SW_SRC_DIR)/qsfp.c
+#C_SOURCES=$(SW_SRC_DIR)/qsfp.c
+C_SOURCES=queue_ref.c udp_simple.c
 
-SIM_DEFINES = -DMARBLE
-INCLUDES=-I$(MAKEF_DIR) -I$(SW_SRC_DIR) -I$(MODULES_DIR)
+SIM_DEFINES = -DMARBLE -DTESTBENCH
+INCLUDES=-I$(MAKEF_DIR) -I$(SW_SRC_DIR) -I$(MODULES_DIR) -I$(GATEWARE_DIR)/top/cctrl_marble
 TB_DIR = .
 
 # Copied from bedrock/build-tools/top_rules.mk
@@ -64,18 +65,25 @@ fifo_tb.vcd: fifo_tb
 # ==       There are useful examples there as well
 # Object directory created by verilator
 VERILATOR_OBJ_DIR = obj_dir
-CPP_SOURCES=qsfpMarble_top_sim.cpp
+CPP_SOURCES=cctrl_top.cpp
 # == NOTE! This Makefile assumes the first .cpp file encountered is the sim
 # ==       source for verilator.  Override if that's not true.
-SOURCES_NO_TB=$(filter-out %_tb.v,$(SOURCES))
+#SOURCES_NO_TB=$(filter-out %_tb.v,$(SOURCES))
+SOURCES_NO_TB=stream_mux.v \
+							forwardCellLinkMux.v \
+							fofbReadLinksMux.v \
+							readBPMlinksMux.v
+
 VL_SIM = $(firstword $(CPP_SOURCES))
-VROOT=qsfpMarble_top
+VROOT=cctrl_verilator_top
 VL_WRAPPER=$(TB_DIR)/$(VROOT).v
 
 VERILATOR_SUPRESSED_WARNINGS=WIDTHEXPAND \
 														 UNUSEDSIGNAL \
 														 UNUSEDPARAM \
-														 PINCONNECTEMPTY
+														 PINCONNECTEMPTY \
+														 VARHIDDEN \
+														 WIDTHTRUNC
 VERILATOR_NOWARN=$(addprefix -Wno-,$(VERILATOR_SUPRESSED_WARNINGS))
 
 VERILATED_TOP = $(VERILATOR_OBJ_DIR)/V$(VROOT)

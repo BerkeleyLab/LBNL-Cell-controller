@@ -197,6 +197,14 @@ fofbCoefficientMul mulY (.CLK(clk),
                          .A(yVal),
                          .B(coefficientY),
                          .P(productY));
+`else
+reg [PRODUCT_WIDTH-1:0] productY_r=0, productX_r=0;
+always @(posedge clk) begin
+  productX_r <= xVal*coefficientX;
+  productY_r <= yVal*coefficientY;
+end
+assign productX = productX_r;
+assign productY = productY_r;
 `endif
 `endif
 
@@ -250,20 +258,29 @@ assign fir_config_TVALID = firConfigStrobe && (coefficientWriteRow == r);
 `ifndef TESTBENCH
 fofbSupplyFilter fir (
   .aclk(clk),
-  .s_axis_data_tvalid(fir_S_TVALID),
-  .s_axis_data_tready(fir_S_TREADY),
-  .s_axis_data_tdata(fir_S_TDATA),
-  .s_axis_config_tvalid(fir_config_TVALID),
-  .s_axis_config_tready(firConfigReady[r]),
-  .s_axis_config_tdata(fir_config_TDATA),
-  .s_axis_reload_tvalid(fir_reload_TVALID),
-  .s_axis_reload_tready(firReloadReady[r]),
-  .s_axis_reload_tlast(fir_reload_TLAST),
-  .s_axis_reload_tdata(fir_reload_TDATA),
-  .m_axis_data_tvalid(fir_M_TVALID),
-  .m_axis_data_tdata(fir_M_TDATA),
-  .event_s_reload_tlast_missing(fir_reload_tlast_missing[r]),
-  .event_s_reload_tlast_unexpected(fir_reload_tlast_unexpected[r]));
+  .s_axis_data_tvalid(fir_S_TVALID), // input
+  .s_axis_data_tready(fir_S_TREADY), // output
+  .s_axis_data_tdata(fir_S_TDATA), // input [31:0]
+  .s_axis_config_tvalid(fir_config_TVALID), // input
+  .s_axis_config_tready(firConfigReady[r]), // output
+  .s_axis_config_tdata(fir_config_TDATA), // input [7:0]
+  .s_axis_reload_tvalid(fir_reload_TVALID), // input
+  .s_axis_reload_tready(firReloadReady[r]), // output
+  .s_axis_reload_tlast(fir_reload_TLAST), // input
+  .s_axis_reload_tdata(fir_reload_TDATA), // input [31:0]
+  .m_axis_data_tvalid(fir_M_TVALID), // output
+  .m_axis_data_tdata(fir_M_TDATA), // output [47:0]
+  .event_s_reload_tlast_missing(fir_reload_tlast_missing[r]), // output
+  .event_s_reload_tlast_unexpected(fir_reload_tlast_unexpected[r])); // output
+`else
+assign fir_S_TREADY=0;
+assign firConfigReady[r]=0;
+assign firReloadReady[r]=0;
+assign fir_M_TVALID=0;
+assign fir_M_TDATA=0;
+assign fir_reload_tlast_missing[r]=0;
+assign fir_reload_tlast_unexpected[r]=0;
+// Avoid UNDRIVEN warnings
 `endif
 `endif
 

@@ -200,12 +200,17 @@ wire [FLOAT_WIDTH-1:0] floatClippedTDATA;
 `ifndef TESTBENCH
 psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
     .aclk(clk),
-    .s_axis_a_tvalid(intClippedTVALID),
-    .s_axis_a_tlast(intClippedTLAST),
-    .s_axis_a_tdata({{AXI_PAD_WIDTH{1'bx}}, psClippedSetpoint}),
-    .m_axis_result_tvalid(floatClippedTVALID),
-    .m_axis_result_tlast(floatClippedTLAST),
-    .m_axis_result_tdata(floatClippedTDATA));
+    .s_axis_a_tvalid(intClippedTVALID), // input
+    .s_axis_a_tlast(intClippedTLAST), // input
+    .s_axis_a_tdata({{AXI_PAD_WIDTH{1'bx}}, psClippedSetpoint}), // input [31:0]
+    .m_axis_result_tvalid(floatClippedTVALID), // output
+    .m_axis_result_tlast(floatClippedTLAST), // output
+    .m_axis_result_tdata(floatClippedTDATA)); // output [31:0]
+`else
+// Avoid UNDRIVEN warning
+assign floatClippedTVALID=0;
+assign floatClippedTLAST=0;
+assign floatClippedTDATA=0;
 `endif
 `endif
 
@@ -215,14 +220,19 @@ psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
 `ifndef TESTBENCH
 psSetpointCalcConvertToAmps psSetpointCalcConvertToAmps (
     .aclk(clk),
-    .s_axis_a_tvalid(floatClippedTVALID),
-    .s_axis_a_tlast(floatClippedTLAST),
-    .s_axis_a_tdata(floatClippedTDATA),
-    .s_axis_b_tvalid(1'b1),
-    .s_axis_b_tdata(32'h3583126f),   // 1.0 / (1000 * 1024)
-    .m_axis_result_tvalid(SETPOINT_TVALID),
-    .m_axis_result_tlast(SETPOINT_TLAST),
-    .m_axis_result_tdata(SETPOINT_TDATA));
+    .s_axis_a_tvalid(floatClippedTVALID), // input
+    .s_axis_a_tlast(floatClippedTLAST), // input
+    .s_axis_a_tdata(floatClippedTDATA), // input [31:0]
+    .s_axis_b_tvalid(1'b1), // input
+    .s_axis_b_tdata(32'h3583126f), // input 1.0 / (1000 * 1024)
+    .m_axis_result_tvalid(SETPOINT_TVALID), // output
+    .m_axis_result_tlast(SETPOINT_TLAST), // output
+    .m_axis_result_tdata(SETPOINT_TDATA)); // output [31:0]
+`else
+// Avoid UNDRIVEN warning
+assign SETPOINT_TVALID=0;
+assign SETPOINT_TLAST=0;
+assign SETPOINT_TDATA=0;
 `endif
 `endif
 

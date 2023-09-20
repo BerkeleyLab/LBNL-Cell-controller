@@ -1129,7 +1129,7 @@ wire DUMMY_UART_LOOPBACK;
         .CELL_CW_AXI_STREAM_TX_tdata(CELL_CW_AXI_STREAM_TX_tdata),  // input
         .CELL_CW_AXI_STREAM_TX_tlast(CELL_CW_AXI_STREAM_TX_tlast),  // input
         .CELL_CW_AXI_STREAM_TX_tvalid(CELL_CW_AXI_STREAM_TX_tvalid),  // input
-        .CELL_CW_AXI_STREAM_TX_tready(CELL_CW_AXI_STREAM_TX_tready),  // input
+        .CELL_CW_AXI_STREAM_TX_tready(CELL_CW_AXI_STREAM_TX_tready),  // input TODO - This needs to be used, right?
         .CELL_CW_AXI_STREAM_RX_tdata(CELL_CW_AXI_STREAM_RX_tdata),  // output
         .CELL_CW_AXI_STREAM_RX_tlast(CELL_CW_AXI_STREAM_RX_tlast),  // output
         .CELL_CW_AXI_STREAM_RX_tvalid(CELL_CW_AXI_STREAM_RX_tvalid),  // output
