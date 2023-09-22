@@ -54,9 +54,18 @@ void rx8chk(void) {
 }
 #endif
 
-int main()
+#ifdef VERILATOR
+int cpuMain(void)
+#else
+int main(void)
+#endif
 {
     uint32_t lastDiagnostic, lastPacket, now;
+#ifdef VERILATOR
+    static int initialized=0;
+    if (initialized == 0) {
+        initialized = 1;
+#endif
 
     /*
      * Announce our presence
@@ -77,8 +86,10 @@ int main()
     eyescanInit();
     qsfpInit();
     auroraInit();
+#ifndef VERILATOR
     evrInit();
     evrShow();
+#endif
     fofbEthernetInit();
     xadcInit();
     setPilotToneReference(328 * 2); // SROC/2 for now
@@ -89,6 +100,7 @@ int main()
      * Toss any junk present in UDP receive buffers
      */
     lastPacket = MICROSECONDS_SINCE_BOOT();
+#ifndef VERILATOR
 #ifndef MARBLE
     int pass;
     for (pass = 0 ; pass < 1000000 ; pass++) {
@@ -100,12 +112,19 @@ int main()
         }
     }
 #endif
+#endif // VERILATOR
 
     /*
      * Main processing loop
      */
     lastDiagnostic = MICROSECONDS_SINCE_BOOT();
-    for (;;) {
+
+#ifdef VERILATOR
+    }
+    for (int n=0; n<1; n++) {
+#else
+    while (1) {
+#endif
         now = MICROSECONDS_SINCE_BOOT();
         if ((now - lastDiagnostic) >= 1000000) {
             lastDiagnostic = now;

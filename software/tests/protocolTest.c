@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <time.h>   // For nanosleep()
 
+#include "ipcfg.h"
 #include "cellControllerProtocol.h"
 #include "xadc.h"
 #include "qsfp.h"
@@ -40,7 +41,7 @@ const uint8_t defaultIP[] = {127, 0, 0, 1};
 
 
 // ====================== Static Function Prototypes ==========================
-static int getIpPort(const char *inStr, uint32_t *pIp32, uint16_t *pPort);
+//static int getIpPort(const char *inStr, uint32_t *pIp32, uint16_t *pPort);
 static int buildTestPacket(void *pkt);
 static int doTests(void);
 static int receiveReply(void);
@@ -59,12 +60,10 @@ struct ccProtocolPacket responsePacket;
 
 int main(int argc, char *argv[]) {
   printf("Usage: protocolTest [IP:PORT|IP|PORT]\r\n");
+  unsigned short port = DEFAULT_PORT;
   uint32_t ip32 = PACK_IP32(defaultIP);
-  uint16_t port = DEFAULT_PORT;
   if (argc > 1) {
-    getIpPort(argv[1], &ip32, &port);
-  } else {
-    getIpPort(NULL, &ip32, &port);
+    getIpPort(argv[1], &ip32, &port, ip32, DEFAULT_PORT);
   }
   udpSendPort = port;
   printf("Sending to IP:PORT ");
@@ -76,9 +75,9 @@ int main(int argc, char *argv[]) {
     printf("Exiting\r\n");
     return 0;
   }
-  rc = doTests();
-  if (rc != 0) {
-    printf("Tests failed: %d\r\n", rc);
+  int errs = doTests();
+  if (errs != 0) {
+    printf("Tests failed: %d\r\n", errs);
     return 1;
   } else {
     printf("Tests passed\r\n");
@@ -102,15 +101,17 @@ static int doTests(void) {
   printf("SENDING: %d bytes\r\n", (int)CC_PROTOCOL_ARG_COUNT_TO_SIZE(0));
   ssize_t x = send(udpfd, (const void *)&testPacket, (int)CC_PROTOCOL_ARG_COUNT_TO_SIZE(0), 0);
   rc = receiveReply();
+  int errs = 0;
   if (rc > 0) {
     printf("Received response of payload size %d\r\n", rc);
     //printResponse(CC_PROTOCOL_SIZE_TO_ARG_COUNT(rc));
-    argValidatorSYSMON(&responsePacket, CC_PROTOCOL_SIZE_TO_ARG_COUNT(rc));
+    errs = argValidatorSYSMON(&responsePacket, CC_PROTOCOL_SIZE_TO_ARG_COUNT(rc));
   } else {
     printf("rc = %d\r\n", rc);
+    errs = -1;
   }
   //waitms(500);
-  return 0;
+  return errs;
 }
 
 static int receiveReply(void) {
@@ -181,6 +182,7 @@ static int clientInit(unsigned short port, uint32_t ipAddr) {
   return 0;
 }
 
+/*
 static int getIpPort(const char *inStr, uint32_t *pIp32, uint16_t *pPort) {
   uint8_t ip[4];
   int rc;
@@ -223,6 +225,7 @@ static int getIpPort(const char *inStr, uint32_t *pIp32, uint16_t *pPort) {
   //printf("IP = %d.%d.%d.%d\r\n", ip[0], ip[1], ip[2], ip[3]);
   return 0;
 }
+*/
 
 static int argValidatorSYSMON(struct ccProtocolPacket *cpkt, int nargs) {
   int errs = 0;

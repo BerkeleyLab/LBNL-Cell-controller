@@ -11,7 +11,7 @@
 #include "simplatform.h"
 #include "gpio.h"
 #include "uart_fifo.h"
-#include "udp_simple.h"
+#include "udp_io.h"
 #include "cellControllerProtocol.h"
 
 //#define TRAPEXIT
@@ -151,6 +151,7 @@ uint8_t nextChar = 0;
 
 // GLOBALS
 static sim_console_state_t sim_console_state;
+int UDP_conn_epics=-1;
 
 static unsigned short udp_port;
 
@@ -199,11 +200,12 @@ void init_platform() {
   sim_console_state.msgReady = 0;
   udp_port = CC_PROTOCOL_UDP_PORT;
   int rc = udp_init(udp_port);
-  if (rc != 0) {
+  if (rc < 0) {
     printf("Error in UDP initialization\r\n");
     return;
   } else {
-    printf("Listening on port %d\r\n", udp_port);
+    UDP_conn_epics = rc;
+    printf("Control (EPICS) link listening on port %d\r\n", udp_port);
   }
   eth_inbox.length_status = BADGER_LENGTH_STATUS(0, 0);
   eth_inbox.index = 0;
@@ -218,7 +220,7 @@ void init_platform() {
 
 static void udpService(void) {
   // INBOX
-  int rc = udp_receive_meta(&eth_inbox.pkt.pkt);
+  int rc = udp_receive_meta(UDP_conn_epics, &eth_inbox.pkt.pkt);
   // NOTE: clobbers any existing data
   if (rc > 0) {
     eth_inbox.fill = rc;
@@ -234,7 +236,8 @@ static void udpService(void) {
   if (eth_outbox.ready) {
     printf("Reply with frameLength = %d\r\n", eth_outbox.frameLength);
     printf("payload length = %d\r\n", ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
-    rc = udp_reply((const void *)&(eth_outbox.pkt.pkt.payload), (int)ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
+    rc = udp_reply(UDP_conn_epics, (const void *)&(eth_outbox.pkt.pkt.payload),
+                   (int)ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
     eth_outbox.ready = 0;
   }
   return;
@@ -310,8 +313,19 @@ static unsigned int getQSFPDescChar(void) {
   return rval;
 }
 
+#ifndef VERILATOR
+uint32_t vl_Xil_In32(uint32_t addrEnc) {
+  return 0;
+}
+
+void vl_Xil_Out32(uint32_t addrEnc, uint32_t val) {
+  return;
+}
+#endif
+
 uint32_t Xil_In32(uint32_t addr) {
   uint32_t rval = 0;
+  int check_vl = 0;
   static uint32_t ppscounter, now = 0;
   if ((addr >= EVR_RAM_A(0)) && (addr < EVR_RAM_A(EVR_RAM_SIZE))) {
     rval = evr_ram_a[EVR_RAM_INDEX_A(addr)];
@@ -340,14 +354,12 @@ uint32_t Xil_In32(uint32_t addr) {
         //rval = 0xfefe; // TODO - What is reality?
         rval = getQSFPDescChar();
         break;
+#ifndef VERILATOR
       case GPIO_ADDR(0):
         break;
       case GPIO_ADDR(6):
         break;
       case GPIO_ADDR(8):
-        break;
-      case GPIO_ADDR(GPIO_IDX_AURORA_CSR):
-        rval = auroraStatus;
         break;
       case GPIO_ADDR(10):
         break;
@@ -359,6 +371,10 @@ uint32_t Xil_In32(uint32_t addr) {
       case GPIO_ADDR(29):
         break;
       case GPIO_ADDR(35):
+        break;
+#endif
+      case GPIO_ADDR(GPIO_IDX_AURORA_CSR):
+        rval = auroraStatus;
         break;
 #ifdef MARBLE
       case GPIO_ADDR(GPIO_IDX_NET_CONFIG_CSR):      // Marble bwudp
@@ -639,15 +655,19 @@ uint32_t Xil_In32(uint32_t addr) {
       case XADC_ADDR(R_SEQ07):
         break;
       default:
-        printf("? 0x%x\r\n", addr);
+        check_vl = 1;
         break;
     }
+  }
+  if (check_vl) {
+    return vl_Xil_In32(addr);
   }
   return rval;
 }
 
 void Xil_Out32(uint32_t addr, uint32_t val) {
   uint8_t c;
+  int check_vl = 0;
   if ((addr >= EVR_RAM_A(0)) && (addr < EVR_RAM_A(EVR_RAM_SIZE))) {
     evr_ram_a[EVR_RAM_INDEX_A(addr)] = val;
   } else if ((addr >= EVR_RAM_B(0)) && (addr < EVR_RAM_B(EVR_RAM_SIZE))) {
@@ -715,8 +735,12 @@ void Xil_Out32(uint32_t addr, uint32_t val) {
         }
         break;
       default:
+        check_vl = 1;
         break;
     }
+  }
+  if (check_vl) {
+    return vl_Xil_Out32(addr, val);
   }
   return;
 }

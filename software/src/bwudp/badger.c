@@ -65,7 +65,6 @@ bwudpInitializeInterface(const uint8_t *ethernetAddress,
 {
     int i;
     int a = 0;
-
     /* Configure MAC address */
     for (i = 0 ; i < 6 ; i++, a++) {
         GPIO_WRITE(GPIO_IDX_NET_CONFIG_CSR, (a << CONFIG_CSR_ADDRESS_SHIFT) |
@@ -86,7 +85,7 @@ bwudpInitializeInterface(const uint8_t *ethernetAddress,
 void
 bwudpSendFrame(const void *frame, int length)
 {
-    const uint16_t *p16 = frame;
+    const uint16_t *p16 = (const uint16_t *)frame;
     /* Minimum is 60 since value doesn't include final four FCS octets */
     int frameLength = length < 60 ? 60 : length;
     int index = 0, limit;
@@ -108,7 +107,7 @@ bwudpFetchFrame(void *frame)
     uint32_t csr = GPIO_READ(GPIO_IDX_NET_RX_CSR);
     uint32_t length_status;
     int length;
-    uint16_t *dst = frame;
+    uint16_t *dst = (uint16_t *)frame;
     uint16_t *limit;
     uint32_t index = 1;
 

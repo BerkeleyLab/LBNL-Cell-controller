@@ -37,9 +37,73 @@ module cctrl_verilator_top #(
   input  [31:0] BPM_CW_AXI_STREAM_RX_tdata,
 
   // Expose this interface to Verilator for simulated cpu
-  output [2047:0] GPIO_IN_FLATTENED,
   input  [31:0] GPIO_OUT,
   input  [63:0] GPIO_STROBES,
+  //output [2047:0] GPIO_IN_FLATTENED,  // TODO I'm guessing Verilator won't like a 2048-bit number
+  output [31:0] GPIO_IN0,
+  output [31:0] GPIO_IN1,
+  output [31:0] GPIO_IN2,
+  output [31:0] GPIO_IN3,
+  output [31:0] GPIO_IN4,
+  output [31:0] GPIO_IN5,
+  output [31:0] GPIO_IN6,
+  output [31:0] GPIO_IN7,
+  output [31:0] GPIO_IN8,
+  output [31:0] GPIO_IN9,
+  output [31:0] GPIO_IN10,
+  output [31:0] GPIO_IN11,
+  output [31:0] GPIO_IN12,
+  output [31:0] GPIO_IN13,
+  output [31:0] GPIO_IN14,
+  output [31:0] GPIO_IN15,
+  output [31:0] GPIO_IN16,
+  output [31:0] GPIO_IN17,
+  output [31:0] GPIO_IN18,
+  output [31:0] GPIO_IN19,
+  output [31:0] GPIO_IN20,
+  output [31:0] GPIO_IN21,
+  output [31:0] GPIO_IN22,
+  output [31:0] GPIO_IN23,
+  output [31:0] GPIO_IN24,
+  output [31:0] GPIO_IN25,
+  output [31:0] GPIO_IN26,
+  output [31:0] GPIO_IN27,
+  output [31:0] GPIO_IN28,
+  output [31:0] GPIO_IN29,
+  output [31:0] GPIO_IN30,
+  output [31:0] GPIO_IN31,
+  output [31:0] GPIO_IN32,
+  output [31:0] GPIO_IN33,
+  output [31:0] GPIO_IN34,
+  output [31:0] GPIO_IN35,
+  output [31:0] GPIO_IN36,
+  output [31:0] GPIO_IN37,
+  output [31:0] GPIO_IN38,
+  output [31:0] GPIO_IN39,
+  output [31:0] GPIO_IN40,
+  output [31:0] GPIO_IN41,
+  output [31:0] GPIO_IN42,
+  output [31:0] GPIO_IN43,
+  output [31:0] GPIO_IN44,
+  output [31:0] GPIO_IN45,
+  output [31:0] GPIO_IN46,
+  output [31:0] GPIO_IN47,
+  output [31:0] GPIO_IN48,
+  output [31:0] GPIO_IN49,
+  output [31:0] GPIO_IN50,
+  output [31:0] GPIO_IN51,
+  output [31:0] GPIO_IN52,
+  output [31:0] GPIO_IN53,
+  output [31:0] GPIO_IN54,
+  output [31:0] GPIO_IN55,
+  output [31:0] GPIO_IN56,
+  output [31:0] GPIO_IN57,
+  output [31:0] GPIO_IN58,
+  output [31:0] GPIO_IN59,
+  output [31:0] GPIO_IN60,
+  output [31:0] GPIO_IN61,
+  output [31:0] GPIO_IN62,
+  output [31:0] GPIO_IN63,
 
   // Expose this interface to Verilator for simulated cpu
   // Add bridge layer to allow direct memory writes/reads to/from here.
@@ -66,12 +130,80 @@ module cctrl_verilator_top #(
 `include "gpioIDX.vh"
 //wire [(GPIO_IDX_COUNT*32)-1:0] GPIO_IN_FLATTENED;
 wire [31:0] GPIO_IN[0:GPIO_IDX_COUNT-1];
+
+assign GPIO_IN0 = GPIO_IN[0];
+assign GPIO_IN1 = GPIO_IN[1];
+assign GPIO_IN2 = GPIO_IN[2];
+assign GPIO_IN3 = GPIO_IN[3];
+assign GPIO_IN4 = GPIO_IN[4];
+assign GPIO_IN5 = GPIO_IN[5];
+assign GPIO_IN6 = GPIO_IN[6];
+assign GPIO_IN7 = GPIO_IN[7];
+assign GPIO_IN8 = GPIO_IN[8];
+assign GPIO_IN9 = GPIO_IN[9];
+assign GPIO_IN10 = GPIO_IN[10];
+assign GPIO_IN11 = GPIO_IN[11];
+assign GPIO_IN12 = GPIO_IN[12];
+assign GPIO_IN13 = GPIO_IN[13];
+assign GPIO_IN14 = GPIO_IN[14];
+assign GPIO_IN15 = GPIO_IN[15];
+assign GPIO_IN16 = GPIO_IN[16];
+assign GPIO_IN17 = GPIO_IN[17];
+assign GPIO_IN18 = GPIO_IN[18];
+assign GPIO_IN19 = GPIO_IN[19];
+assign GPIO_IN20 = GPIO_IN[10];
+assign GPIO_IN21 = GPIO_IN[21];
+assign GPIO_IN22 = GPIO_IN[22];
+assign GPIO_IN23 = GPIO_IN[23];
+assign GPIO_IN24 = GPIO_IN[24];
+assign GPIO_IN25 = GPIO_IN[25];
+assign GPIO_IN26 = GPIO_IN[26];
+assign GPIO_IN27 = GPIO_IN[27];
+assign GPIO_IN28 = GPIO_IN[28];
+assign GPIO_IN29 = GPIO_IN[29];
+assign GPIO_IN30 = GPIO_IN[30];
+assign GPIO_IN31 = GPIO_IN[31];
+assign GPIO_IN32 = GPIO_IN[32];
+assign GPIO_IN33 = GPIO_IN[33];
+assign GPIO_IN34 = GPIO_IN[34];
+assign GPIO_IN35 = GPIO_IN[35];
+assign GPIO_IN36 = GPIO_IN[36];
+assign GPIO_IN37 = GPIO_IN[37];
+assign GPIO_IN38 = GPIO_IN[38];
+assign GPIO_IN39 = GPIO_IN[39];
+assign GPIO_IN40 = GPIO_IN[40];
+assign GPIO_IN41 = GPIO_IN[41];
+assign GPIO_IN42 = GPIO_IN[42];
+assign GPIO_IN43 = GPIO_IN[43];
+assign GPIO_IN44 = GPIO_IN[44];
+assign GPIO_IN45 = GPIO_IN[45];
+assign GPIO_IN46 = GPIO_IN[46];
+assign GPIO_IN47 = GPIO_IN[47];
+assign GPIO_IN48 = GPIO_IN[48];
+assign GPIO_IN49 = GPIO_IN[49];
+assign GPIO_IN50 = GPIO_IN[50];
+assign GPIO_IN51 = GPIO_IN[51];
+assign GPIO_IN52 = GPIO_IN[52];
+assign GPIO_IN53 = GPIO_IN[53];
+assign GPIO_IN54 = GPIO_IN[54];
+assign GPIO_IN55 = GPIO_IN[55];
+assign GPIO_IN56 = GPIO_IN[56];
+assign GPIO_IN57 = GPIO_IN[57];
+assign GPIO_IN58 = GPIO_IN[58];
+assign GPIO_IN59 = GPIO_IN[59];
+assign GPIO_IN60 = GPIO_IN[60];
+assign GPIO_IN61 = GPIO_IN[61];
+assign GPIO_IN62 = GPIO_IN[62];
+assign GPIO_IN63 = GPIO_IN[63];
+
+/*
 genvar i;
 generate
 for (i = 0 ; i < GPIO_IDX_COUNT ; i = i + 1) begin : gpio_flatten
   assign GPIO_IN_FLATTENED[ (i*32)+31 : (i*32)+0 ] = GPIO_IN[i];
 end
 endgenerate
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // Timekeeping

@@ -42,7 +42,7 @@ evChk(const char *name, struct eventCheck *ep)
         diff = ep->ticks[1] - ep->ticks[0];
         if ((diff <= 900000) || (diff >= 1100000)) {
             printf("Warning -- %s events arriving %u microseconds apart).\n",
-                                                                    name, diff);
+                   name, diff);
         }
         break;
     }

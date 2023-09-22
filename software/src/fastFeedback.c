@@ -259,6 +259,6 @@ ffbShowPowerSupplySetpoints(void)
             sign = -1;
             ua = -ua;
         }
-        printf("%2d: %4d.%06d\n", i, sign * (ua / 1000000), ua % 1000000);
+        printf("%2d: %4ld.%06ld\n", i, sign * (ua / 1000000), ua % 1000000);
     }
 }

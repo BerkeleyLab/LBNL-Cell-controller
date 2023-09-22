@@ -199,16 +199,20 @@ bwudpRegisterInterface(BWUDP_INTERFACE_INDEX
     if (ip->txFrame.protocol[0] != 0) {
         return -1;
     }
-    ip->myEthernetMAC = *eMAC;
-    ip->myAddress = *address;
+    //ip->myEthernetMAC = *eMAC;
+    memcpy(&ip->myEthernetMAC, eMAC, sizeof(ethernetMAC));
+    //ip->myAddress = *address;
+    memcpy(&ip->myAddress, address, sizeof(ipv4Address));
 #if BWUDP_INTERFACE_CAPACITY > 1
     ip->index = interfaceIndex;
 #endif
 #ifdef BWUDP_ENABLE_CLIENT_SUPPORT
     if (netmask) {
-        ip->myNetmask = *netmask;
+        //ip->myNetmask = *netmask;
+        memcpy(&ip->myNetmask, netmask, sizeof(ipv4Address));
         if (gateway) {
-            ip->myGateway = *gateway;
+            //ip->myGateway = *gateway;
+            memcpy(&ip->myGateway, gateway, sizeof(ipv4Address));
             defaultRouteInterface = ip;
         }
     }

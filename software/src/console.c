@@ -18,6 +18,9 @@
 #include "qsfp.h"
 #include "util.h"
 
+#ifdef VERILATOR
+#define SIMULATION
+#endif
 #ifdef SIMULATION
 #include "simplatform.h"
 #endif

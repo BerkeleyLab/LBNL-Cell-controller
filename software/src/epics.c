@@ -17,10 +17,14 @@
 #include "psAWG.h"
 #include "psWaveformRecorder.h"
 #include "qsfp.h"
-#include "softwareBuildDate.h"
 #include "util.h"
 #include "xadc.h"
 
+#ifndef VERILATOR
+#include "softwareBuildDate.h"
+#else
+#define SOFTWARE_BUILD_DATE (0)
+#endif
 #ifdef MARBLE
 #include "bwudp.h"
 #else
@@ -51,8 +55,14 @@ static bwudpHandle handleNonce;
 
 int epicsInit(void) {
 #ifdef MARBLE
+#ifndef VERILATOR
+    int port = htons(CC_PROTOCOL_UDP_PORT);
+#else
+    // I don't know why the endianness is different in this case, but it works.
+    int port = CC_PROTOCOL_UDP_PORT;
+#endif
     int rval = bwudpRegisterInterface(&defaultMAC, &defaultIP, &defaultNetmask, &defaultGateway);
-    rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
+    rval |= bwudpRegisterServer(port, (bwudpCallback)rxPacketCallback);
     return rval;
 #else
     return udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");

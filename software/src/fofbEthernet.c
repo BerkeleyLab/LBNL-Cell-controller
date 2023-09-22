@@ -1,6 +1,10 @@
 /*
  * Handle Ethernet links to/from fast orbit feedback power supplies
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include "fofbEthernet.h"
@@ -155,3 +159,8 @@ fofbEthernetBringUp(void)
     }
     fofbEthernetShowStatus();
 }
+
+#ifdef __cplusplus
+}
+#endif
+

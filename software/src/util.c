@@ -63,8 +63,11 @@ warn(const char *fmt, ...)
 void
 microsecondSpin(unsigned int us)
 {
+#ifndef VERILATOR
     unsigned int now, then = MICROSECONDS_SINCE_BOOT();
     while (((now = MICROSECONDS_SINCE_BOOT()) - then) < us) continue;
+#endif
+    return;
 }
 
 /*

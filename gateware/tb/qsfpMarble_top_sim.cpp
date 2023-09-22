@@ -73,5 +73,3 @@ void vtb_Out32(uint32_t val) {
   top->GPIO_STROBE = 0;
   return;
 }
-
-
