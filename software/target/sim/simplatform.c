@@ -225,7 +225,7 @@ static void udpService(void) {
   if (rc > 0) {
     eth_inbox.fill = rc;
     eth_inbox.length_status = BADGER_LENGTH_STATUS(rc, 0);  // What is status bit?
-    printf("Got packet len %d\r\n", rc);
+    //printf("Got packet len %d\r\n", rc);
     eth_inbox.pending = 1;
   } else if (rc < 0) {
     printf("Receive error\r\n");
@@ -234,8 +234,8 @@ static void udpService(void) {
   }
   // OUTBOX
   if (eth_outbox.ready) {
-    printf("Reply with frameLength = %d\r\n", eth_outbox.frameLength);
-    printf("payload length = %d\r\n", ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
+    //printf("Reply with frameLength = %d\r\n", eth_outbox.frameLength);
+    //printf("payload length = %d\r\n", ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
     rc = udp_reply(UDP_conn_epics, (const void *)&(eth_outbox.pkt.pkt.payload),
                    (int)ETH_PAYLOAD_LENGTH(eth_outbox.frameLength));
     eth_outbox.ready = 0;

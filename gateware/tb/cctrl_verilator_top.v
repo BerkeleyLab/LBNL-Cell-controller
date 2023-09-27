@@ -6,35 +6,21 @@ module cctrl_verilator_top #(
   input         sysClk,   // 100 Mhz
   input         auroraUserClk, // 125 MHz?
 
-  // Cell CCW Stream OUT
-  output [31:0] CELL_CCW_AXI_STREAM_TX_tdata,
-  output        CELL_CCW_AXI_STREAM_TX_tlast,
-  output        CELL_CCW_AXI_STREAM_TX_tvalid,
+  // Stream packet MUX input
+  input         stream_mux_strobe,
+  input   [1:0] stream_mux_sel,
+  input  [31:0] stream_in_header,
+  input  [31:0] stream_in_datax,
+  input  [31:0] stream_in_datay,
+  input  [31:0] stream_in_datas,
 
-  // Cell CCW Stream IN
-  input  [31:0] CELL_CCW_AXI_STREAM_RX_tdata,
-  input         CELL_CCW_AXI_STREAM_RX_tlast,
-  input         CELL_CCW_AXI_STREAM_RX_tvalid,
-
-  // Cell CW Stream OUT
-  output [31:0] CELL_CW_AXI_STREAM_TX_tdata,
-  output        CELL_CW_AXI_STREAM_TX_tlast,
-  output        CELL_CW_AXI_STREAM_TX_tvalid,
-
-  // Cell CW Stream IN
-  input  [31:0] CELL_CW_AXI_STREAM_RX_tdata,
-  input         CELL_CW_AXI_STREAM_RX_tlast,
-  input         CELL_CW_AXI_STREAM_RX_tvalid,
-
-  // BPM CCW Stream IN
-  input         BPM_CCW_AXI_STREAM_RX_tlast,
-  input         BPM_CCW_AXI_STREAM_RX_tvalid,
-  input  [31:0] BPM_CCW_AXI_STREAM_RX_tdata,
-
-  // BPM CW Stream IN
-  input         BPM_CW_AXI_STREAM_RX_tlast,
-  input         BPM_CW_AXI_STREAM_RX_tvalid,
-  input  [31:0] BPM_CW_AXI_STREAM_RX_tdata,
+  // Stream packet MUX input
+  output        stream_mux_valid,
+  output  [1:0] stream_mux_src,
+  output [31:0] stream_out_header,
+  output [31:0] stream_out_datax,
+  output [31:0] stream_out_datay,
+  output [31:0] stream_out_datas,
 
   // Expose this interface to Verilator for simulated cpu
   input  [31:0] GPIO_OUT,
@@ -112,6 +98,70 @@ module cctrl_verilator_top #(
   input         BRAM_BPM_SETPOINTS_WENABLE,
   output [31:0] BRAM_BPM_SETPOINTS_RDATA
 
+);
+
+// Cell CCW Stream OUT
+wire [31:0] CELL_CCW_AXI_STREAM_TX_tdata;
+wire        CELL_CCW_AXI_STREAM_TX_tlast;
+wire        CELL_CCW_AXI_STREAM_TX_tvalid;
+
+// Cell CCW Stream IN
+wire  [31:0] CELL_CCW_AXI_STREAM_RX_tdata;
+wire         CELL_CCW_AXI_STREAM_RX_tlast;
+wire         CELL_CCW_AXI_STREAM_RX_tvalid;
+
+// Cell CW Stream OUT
+wire [31:0] CELL_CW_AXI_STREAM_TX_tdata;
+wire        CELL_CW_AXI_STREAM_TX_tlast;
+wire        CELL_CW_AXI_STREAM_TX_tvalid;
+
+// Cell CW Stream IN
+wire  [31:0] CELL_CW_AXI_STREAM_RX_tdata;
+wire         CELL_CW_AXI_STREAM_RX_tlast;
+wire         CELL_CW_AXI_STREAM_RX_tvalid;
+
+// BPM CCW Stream IN
+wire         BPM_CCW_AXI_STREAM_RX_tlast;
+wire         BPM_CCW_AXI_STREAM_RX_tvalid;
+wire  [31:0] BPM_CCW_AXI_STREAM_RX_tdata;
+
+// BPM CW Stream IN
+wire         BPM_CW_AXI_STREAM_RX_tlast;
+wire         BPM_CW_AXI_STREAM_RX_tvalid;
+wire  [31:0] BPM_CW_AXI_STREAM_RX_tdata;
+
+cell_stream_mux cell_stream_mux_i (
+  .clk(auroraUserClk), // input
+  .stream_mux_strobe(stream_mux_strobe), // input
+  .stream_mux_sel(stream_mux_sel), // input [1:0]
+  .stream_in_header(stream_in_header), // input [31:0]
+  .stream_in_datax(stream_in_datax), // input [31:0]
+  .stream_in_datay(stream_in_datay), // input [31:0]
+  .stream_in_datas(stream_in_datas), // input [31:0]
+  .stream_mux_valid(stream_mux_valid), // output
+  .stream_mux_src(stream_mux_src), // output [1:0]
+  .stream_out_header(stream_out_header), // output [31:0]
+  .stream_out_datax(stream_out_datax), // output [31:0]
+  .stream_out_datay(stream_out_datay), // output [31:0]
+  .stream_out_datas(stream_out_datas), // output [31:0]
+  .CELL_CCW_AXI_STREAM_TX_tdata(CELL_CCW_AXI_STREAM_TX_tdata), // input [31:0]
+  .CELL_CCW_AXI_STREAM_TX_tlast(CELL_CCW_AXI_STREAM_TX_tlast), // input
+  .CELL_CCW_AXI_STREAM_TX_tvalid(CELL_CCW_AXI_STREAM_TX_tvalid), // input
+  .CELL_CCW_AXI_STREAM_RX_tdata(CELL_CCW_AXI_STREAM_RX_tdata), // output [31:0]
+  .CELL_CCW_AXI_STREAM_RX_tlast(CELL_CCW_AXI_STREAM_RX_tlast), // output
+  .CELL_CCW_AXI_STREAM_RX_tvalid(CELL_CCW_AXI_STREAM_RX_tvalid), // output
+  .CELL_CW_AXI_STREAM_TX_tdata(CELL_CW_AXI_STREAM_TX_tdata), // input [31:0]
+  .CELL_CW_AXI_STREAM_TX_tlast(CELL_CW_AXI_STREAM_TX_tlast), // input
+  .CELL_CW_AXI_STREAM_TX_tvalid(CELL_CW_AXI_STREAM_TX_tvalid), // input
+  .CELL_CW_AXI_STREAM_RX_tdata(CELL_CW_AXI_STREAM_RX_tdata), // output [31:0]
+  .CELL_CW_AXI_STREAM_RX_tlast(CELL_CW_AXI_STREAM_RX_tlast), // output
+  .CELL_CW_AXI_STREAM_RX_tvalid(CELL_CW_AXI_STREAM_RX_tvalid), // output
+  .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast), // output
+  .BPM_CCW_AXI_STREAM_RX_tvalid(BPM_CCW_AXI_STREAM_RX_tvalid), // output
+  .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata), // output [31:0]
+  .BPM_CW_AXI_STREAM_RX_tlast(BPM_CW_AXI_STREAM_RX_tlast), // output
+  .BPM_CW_AXI_STREAM_RX_tvalid(BPM_CW_AXI_STREAM_RX_tvalid), // output
+  .BPM_CW_AXI_STREAM_RX_tdata(BPM_CW_AXI_STREAM_RX_tdata) // output [31:0]
 );
 
 //////////////////////////////////////////////////////////////////////////////
@@ -352,46 +402,46 @@ wire        CELL_CW_AuroraCoreStatus_soft_err;
 wire        CELL_CW_AuroraCoreStatus_tx_lock;
 wire        CELL_CW_AuroraCoreStatus_tx_resetdone_out;
 // ====== FAKE DATA ======
-assign BPM_CCW_AuroraCoreStatus_channel_up = 0;
-assign BPM_CCW_AuroraCoreStatus_crc_pass_fail = 0;
-assign BPM_CCW_AuroraCoreStatus_crc_valid = 0;
+assign BPM_CCW_AuroraCoreStatus_channel_up = 1;
+assign BPM_CCW_AuroraCoreStatus_crc_pass_fail = 1;
+assign BPM_CCW_AuroraCoreStatus_crc_valid = 1;
 assign BPM_CCW_AuroraCoreStatus_frame_err = 0;
 assign BPM_CCW_AuroraCoreStatus_hard_err = 0;
 assign BPM_CCW_AuroraCoreStatus_lane_up = 0;
-assign BPM_CCW_AuroraCoreStatus_rx_resetdone_out = 0;
+assign BPM_CCW_AuroraCoreStatus_rx_resetdone_out = 1;
 assign BPM_CCW_AuroraCoreStatus_soft_err = 0;
-assign BPM_CCW_AuroraCoreStatus_tx_lock = 0;
-assign BPM_CCW_AuroraCoreStatus_tx_resetdone_out = 0;
-assign BPM_CW_AuroraCoreStatus_channel_up = 0;
-assign BPM_CW_AuroraCoreStatus_crc_pass_fail = 0;
-assign BPM_CW_AuroraCoreStatus_crc_valid = 0;
+assign BPM_CCW_AuroraCoreStatus_tx_lock = 1;
+assign BPM_CCW_AuroraCoreStatus_tx_resetdone_out = 1;
+assign BPM_CW_AuroraCoreStatus_channel_up = 1;
+assign BPM_CW_AuroraCoreStatus_crc_pass_fail = 1;
+assign BPM_CW_AuroraCoreStatus_crc_valid = 1;
 assign BPM_CW_AuroraCoreStatus_frame_err = 0;
 assign BPM_CW_AuroraCoreStatus_hard_err = 0;
-assign BPM_CW_AuroraCoreStatus_lane_up = 0;
-assign BPM_CW_AuroraCoreStatus_rx_resetdone_out = 0;
+assign BPM_CW_AuroraCoreStatus_lane_up = 1;
+assign BPM_CW_AuroraCoreStatus_rx_resetdone_out = 1;
 assign BPM_CW_AuroraCoreStatus_soft_err = 0;
-assign BPM_CW_AuroraCoreStatus_tx_lock = 0;
-assign BPM_CW_AuroraCoreStatus_tx_resetdone_out = 0;
-assign CELL_CCW_AuroraCoreStatus_channel_up = 0;
-assign CELL_CCW_AuroraCoreStatus_crc_pass_fail = 0;
-assign CELL_CCW_AuroraCoreStatus_crc_valid = 0;
+assign BPM_CW_AuroraCoreStatus_tx_lock = 1;
+assign BPM_CW_AuroraCoreStatus_tx_resetdone_out = 1;
+assign CELL_CCW_AuroraCoreStatus_channel_up = 1;
+assign CELL_CCW_AuroraCoreStatus_crc_pass_fail = 1;
+assign CELL_CCW_AuroraCoreStatus_crc_valid = 1;
 assign CELL_CCW_AuroraCoreStatus_frame_err = 0;
 assign CELL_CCW_AuroraCoreStatus_hard_err = 0;
 assign CELL_CCW_AuroraCoreStatus_lane_up = 0;
-assign CELL_CCW_AuroraCoreStatus_rx_resetdone_out = 0;
+assign CELL_CCW_AuroraCoreStatus_rx_resetdone_out = 1;
 assign CELL_CCW_AuroraCoreStatus_soft_err = 0;
-assign CELL_CCW_AuroraCoreStatus_tx_lock = 0;
-assign CELL_CCW_AuroraCoreStatus_tx_resetdone_out = 0;
-assign CELL_CW_AuroraCoreStatus_channel_up = 0;
-assign CELL_CW_AuroraCoreStatus_crc_pass_fail = 0;
-assign CELL_CW_AuroraCoreStatus_crc_valid = 0;
+assign CELL_CCW_AuroraCoreStatus_tx_lock = 1;
+assign CELL_CCW_AuroraCoreStatus_tx_resetdone_out = 1;
+assign CELL_CW_AuroraCoreStatus_channel_up = 1;
+assign CELL_CW_AuroraCoreStatus_crc_pass_fail = 1;
+assign CELL_CW_AuroraCoreStatus_crc_valid = 1;
 assign CELL_CW_AuroraCoreStatus_frame_err = 0;
 assign CELL_CW_AuroraCoreStatus_hard_err = 0;
-assign CELL_CW_AuroraCoreStatus_lane_up = 0;
-assign CELL_CW_AuroraCoreStatus_rx_resetdone_out = 0;
+assign CELL_CW_AuroraCoreStatus_lane_up = 1;
+assign CELL_CW_AuroraCoreStatus_rx_resetdone_out = 1;
 assign CELL_CW_AuroraCoreStatus_soft_err = 0;
-assign CELL_CW_AuroraCoreStatus_tx_lock = 0;
-assign CELL_CW_AuroraCoreStatus_tx_resetdone_out = 0;
+assign CELL_CW_AuroraCoreStatus_tx_lock = 1;
+assign CELL_CW_AuroraCoreStatus_tx_resetdone_out = 1;
 // ==== END FAKE DATA ====
 
 //////////////////////////////////////////////////////////////////////////////

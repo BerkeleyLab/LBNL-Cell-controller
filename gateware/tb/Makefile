@@ -74,8 +74,9 @@ CDEFINES=-I$(abspath $(GATEWARE_DIR)/tb) \
 #CDEFINES+=-DDEBUG_PRINT
 
 # Translation mapping of paths from source to object
-CPU_SW_SRC=$(abspath $(SW_SRC_DIR))
-CPU_SW_BIN=$(BUILD_DIR)/src
+CPU_SW_SRC=$(abspath $(SOFTWARE_DIR))
+CPU_SW_BIN=$(BUILD_DIR)
+
 TB_SRC=$(abspath $(TB_DIR))
 TB_BIN=$(BUILD_DIR)/tb
 
@@ -124,11 +125,6 @@ endef
 $(foreach sf,$(CPU_SOURCES),$(eval $(call bldobj,$(subst $(CPU_SW_SRC),$(CPU_SW_BIN),$(patsubst %.c,%.o,$(sf))),$(sf))))
 #$(foreach sf,$(TB_C_SOURCES),$(eval $(call bldobj,$(subst $(TB_SRC),$(TB_BIN),$(patsubst %.c,%.o,$(sf))),$(sf))))
 
-#$(BUILD_DIR)/%.o: %.c
-#	@$(ECHO) 'Compiling $<...'
-#	$(MKDIR) $(dir $@)
-#	$(CC) -c -MMD -MT"$(patsubst %.c,%.d,$<)" $(CFLAGS) $(CDEFINES) $(INCLUDES) -o $@ $<
-
 # ====== C++ Compilation ========
 # Empty right now
 
@@ -144,6 +140,9 @@ SOURCES_NO_TB=stream_mux.v \
 VL_SIM=cctrl_top.cpp
 VROOT=cctrl_verilator_top
 VL_WRAPPER=$(TB_DIR)$(VROOT).v
+VL_SOURCES =cell_stream_ibuf.v \
+						cell_stream_obuf.v \
+						cell_stream_mux.v
 VERILATOR_DEFINES = -DMARBLE -DTESTBENCH
 VERILATOR_SUPRESSED_WARNINGS=WIDTHEXPAND \
 														 UNUSEDSIGNAL \
@@ -162,7 +161,7 @@ VL_CFLAGS=$(addprefix -CFLAGS ,$(CDEFINES))
 .PHONY: verilate
 verilate: $(VERILATED_TOP)
 
-$(VERILATED_TOP): $(VL_SIM) $(VL_WRAPPER) $(C_OBJECTS) $(CPP_OBJECTS)
+$(VERILATED_TOP): $(VL_SIM) $(VL_WRAPPER) $(VL_SOURCES) $(C_OBJECTS) $(CPP_OBJECTS)
 	mkdir -p $(VERILATOR_OBJ_DIR)
 	$(VERILATOR) --cc --exe --build -Wall $(VERILATOR_NOWARN) $(VERILATOR_DEFINES) $(INCLUDES) $(VL_CFLAGS) $^
 

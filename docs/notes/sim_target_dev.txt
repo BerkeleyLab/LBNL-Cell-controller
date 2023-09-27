@@ -1,5 +1,21 @@
-Development notes for cell-controller firmware pickup
-Keith Penney
+Development notes for cell-controller firmware and software
+Keith Penney picking up codebase from Eric Norum
+
+230926:
+  I have merged my Verilator top model with the sim platform which implements a lot
+  of the FOFB mechanism.  Interaction with the live model is via 3 interfaces:
+    1. EPICS ("copper") UDP link talks the "Cell Controller Protocol" just as the hardware does.
+    2. stdin/stdout in the model provides the same interface as the UART terminal
+    3. Stream Mux UDP link simulates traffic between the Aurora networks.
+
+  To add to model:
+    1. Simulated EVR traffic (controls FAstrobe)
+
+  To add to external stimulus:
+    1. Parameterized daemonic traffic generator
+       * Implement with EVR traffic generator to simulate at the "FAstrobe" level
+    2. Connect to EPICS IOC
+    3. Run the setup scripts at model start
 
 230209:
   I'm going to try to spin up a simulated platform (native-compiled) version of the

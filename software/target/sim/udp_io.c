@@ -131,9 +131,9 @@ int udp_receive_meta(int nconn, eth_packet_t *pkt) {
     pkt->ipv4.checksum = 0;
     *(uint32_t *)&(pkt->ipv4.source) = pconn->src_addr.sin_addr.s_addr;
     //pkt->ipv4.destination = {0, 0, 0, 0};
-    printf("rc = 0x%x\r\n", rc);
+    //printf("rc = 0x%x\r\n", rc);
     pkt->udp.length = htons(rc);
-    printf("udp.length = 0x%x\r\n", pkt->udp.length);
+    //printf("udp.length = 0x%x\r\n", pkt->udp.length);
     pkt->udp.destinationPort = pconn->udp_port;
     pkt->udp.sourcePort = pconn->src_addr.sin_port;
     return ETH_PACKET_LENGTH(rc);
@@ -142,7 +142,6 @@ int udp_receive_meta(int nconn, eth_packet_t *pkt) {
 }
 
 int udp_reply(int nconn, const void *src, int nchars) {
-  printf("udp_reply\r\n");
   if ((nconn < 0) || (nconn >= conn_next)) {
     printf("Invalid connection number: %d (only %d connections type)\r\n",
            nconn, conn_next);
@@ -154,7 +153,7 @@ int udp_reply(int nconn, const void *src, int nchars) {
     return -1;
   }
   int rc = sendto(pconn->udpfd, (char *)src, nchars, 0, (struct sockaddr *)&(pconn->src_addr), pconn->src_addrlen);
-  printf("rc = %d\r\n", rc);
+  //printf("rc = %d\r\n", rc);
   return rc;
 }
 
@@ -185,7 +184,6 @@ int udp_client_init(unsigned short port, uint32_t ipAddr) {
 }
 
 int udp_send(int nconn, const void *src, int nchars) {
-  printf("udp_send\r\n");
   if ((nconn < 0) || (nconn >= conn_next)) {
     printf("Invalid connection number: %d (only %d connections type)\r\n", nconn, conn_next);
     return -1;

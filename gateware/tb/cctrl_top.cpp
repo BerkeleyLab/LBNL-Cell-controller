@@ -9,6 +9,7 @@
 #include <sys/time.h> // Needed for struct timeval
 #include <unistd.h>   // For STDIN_FILENO
 #include <stdio.h>
+#include <string.h>
 #include "xil_io.h"
 #include "simplatform.h"
 #include "aurora_mux.h"
@@ -18,27 +19,26 @@
 #define TERM_CHAR         ('\n')
 static unsigned short udp_port;  /* Global */
 static int toExit = 0;
+
+// Queue's of stream_mux_pkt_t
 static queue_t stream_tx_queue;
 static queue_t stream_rx_queue;
 
 typedef struct {
   int fill;     // buffer fill level in bytes
   int ready;    // Message waiting
-  unsigned char buf[ETH_PAYLOAD_MAX];
+  //unsigned char buf[ETH_PAYLOAD_MAX];
 } udp_buf_t;
 
 static int UDP_stream_conn=-1;
-static udp_buf_t eth_inbox;
-static udp_buf_t eth_outbox;
 
 static int sysService(void);
 static void udpService(void);
 static void _sigHandler(int c);
 static void sysInit(const unsigned short udp_port);
-static void buffer_data(unsigned char c);
-static int get_next_byte(volatile unsigned char *c);
 static void topInit(void);
-static void topTick(void);
+static int topTick(int nticks);
+static int topTickUntil(int clksel, int val);
 static uint32_t get_gpio_in(uint32_t addr);
 static void cpuService(void);
 static void streamMuxService(void);
@@ -72,7 +72,7 @@ int main(int argc, char** argv, char** env) {
   int w = 0;
   int w_0 = 0;
   while (!toExit) {
-    topTick();
+    topTick(0);
     // Service the Simulated CPU
     cpuService();
     sysService();
@@ -110,51 +110,80 @@ static void topInit(void) {
 #define DIV_EVRCLK        (5)
 #define DIV_SYSCLK        (5)
 #define DIV_AURORAUSERCLK (4)
-static void topTick(void) {
+static int topTick(int nticks) {
   static int clkcounter = 0;
   int doBreak=0;
-  while (1) {
+  int breakFirst=0;
+  if (nticks < 1) {
+    breakFirst = 1;
+    nticks = -1;
+  }
+  while (nticks-- != 0) {
     clkcounter++;
     if ((clkcounter % DIV_CLKIN125) == 0) {
-      top->clkIn125 <= ~top->clkIn125;
+      top->clkIn125 = !top->clkIn125;
       doBreak=1;
     }
     if ((clkcounter % DIV_EVRCLK) == 0) {
-      top->evrClk <= ~top->evrClk;
+      top->evrClk = !top->evrClk;
       doBreak=1;
     }
     if ((clkcounter % DIV_SYSCLK) == 0) {
-      top->sysClk <= ~top->sysClk;
+      top->sysClk = !top->sysClk;
       doBreak=1;
     }
     if ((clkcounter % DIV_AURORAUSERCLK) == 0) {
-      top->auroraUserClk <= ~top->auroraUserClk;
+      top->auroraUserClk = !top->auroraUserClk;
       doBreak=1;
     }
-    if (doBreak) break;
+    if ((breakFirst) && (doBreak)) break;
   }
   top->eval();
-  return;
+  return clkcounter;
 }
 
-static void buffer_data(unsigned char c) {
-  queue_ret_t rval;
-  rval = QUEUE_Add(&stream_tx_queue, (queue_item_t *)&c);
-  int nchars;
-  if (c == TERM_CHAR) {
-    // Copy to eth_outbox.buf
-    //printf("Detected TERM_CHAR\r\n");
-    // TODO - Here I could instead shift until newline char to handle multiple messages in the buffer
-    nchars = QUEUE_ShiftOut(&stream_tx_queue, (queue_item_t *)eth_outbox.buf, QUEUE_MAX_ITEMS);
-    //printf("Shifting %d bytes\r\n", nchars);
-    eth_outbox.fill = nchars;
-    eth_outbox.ready = 1;
+/* static int topTickUntil(int clksel, int val);
+ *  Tick until clock selected by 'clksel' is equal to value 'val' (0, 1)
+ *  clksel values:
+ *    0: clkIn125
+ *    1: evrClk
+ *    2: sysClk
+ *    3: auroraUserClk
+ */
+#define CLKSEL_CLKIN125   (0)
+#define CLKSEL_EVRCLK     (1)
+#define CLKSEL_SYSCLK     (2)
+#define CLKSEL_AUCLK      (3)
+static int topTickUntil(int clksel, int val) {
+  int loopmax = 100;
+  topTick(1);
+  switch (clksel) {
+    case CLKSEL_CLKIN125:
+      while ((top->clkIn125 != val) && (loopmax-- > 0)) {
+        topTick(1);
+      }
+      break;
+    case CLKSEL_EVRCLK:
+      while ((top->evrClk != val) && (loopmax-- > 0)) {
+        topTick(1);
+      }
+      break;
+    case CLKSEL_SYSCLK:
+      while ((top->sysClk != val) && (loopmax-- > 0)) {
+        topTick(1);
+      }
+      break;
+    case CLKSEL_AUCLK:
+      while ((top->auroraUserClk != val) && (loopmax-- > 0)) {
+        topTick(1);
+      }
+      break;
   }
-  return;
-}
-
-static int get_next_byte(volatile unsigned char *c) {
-  return (int)QUEUE_Get(&stream_rx_queue, (queue_item_t *)c);
+  if (loopmax > 0) {
+    return 0;
+  }
+  // Timed out waiting for clk == val
+  return -1;
 }
 
 static void sysInit(const unsigned short udp_port) {
@@ -162,8 +191,8 @@ static void sysInit(const unsigned short udp_port) {
   signal(SIGINT, _sigHandler);
 #endif
   toExit = 0;
-  QUEUE_Init(&stream_tx_queue);
-  QUEUE_Init(&stream_rx_queue);
+  QUEUE_Init(&stream_tx_queue, sizeof(stream_mux_pkt_t));
+  QUEUE_Init(&stream_rx_queue, sizeof(stream_mux_pkt_t));
   int rc = udp_server_init(udp_port);
   if (rc < 0) {
     printf("Error in UDP initialization\r\n");
@@ -172,11 +201,7 @@ static void sysInit(const unsigned short udp_port) {
     UDP_stream_conn = rc;
     printf("Stream MUX listening on port %d\r\n", udp_port);
   }
-  eth_inbox.ready = 0;
-  eth_inbox.fill = 0;
 
-  eth_outbox.ready = 0;
-  eth_outbox.fill = 0;
   return;
 }
 
@@ -192,47 +217,53 @@ static int sysService(void) {
 
 static void udpService(void) {
   // INBOX
-  int rc = udp_receive(UDP_stream_conn, eth_inbox.buf, ETH_PAYLOAD_MAX);
+  stream_mux_pkt_t pkt;
+  int rc = udp_receive(UDP_stream_conn, &pkt, sizeof(stream_mux_pkt_t));
   // NOTE: clobbers any existing data
   if (rc > 0) {
-    printf("rc = %d\r\n", rc);
-    eth_inbox.fill = rc;
+    //printf("rc = %d\r\n", rc);
     //printf("Got packet len %d\r\n", rc);
-    eth_inbox.ready = 1;
     // Add to queue
-    for (int n = 0; n < rc; n++) {
-      if (QUEUE_Add(&stream_rx_queue, (queue_item_t *)&(eth_inbox.buf[n])) == QUEUE_FULL) {
-        printf("Broke early: n = %d\r\n", n);
-        break;
-      }
+    if (QUEUE_Add(&stream_rx_queue, &pkt) == QUEUE_FULL) {
+      printf("RX Aurora Packet Stream queue is full\r\n");
     }
   } else if (rc < 0) {
     printf("Receive error\r\n");
     toExit = 1;
-    eth_inbox.ready = 0;
   }
   // OUTBOX
-  if (eth_outbox.ready) {
-    printf("udp_reply with %d bytes\r\n", eth_outbox.fill);
-    rc = udp_reply(UDP_stream_conn, eth_outbox.buf, eth_outbox.fill);
-    eth_outbox.fill = 0;
-    eth_outbox.ready = 0;
+  if (QUEUE_Get(&stream_rx_queue, &pkt) != QUEUE_EMPTY) {
+    rc = udp_reply(UDP_stream_conn, &pkt, sizeof(stream_mux_pkt_t));
   }
   return;
 }
 
 static void streamMuxService(void) {
-  if ((eth_inbox.ready) && (eth_inbox.fill >= STREAM_PACKET_SIZE)) {
-    stream_mux_pkt_t pkt;
-    //QUEUE_Get(&stream_rx_queue, (queue_item_t *)pkt);
-    int out = QUEUE_ShiftOut(&stream_rx_queue, (queue_item_t *)&pkt, STREAM_PACKET_SIZE);
-    if (out == STREAM_PACKET_SIZE) {
-      printf("pkt.muxinfo = 0x%x\r\n", pkt.muxinfo);
-      printf("pkt.auHeader = 0x%x\r\n", pkt.auHeader);
-      printf("pkt.auDataX = 0x%x\r\n", pkt.auDataX);
-      printf("pkt.auDataY = 0x%x\r\n", pkt.auDataY);
-      printf("pkt.auDataS = 0x%x\r\n", pkt.auDataS);
-      feedStream(&pkt);
+  // Handle packets destined for the Verilated model (from UDP socket)
+  stream_mux_pkt_t pkt;
+  //int out = QUEUE_ShiftOut(&stream_rx_queue, (queue_item_t *)&pkt, STREAM_PACKET_SIZE);
+  //if (out == STREAM_PACKET_SIZE) {
+  if (QUEUE_Get(&stream_rx_queue, &pkt) != QUEUE_EMPTY) {
+    printf("pkt.muxinfo = 0x%x\r\n", pkt.muxinfo);
+    printf("pkt.auHeader = 0x%x\r\n", pkt.auHeader);
+    printf("pkt.auDataX = 0x%x\r\n", pkt.auDataX);
+    printf("pkt.auDataY = 0x%x\r\n", pkt.auDataY);
+    printf("pkt.auDataS = 0x%x\r\n", pkt.auDataS);
+    feedStream(&pkt);
+  }
+  // Handle packets leaving the Verilated model (to UDP socket)
+  if (top->stream_mux_valid) {
+    pkt.muxinfo = PACK_MUXINFO(top->stream_mux_src);
+    pkt.auHeader = top->stream_out_header;
+    pkt.auDataX = top->stream_out_datax;
+    pkt.auDataY = top->stream_out_datay;
+    pkt.auDataS = top->stream_out_datas;
+    if (QUEUE_Add(&stream_tx_queue, &pkt) == QUEUE_FULL) {
+      printf("TX Aurora Packet Stream queue is full\r\n");
+    } else {
+      // Make sure we don't trigger again on the same strobe
+      topTickUntil(CLKSEL_AUCLK, 0);
+      topTickUntil(CLKSEL_AUCLK, 1);
     }
   }
   return;
@@ -240,67 +271,21 @@ static void streamMuxService(void) {
 
 static void feedStream(stream_mux_pkt_t *pkt) {
   if (((pkt->muxinfo >> 16) & 0xffff) != MUXINFO_MAGIC) {
+    printf("Magic fail\r\n");
     return;
   }
+  printf("Magic hit\r\n");
+  topTickUntil(CLKSEL_AUCLK, 0);
   int nstream = (pkt->muxinfo) & 0x3;
-  // TODO FIXME I'm sure I'm not going to get the timing right with topTick()
-  if (nstream == NSTREAM_CELL_CCW) {
-    top->CELL_CCW_AXI_STREAM_RX_tdata = pkt->auHeader;
-    top->CELL_CCW_AXI_STREAM_RX_tvalid = 1;
-    topTick();
-    top->CELL_CCW_AXI_STREAM_RX_tdata = pkt->auDataX;
-    topTick();
-    top->CELL_CCW_AXI_STREAM_RX_tdata = pkt->auDataY;
-    topTick();
-    top->CELL_CCW_AXI_STREAM_RX_tdata = pkt->auDataS;
-    top->CELL_CCW_AXI_STREAM_RX_tlast = 1;
-    topTick();
-    top->CELL_CCW_AXI_STREAM_RX_tvalid = 0;
-    top->CELL_CCW_AXI_STREAM_RX_tlast = 0;
-    topTick();
-  } else if (nstream == NSTREAM_CELL_CW) {
-    top->CELL_CW_AXI_STREAM_RX_tdata = pkt->auHeader;
-    top->CELL_CW_AXI_STREAM_RX_tvalid = 1;
-    topTick();
-    top->CELL_CW_AXI_STREAM_RX_tdata = pkt->auDataX;
-    topTick();
-    top->CELL_CW_AXI_STREAM_RX_tdata = pkt->auDataY;
-    topTick();
-    top->CELL_CW_AXI_STREAM_RX_tdata = pkt->auDataS;
-    top->CELL_CW_AXI_STREAM_RX_tlast = 1;
-    topTick();
-    top->CELL_CW_AXI_STREAM_RX_tvalid = 0;
-    top->CELL_CW_AXI_STREAM_RX_tlast = 0;
-    topTick();
-  } else if (nstream == NSTREAM_BPM_CCW) {
-    top->BPM_CCW_AXI_STREAM_RX_tdata = pkt->auHeader;
-    top->BPM_CCW_AXI_STREAM_RX_tvalid = 1;
-    topTick();
-    top->BPM_CCW_AXI_STREAM_RX_tdata = pkt->auDataX;
-    topTick();
-    top->BPM_CCW_AXI_STREAM_RX_tdata = pkt->auDataY;
-    topTick();
-    top->BPM_CCW_AXI_STREAM_RX_tdata = pkt->auDataS;
-    top->BPM_CCW_AXI_STREAM_RX_tlast = 1;
-    topTick();
-    top->BPM_CCW_AXI_STREAM_RX_tvalid = 0;
-    top->BPM_CCW_AXI_STREAM_RX_tlast = 0;
-    topTick();
-  } else if (nstream == NSTREAM_BPM_CW) {
-    top->BPM_CW_AXI_STREAM_RX_tdata = pkt->auHeader;
-    top->BPM_CW_AXI_STREAM_RX_tvalid = 1;
-    topTick();
-    top->BPM_CW_AXI_STREAM_RX_tdata = pkt->auDataX;
-    topTick();
-    top->BPM_CW_AXI_STREAM_RX_tdata = pkt->auDataY;
-    topTick();
-    top->BPM_CW_AXI_STREAM_RX_tdata = pkt->auDataS;
-    top->BPM_CW_AXI_STREAM_RX_tlast = 1;
-    topTick();
-    top->BPM_CW_AXI_STREAM_RX_tvalid = 0;
-    top->BPM_CW_AXI_STREAM_RX_tlast = 0;
-    topTick();
-  }
+  top->stream_mux_sel = nstream;
+  top->stream_in_header = pkt->auHeader;
+  top->stream_in_datax = pkt->auDataX;
+  top->stream_in_datay = pkt->auDataY;
+  top->stream_in_datas = pkt->auDataS;
+  top->stream_mux_strobe = 1;
+  topTickUntil(CLKSEL_AUCLK, 1);
+  topTickUntil(CLKSEL_AUCLK, 0);
+  top->stream_mux_strobe = 0;
   return;
 }
 
@@ -352,7 +337,7 @@ void vl_Xil_Out32(uint32_t addrEnc, uint32_t val) {
     addrDec = (addrEnc-XPAR_AXI_LITE_GENERIC_REG_BASEADDR)/4;
     top->GPIO_OUT = val;
     top->GPIO_STROBES = (1 << addrDec);
-    topTick();
+    topTick(0);
     top->GPIO_STROBES = 0;
   } else if ((addrEnc >= XPAR_BRAM_BPM_SETPOINTS_S_AXI_BASEADDR) && (addrEnc <= XPAR_BRAM_BPM_SETPOINTS_S_AXI_HIGHADDR)) {
     // BPM setpoint memory range

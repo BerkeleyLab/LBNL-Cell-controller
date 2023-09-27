@@ -42,6 +42,9 @@ These packets are destined for the hardware/simulated Stream MUX, so they have o
 #define PACK_AUDATAS(crc_fault, adc_clipping, sum) \
   ((crc_fault & 1) << 31 | (adc_clipping << 30) | (sum & 0x3fffffff))
 
+#define UNPACK_CELL_INDEX(auHeader)     ((auHeader >> 10) & 0x1f)
+#define UNPACK_FOFB_INDEX(auHeader)            (auHeader & 0x1ff)
+
 typedef struct {
   uint32_t muxinfo;
   uint32_t auHeader;
