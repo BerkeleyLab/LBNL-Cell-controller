@@ -13,6 +13,8 @@
 #define DEFAULT_UDP_PORT        (50007)
 #define CELL_INDEX_INIT             (0)
 #define CELL_INDEX_MAX             (15)
+#define FOFB_INDEX_INIT             (0)
+#define FOFB_INDEX_MAX             (15)
 
 static void _sigHandler(int c);
 static void _sendPacket(stream_mux_pkt_t *pkt, int nstream, int cell_index, int fofb_index);
@@ -48,14 +50,19 @@ int main(int argc, char *argv[]) {
     printf("UDP initialization failed\r\n");
     return -1;
   }
-  for (int n = CELL_INDEX_INIT; n < CELL_INDEX_MAX; n++) {
-    // TODO Make valid FOFB indicies
-    _sendPacket(&pkt, NSTREAM_CELL_CCW, n, 5);
-    waitms(1);
-    _handlePacket(&pkt);
-    waitms(1);
-    if (toExit) {
-      break;
+  int cell_index;
+  int fofb_index;
+  for (int n = CELL_INDEX_INIT; n <= CELL_INDEX_MAX; n++) {
+    cell_index = n;
+    for (int m = FOFB_INDEX_INIT; m <= FOFB_INDEX_MAX; m++) {
+      fofb_index = (cell_index << 4) | m;
+      _sendPacket(&pkt, NSTREAM_CELL_CCW, cell_index, fofb_index);
+      waitms(1);
+      _handlePacket(&pkt);
+      waitms(1);
+      if (toExit) {
+        break;
+      }
     }
   }
   return 0;
@@ -82,10 +89,12 @@ static void _sendPacket(stream_mux_pkt_t *pkt, int nstream, int cell_index, int 
 static void _handlePacket(stream_mux_pkt_t *pkt) {
   int rc;
   int cell_index;
+  int fofb_index;
   rc = udp_receive(conn, (void *)pkt, sizeof(stream_mux_pkt_t));
   if (rc > 0) {
     cell_index = UNPACK_CELL_INDEX(pkt->auHeader);
-    printf("Received packet from cell index %d\r\n", cell_index);
+    fofb_index = UNPACK_FOFB_INDEX(pkt->auHeader);
+    printf("Received. cell_index=%d, fofb_index=%d\r\n", cell_index, fofb_index);
     /*
     printf("inpkt.muxinfo = 0x%x\r\n", pkt->muxinfo);
     printf("inpkt.auHeader = 0x%x\r\n", pkt->auHeader);

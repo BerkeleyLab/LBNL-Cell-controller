@@ -199,6 +199,5 @@ int udp_send(int nconn, const void *src, int nchars) {
     printf("rc = %d, errno = %d\r\n", rc, errno);
     perror("Goofed");
   }
-  printf("rc = %d\r\n", rc);
   return rc;
 }
