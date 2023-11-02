@@ -5,7 +5,6 @@ module cctrl_marble_top #(
   input              DDR_REF_CLK_N, // 125 MHz (complement)
   //input              MGT_CLK_0_P, // 125 MHz
   //input              MGT_CLK_0_N, // 125 MHz (complement)
-  //output             VCXO_EN,
   output             PHY_RSTN,
 
   input  wire        FPGA_TxD,
@@ -403,18 +402,6 @@ wire  [8:0] evr_mgt_drp_daddr;
 (* mark_debug=EVR_DEBUG *) wire  [1:0] evr_notintable;
 (* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
 (* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
-
-/*
-`ifndef INCLUDE_FOFB
-  // Need to provide refclk for evr_mgt_top since not shared with fofb
-  IBUFDS_GTE2 ibufds_gtrefclk_top_i (
-    .I(MGT_CLK_2_P),                         // input MGT_CLK_3_P
-    .IB(MGT_CLK_2_N),                        // input MGT_CLK_3_N
-    .CEB(1'b0),
-    .O(ethRefClk125)                          // output gtrefclk_i
-  );
-`endif // `ifndef INCLUDE_FOFB
-*/
 
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
@@ -879,7 +866,6 @@ fofbEthernet #(
     .ETH_TX_N(QSFP2_TX_N[3]), // H1  MGT_TX_7_N  MGT_TX_7_QSFP_N   QSFP2_TX_4_N Bank 115
     .ETH_TX_P(QSFP2_TX_P[3]));// H2  MGT_TX_7_P  MGT_TX_7_QSFP_P   QSFP2_TX_4_P Bank 115
 
-`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
 fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),
@@ -909,6 +895,7 @@ fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),
     .rx_S_AXIS_TDATA(PS_READBACK_AXIS_TDATA),
     .rx_S_AXIS_TUSER(PS_READBACK_AXIS_TUSER));
 
+`ifdef INCLUDE_EEBI
 //////////////////////////////////////////////////////////////////////////////
 // Errant Electron Beam Interlock
 eebi #(.SYSCLK_RATE(SYSCLK_RATE), .dbg("false")) eebi (
@@ -925,6 +912,7 @@ eebi #(.SYSCLK_RATE(SYSCLK_RATE), .dbg("false")) eebi (
             .localBPMvaluesVALID(localBPMvaluesVALID),
             .eebiRelay(INTLK_RELAY_CTL),
             .eebiResetButton_n(INTLK_RESET_BUTTON_N));
+`endif // `ifdef INCLUDE_EEBI
 
 //////////////////////////////////////////////////////////////////////////////
 // Convert value from integer nm to double precision mm
@@ -936,7 +924,6 @@ errorConvert errorConvert (
           .status(GPIO_IN[GPIO_IDX_ERROR_CONVERT_CSR]),
           .resultHi(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_HI]),
           .resultLo(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_LO]));
-`endif // `ifdef INCLUDE_FOFB
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
