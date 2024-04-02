@@ -107,7 +107,7 @@ __STP_FILES = \
 	AD9520-4_PT_LO_1_2.stp \
 	AD9520-4_RF_11_19_compat.stp \
 	AD9520-4_RF.stp
-STP_FILES = $(addprefix $(SW_APP_TGT_DIR)/, $(__STP_FILES))
+STP_FILES = $(addprefix $(SW_TGT_SCRIPTS_DIR)/, $(__STP_FILES))
 
 include $(TARGET_DIR)/$(TARGET).mk
 
@@ -148,10 +148,10 @@ vpath *.o $(SW_SRC_DIR)
 vpath *.mmi $(GW_TGT_DIR)
 
 %softwareBuildDate.h: $(SRC_FILES) $(HDR_FILES)
-	sh $(SW_APP_TGT_DIR)/setSoftwareBuildDate.sh > $@
+	sh $(SW_TGT_SCRIPTS_DIR)/setSoftwareBuildDate.sh > $@
 
 %ad9520Tables.h: $(STP_FILES)
-	bash $(SW_APP_TGT_DIR)/createPLLtables.sh $^ > $@
+	bash $(SW_TGT_SCRIPTS_DIR)/createPLLtables.sh $^ > $@
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
