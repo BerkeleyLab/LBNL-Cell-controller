@@ -22,6 +22,9 @@ all: $(TARGET)_top.bit $(TARGET)_top.mmi
 # Search for .v files here
 vpath %.v $(DSP_DIR)
 vpath %.v $(MODULES_DIR)
+vpath %.v $(BADGER_DIR)
+vpath %.v $(PERIPH_DRIVERS_DIR)
+vpath %.v $(PERIPH_DRIVERS_DIR)/i2cbridge
 
 TOP_LVL_DIR = ../../top/$(TARGET)
 
@@ -49,7 +52,7 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 # custom ip_cores that requires packaging
 include $(MODULES_DIR)/evr_axi_rules.mk
 include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
-include $(MODULES_DIR)/badger_rules.mk
+include $(MODULES_DIR)/bantamweightUDP_rules.mk
 include $(MODULES_DIR)/drp_bridge_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply ila_td256_s4096_cap
@@ -126,10 +129,6 @@ BD_SRCS_DIRS += $(addsuffix /synth, $(BD_DIRS))
 BD_SRCS_DIRS += $(addsuffix /hdl, $(BD_DIRS))
 
 BD_bds = $(addsuffix .bd, $(BD))
-
-# Add ethernet-core rules, paths
-include $(MODULES_DIR)/aggregate_rules.mk
-vpath %.v $(CORE_DIR) $(CRC_DIR)
 
 # For iverilog to search for dependencies
 
@@ -233,6 +232,10 @@ VFLAGS_DEP += $(addprefix -c, $(VFLAGS_COMMAND_FILE))
 
 #VFLAGS_DEP += -DSIMULATE
 
+# Badger build
+RTEFI_CLIENT_LIST = hello.v
+include $(BADGER_DIR)/rules.mk
+
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.v $(BWUDP_DIR)
@@ -268,20 +271,11 @@ else
 SCRAP_DIR=
 endif
 
-# ================ BWUDP =======================
-MERGED_FILE = $(MODULES_DIR)/badgerMerged.v
-# Packet Badger synthesizable code
-RTEFI_CLIENT_LIST = hello.v
-include $(BADGER_DIR)/rules.mk
-
-$(MERGED_FILE): $(RTEFI_V)
-	iverilog -E -o $@ $^
-
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MERGED_FILE) $(BWUDP_DIR)/badger.v $(SERIAL_IO_DIR)/gmii_to_rgmii.v $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(TOP_LVL_DIR)/aggregate.v $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
 	vivado -mode batch -nojou -nolog -source $(GW_SCRIPTS_DIR)/gen_mem_info.tcl -tclargs $< $@
@@ -358,7 +352,6 @@ CLEAN += *.bin
 CLEAN += *.prm
 CLEAN += system_top.xdc
 CLEAN += $(TOP_LVL_DIR)/firmwareBuildDate.v
-CLEAN += $(TOP_LVL_DIR)/aggregate.v
 CLEAN += $(TOP_LVL_DIR)/$(GPIOIDX_V)
 CLEAN += $(IP_CORES_CUSTOM)
 CLEAN += $(VFLAGS_COMMAND_FILE)
