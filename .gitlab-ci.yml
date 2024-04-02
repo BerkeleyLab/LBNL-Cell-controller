@@ -57,7 +57,7 @@ sw_cctrl_bmb7:
     - cd software/app/cctrl
   stage: software
   script:
-    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make TARGET=cctrl_bmb7 all bundle
+    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make APP=cctrl PLATFORM=bmb7 all
   # Get artifacts from this job, needed to compile the sofware
   needs:
     - job: gw_cctrl_bmb7
@@ -68,14 +68,14 @@ sw_cctrl_bmb7:
     paths:
       - software/app/cctrl/cctrl_bmb7.elf
       - software/app/cctrl/cctrl_bmb7.elf.size
-      - software/app/cctrl/download_cctrl_bmb7.bit
+      - software/app/cctrl/cctrl_bmb7*.bit
 
 sw_cctrl_marble:
   before_script:
     - cd software/app/cctrl
   stage: software
   script:
-    - make TARGET=cctrl_marble clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make TARGET=cctrl_marble all bundle
+    - make TARGET=cctrl_marble clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make APP=cctrl PLATFORM=marble all
   # Get artifacts from this job, needed to compile the sofware
   needs:
     - job: gw_cctrl_marble
@@ -86,4 +86,4 @@ sw_cctrl_marble:
     paths:
       - software/app/cctrl/cctrl_marble.elf
       - software/app/cctrl/cctrl_marble.elf.size
-      - software/app/cctrl/download_cctrl_marble.bit
+      - software/app/cctrl/cctrl_marble*.bit
