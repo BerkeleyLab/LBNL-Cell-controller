@@ -145,7 +145,7 @@ INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 vpath *.c $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.h $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.o $(SW_SRC_DIR)
-vpath *.mmi $(GW_CCTRL_TGT_DIR)
+vpath *.mmi $(GW_TGT_DIR)
 
 %softwareBuildDate.h: $(SRC_FILES) $(HDR_FILES)
 	sh $(SW_APP_TGT_DIR)/setSoftwareBuildDate.sh > $@
@@ -156,9 +156,9 @@ vpath *.mmi $(GW_CCTRL_TGT_DIR)
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
 ifeq ($(TARGET),cctrl_marble)
-XSA_FILE=$(GW_CCTRL_TGT_DIR)/system_marble.xsa
+XSA_FILE=$(GW_TGT_DIR)/system_marble.xsa
 else
-XSA_FILE=$(GW_CCTRL_TGT_DIR)/system.xsa
+XSA_FILE=$(GW_TGT_DIR)/system.xsa
 endif
 
 $(TARGET):
