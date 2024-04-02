@@ -11,7 +11,7 @@ module cctrl_marble_top #(
   input  wire        FPGA_TxD,
   output wire        FPGA_RxD,
 
-// TODO: Gateware currently expects MGT_CLK_1_P/N = 312.5 MHz? Formerly 
+// TODO: Gateware currently expects MGT_CLK_1_P/N = 312.5 MHz? Formerly
   input wire         MGT_CLK_1_N, MGT_CLK_1_P,
 // TODO: Gateware currently expects MGT_CLK_2_P/N = 125 MHz
   input wire         MGT_CLK_2_N, MGT_CLK_2_P,
@@ -1015,7 +1015,7 @@ badger badger_i (
   // RGMII pins
   .RGMII_RX_CLK   (RGMII_RX_CLK),
   .RGMII_RX_CTRL  (RGMII_RX_CTRL),
-  .RGMII_RXD      (RGMII_RXD), // [3:0] 
+  .RGMII_RXD      (RGMII_RXD), // [3:0]
   .RGMII_TX_CLK   (RGMII_TX_CLK),
   .RGMII_TX_CTRL  (RGMII_TX_CTRL),
   .RGMII_TXD      (RGMII_TXD) // [3:0]
