@@ -8,12 +8,19 @@ XSCT ?= xsct -norlwrap
 
 include ../../../dir_list.mk
 
-TARGET   ?= cctrl_bmb7
-GW_CCTRL_TGT_DIR = $(GW_SYN_DIR)/$(TARGET)
-BIT      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.bit
-DEPLOY_BIT ?= $(THIS_DIR)/download_$(TARGET).bit
-MMI      ?= $(GW_CCTRL_TGT_DIR)/$(TARGET)_top.mmi
-ELF 	 ?= $(THIS_DIR)/$(TARGET).elf
+GIT_COMMIT	= $(shell git rev-parse --short=8 --verify HEAD || echo "NOCOMMIT")
+
+APP         ?= cctrl
+PLATFORM    ?= marble
+TARGET      = $(APP)_$(PLATFORM)
+GW_TGT_DIR  = $(GW_SYN_DIR)/$(TARGET)
+BIT         ?= $(GW_TGT_DIR)/$(TARGET)_top.bit
+DEPLOY_BIT  ?= $(THIS_DIR)/$(TARGET).$(GIT_COMMIT).bit
+MMI         ?= $(GW_TGT_DIR)/$(TARGET)_top.mmi
+ELF         ?= $(THIS_DIR)/$(TARGET).elf
+
+SW_APP_TGT_DIR = $(SW_APP_DIR)/$(APP)
+SW_TGT_SCRIPTS_DIR = $(SW_APP_DIR)/$(APP)/scripts
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
@@ -23,9 +30,7 @@ else
 BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 endif
 
-all: $(TARGET) $(TARGET).elf $(TARGET).elf.size
-
-bundle: $(DEPLOY_BIT)
+all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
 
 __SRC_FILES = \
 	aurora.c \
@@ -102,7 +107,7 @@ __STP_FILES = \
 	AD9520-4_PT_LO_1_2.stp \
 	AD9520-4_RF_11_19_compat.stp \
 	AD9520-4_RF.stp
-STP_FILES = $(addprefix $(SW_CCTRL_SCRIPTS_DIR)/, $(__STP_FILES))
+STP_FILES = $(addprefix $(SW_APP_TGT_DIR)/, $(__STP_FILES))
 
 include $(TARGET_DIR)/$(TARGET).mk
 
@@ -143,10 +148,10 @@ vpath *.o $(SW_SRC_DIR)
 vpath *.mmi $(GW_CCTRL_TGT_DIR)
 
 %softwareBuildDate.h: $(SRC_FILES) $(HDR_FILES)
-	sh $(SW_CCTRL_SCRIPTS_DIR)/setSoftwareBuildDate.sh > $@
+	sh $(SW_APP_TGT_DIR)/setSoftwareBuildDate.sh > $@
 
 %ad9520Tables.h: $(STP_FILES)
-	bash $(SW_CCTRL_SCRIPTS_DIR)/createPLLtables.sh $^ > $@
+	bash $(SW_APP_TGT_DIR)/createPLLtables.sh $^ > $@
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
@@ -179,5 +184,5 @@ $(DEPLOY_BIT): $(MMI) $(BIT) $(ELF)
 	$(CC) -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) -c $*.c -o $@
 
 clean::
-	$(RM) -rf $(TARGET).elf $(TARGET).elf.size $(HDR_GEN_FILES) \
+	$(RM) -rf $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT) $(HDR_GEN_FILES) \
 		$(OBJ_FILES) $(OBJ_FILES:.o=.d) $(TARGET)
