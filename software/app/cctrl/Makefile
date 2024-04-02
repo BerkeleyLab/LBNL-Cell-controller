@@ -25,9 +25,9 @@ SW_TGT_SCRIPTS_DIR = $(SW_APP_DIR)/$(APP)/scripts
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
 ifeq ($(TARGET), cctrl_bmb7)
-BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 else
-BSP_DIR   = $(SW_CCTRL_APP_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 endif
 
 all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
