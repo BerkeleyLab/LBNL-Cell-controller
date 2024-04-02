@@ -984,8 +984,6 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .TxData(FPGA_RxD),
                    .RxData(FPGA_TxD));
 
-`ifndef SIMULATE
-
 //////////////////////////////////////////////////////////////////////////////
 // Badger Ethernet MAC Interface
 badger badger_i (
@@ -1015,6 +1013,8 @@ badger badger_i (
   .RGMII_TX_CTRL  (RGMII_TX_CTRL),
   .RGMII_TXD      (RGMII_TXD) // [3:0]
 );
+
+`ifndef SIMULATE
 
 //////////////////////////////////////////////////////////////////////////////
 // Block design (MicroBlaze)
