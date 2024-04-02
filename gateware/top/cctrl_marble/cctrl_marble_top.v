@@ -96,6 +96,7 @@ parameter FREQ_CLKIN_HZ = 125_000_000;
 wire clkIn125;  // Input clock (125 MHz) from U20
 wire sysClk;    // 100 MHz sysclk
 wire clk200;    // 200 MHz clock
+wire ethernetRxClk, ethernetTxClk;
 wire ethRefClk125;
 wire badgerRefClk125, badgerRefClk125d90; // 125 MHz ethernet clock (and 90-deg shifted copy)
 wire sysReset_n;
@@ -917,23 +918,29 @@ errorConvert errorConvert (
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
-reg   [2:0] frequencyMonitorSelect;
+localparam FREQ_COUNTERS_NUM = 7;
+localparam FREQ_SEL_WIDTH = $clog2(FREQ_COUNTERS_NUM+1);
+reg  [FREQ_SEL_WIDTH-1:0] frequencyMonitorSelect;
 wire [29:0] measuredFrequency;
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_FREQUENCY_MONITOR_CSR])
-                                        frequencyMonitorSelect <= GPIO_OUT[2:0];
+        frequencyMonitorSelect <= GPIO_OUT[FREQ_SEL_WIDTH-1:0];
 end
 assign GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR] = { 2'b0, measuredFrequency };
 wire auRefClk;  // TODO FIXME
 freq_multi_count #(
-        .NF(5),  // number of frequency counters in a block
+        .NF(FREQ_COUNTERS_NUM),  // number of frequency counters in a block
         .NG(1),  // number of frequency counter blocks
         .gw(4),  // Gray counter width
         .cw(1),  // macro-cycle counter width
         .rw($clog2(SYSCLK_RATE*4/3)), // reference counter width
         .uw(30)) // unknown counter width
   frequencyCounters(
-    .unk_clk({auRefClk, ethRefClk125, auroraUserClk, evrClk, sysClk}),
+    .unk_clk({
+        ethernetRxClk, ethernetTxClk,
+        auRefClk,
+        ethRefClk125,
+        auroraUserClk, evrClk, sysClk}),
     .refclk(sysClk),
     .refMarker(evrTriggerBus[1]),  // 1 PPS marker from event system
     .addr(frequencyMonitorSelect),
@@ -1002,8 +1009,8 @@ badger badger_i (
   .refClk125d90   (badgerRefClk125d90),
 
   // Diagnostic outputs (e.g. to frequency counters)
-  .rx_clk         (),
-  .tx_clk         (),
+  .rx_clk(ethernetRxClk),
+  .tx_clk(ethernetTxClk),
 
   // RGMII pins
   .RGMII_RX_CLK   (RGMII_RX_CLK),
