@@ -89,8 +89,6 @@ set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
 set_property -dict {PACKAGE_PIN F5} [get_ports MGT_CLK_1_N]
 create_clock -name clkAuroraGTREF -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_1_P]
 
-#Problem ports: QSFP2_TX_N[3], QSFP2_TX_N[2], QSFP2_TX_P[3], and QSFP2_TX_P[2]
-
 # MGTREFCLK0_115 (schematic MGT_CLK_2), U2 output 4
 set_property -dict {PACKAGE_PIN H6} [get_ports MGT_CLK_2_P]
 set_property -dict {PACKAGE_PIN H5} [get_ports MGT_CLK_2_N]
@@ -101,57 +99,50 @@ create_clock -name clk125 -period 8.000 -waveform {0.000 4.000} [get_ports MGT_C
 #set_property -dict {PACKAGE_PIN K5} [get_ports MGT_CLK_3_N]
 #create_clock -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_3_P]
 
+###########################
 # Transceivers
-# ----------------------------------------------------------------------
-# ------------------------------- QSFP1 --------------------------------
-# ----------------------------------------------------------------------
-# Corrected on 220315
-set_property PACKAGE_PIN E3 [get_ports {QSFP1_RX_N[0]}]
-set_property PACKAGE_PIN E4 [get_ports {QSFP1_RX_P[0]}]
-#set_property PACKAGE_PIN D1 [get_ports {QSFP1_TX_N[0]}]
-#set_property PACKAGE_PIN D2 [get_ports {QSFP1_TX_P[0]}]
-set_property PACKAGE_PIN C3 [get_ports {QSFP1_RX_N[1]}]
-set_property PACKAGE_PIN C4 [get_ports {QSFP1_RX_P[1]}]
-set_property PACKAGE_PIN B1 [get_ports {QSFP1_TX_N[1]}]
-set_property PACKAGE_PIN B2 [get_ports {QSFP1_TX_P[1]}]
-set_property PACKAGE_PIN G3 [get_ports {QSFP1_RX_N[2]}]
-set_property PACKAGE_PIN G4 [get_ports {QSFP1_RX_P[2]}]
-set_property PACKAGE_PIN F1 [get_ports {QSFP1_TX_N[2]}]
-set_property PACKAGE_PIN F2 [get_ports {QSFP1_TX_P[2]}]
-#set_property PACKAGE_PIN B5 [get_ports {QSFP1_RX_N[3]}]
-#set_property PACKAGE_PIN B6 [get_ports {QSFP1_RX_P[3]}]
-#set_property PACKAGE_PIN A3 [get_ports {QSFP1_TX_N[3]}]
-#set_property PACKAGE_PIN A4 [get_ports {QSFP1_TX_P[3]}]
-# ----------------------------------------------------------------------
-# ------------------------------- QSFP2 --------------------------------
-# ----------------------------------------------------------------------
-# Corrected on 220315
-set_property -dict {PACKAGE_PIN N3 IOSTANDARD LVCMOS15} [get_ports {QSFP2_RX_N[0]}]
-set_property PACKAGE_PIN N4 [get_ports {QSFP2_RX_P[0]}]
-set_property PACKAGE_PIN M1 [get_ports {QSFP2_TX_N[0]}]
-set_property PACKAGE_PIN M2 [get_ports {QSFP2_TX_P[0]}]
-set_property PACKAGE_PIN L3 [get_ports {QSFP2_RX_N[1]}]
-set_property PACKAGE_PIN L4 [get_ports {QSFP2_RX_P[1]}]
-set_property PACKAGE_PIN K1 [get_ports {QSFP2_TX_N[1]}]
-set_property PACKAGE_PIN K2 [get_ports {QSFP2_TX_P[1]}]
-#set_property PACKAGE_PIN R3 [get_ports {QSFP2_RX_N[2]}]
-#set_property PACKAGE_PIN R4 [get_ports {QSFP2_RX_P[2]}]
-#set_property PACKAGE_PIN P1 [get_ports {QSFP2_TX_N[2]}]
-#set_property PACKAGE_PIN P2 [get_ports {QSFP2_TX_P[2]}]
-#set_property PACKAGE_PIN J3 [get_ports {QSFP2_RX_N[3]}]
-#set_property PACKAGE_PIN J4 [get_ports {QSFP2_RX_P[3]}]
-#set_property PACKAGE_PIN H1 [get_ports {QSFP2_TX_N[3]}]
-#set_property PACKAGE_PIN H2 [get_ports {QSFP2_TX_P[3]}]
-### QSFP1-2/11, Bank 116 MGT 2, X0Y6
-##set_property -dict {PACKAGE_PIN B2} [get_ports MGT_TX_t1_P]
-##set_property -dict {PACKAGE_PIN B1} [get_ports MGT_TX_t1_N]
-##set_property -dict {PACKAGE_PIN C4} [get_ports MGT_RX_t1_P]
-##set_property -dict {PACKAGE_PIN C3} [get_ports MGT_RX_t1_N]
-### QSFP1-3/11, Bank 116 MGT 0, X0Y4
-##set_property -dict {PACKAGE_PIN F2} [get_ports MGT_TX_t2_P]
-##set_property -dict {PACKAGE_PIN F1} [get_ports MGT_TX_t2_N]
-##set_property -dict {PACKAGE_PIN G4} [get_ports MGT_RX_t2_P]
-##set_property -dict {PACKAGE_PIN G3} [get_ports MGT_RX_t2_N]
+###########################
+# QSFP1-1/12, Bank 116 MGT 1, X0Y5
+# set_property -dict {PACKAGE_PIN D2} [get_ports {QSFP1_TX_P[0]}]
+# set_property -dict {PACKAGE_PIN D1} [get_ports {QSFP1_TX_N[0]}]
+set_property -dict {PACKAGE_PIN E4} [get_ports {QSFP1_RX_P[0]}]
+set_property -dict {PACKAGE_PIN E3} [get_ports {QSFP1_RX_N[0]}]
+# QSFP1-2/11, Bank 116 MGT 2, X0Y6
+set_property -dict {PACKAGE_PIN B2} [get_ports {QSFP1_TX_P[1]}]
+set_property -dict {PACKAGE_PIN B1} [get_ports {QSFP1_TX_N[1]}]
+set_property -dict {PACKAGE_PIN C4} [get_ports {QSFP1_RX_P[1]}]
+set_property -dict {PACKAGE_PIN C3} [get_ports {QSFP1_RX_N[1]}]
+# QSFP1-3/10, Bank 116 MGT 0, X0Y4
+set_property -dict {PACKAGE_PIN F2} [get_ports {QSFP1_TX_P[2]}]
+set_property -dict {PACKAGE_PIN F1} [get_ports {QSFP1_TX_N[2]}]
+set_property -dict {PACKAGE_PIN G4} [get_ports {QSFP1_RX_P[2]}]
+set_property -dict {PACKAGE_PIN G3} [get_ports {QSFP1_RX_N[2]}]
+# QSFP1-4/9, Bank 116  MGT 3, X0Y7
+# set_property -dict {PACKAGE_PIN A4} [get_ports {QSFP1_TX_P[3]}]
+# set_property -dict {PACKAGE_PIN A3} [get_ports {QSFP1_TX_N[3]}]
+# set_property -dict {PACKAGE_PIN B6} [get_ports {QSFP1_RX_P[3]}]
+# set_property -dict {PACKAGE_PIN B5} [get_ports {QSFP1_RX_N[3]}]
+
+# QSFP2-1/12, Bank 115 MGT 1, X0Y1
+set_property -dict {PACKAGE_PIN M2} [get_ports {QSFP2_TX_P[0]}]
+set_property -dict {PACKAGE_PIN M1} [get_ports {QSFP2_TX_N[0]}]
+set_property -dict {PACKAGE_PIN N4} [get_ports {QSFP2_RX_P[0]}]
+set_property -dict {PACKAGE_PIN N3} [get_ports {QSFP2_RX_N[0]}]
+# QSFP2-2/11, Bank 115 MGT 2, X0Y2
+set_property -dict {PACKAGE_PIN K2} [get_ports {QSFP2_TX_P[1]}]
+set_property -dict {PACKAGE_PIN K1} [get_ports {QSFP2_TX_N[1]}]
+set_property -dict {PACKAGE_PIN L4} [get_ports {QSFP2_RX_P[1]}]
+set_property -dict {PACKAGE_PIN L3} [get_ports {QSFP2_RX_N[1]}]
+# QSFP2-3/10, Bank 115 MGT 0, X0Y0
+set_property -dict {PACKAGE_PIN P2} [get_ports {QSFP2_TX_P[2]}]
+set_property -dict {PACKAGE_PIN P1} [get_ports {QSFP2_TX_N[2]}]
+set_property -dict {PACKAGE_PIN R4} [get_ports {QSFP2_RX_P[2]}]
+set_property -dict {PACKAGE_PIN R3} [get_ports {QSFP2_RX_N[2]}]
+# QSFP2-4/9, Bank 115  MGT 3, X0Y3
+set_property -dict {PACKAGE_PIN H2} [get_ports {QSFP2_TX_P[3]}]
+set_property -dict {PACKAGE_PIN H1} [get_ports {QSFP2_TX_N[3]}]
+set_property -dict {PACKAGE_PIN J4} [get_ports {QSFP2_RX_P[3]}]
+set_property -dict {PACKAGE_PIN J3} [get_ports {QSFP2_RX_N[3]}]
 
 # Direct monitoring of MGT reference clocks
 # FMC1 -- H4/H5

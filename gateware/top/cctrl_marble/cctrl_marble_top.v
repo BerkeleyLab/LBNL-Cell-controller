@@ -39,8 +39,8 @@ module cctrl_marble_top #(
 
   input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
   output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
-  input  wire  [1:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
-  output wire  [1:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
+  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
+  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
   inout TWI_SDA,
   inout TWI_SCL,
@@ -806,8 +806,8 @@ fofbEthernet #(
     .pcs_pma_shared(pcs_pma_shared),
     .ethNonce(ethNonce),
     .clk200(clk200),
-    .ETH_REF_N(MGT_CLK_2_N),  // D5 Bank 116
-    .ETH_REF_P(MGT_CLK_2_P),  // D6 Bank 116
+    .ETH_REF_N(MGT_CLK_2_N),
+    .ETH_REF_P(MGT_CLK_2_P),
     .ETH_RX_N(QSFP2_RX_N[2]), // R3  MGT_RX_4_N  MGT_RX_4_QSFP_N   QSFP2_RX_3_N Bank 115
     .ETH_RX_P(QSFP2_RX_P[2]), // R4  MGT_RX_4_P  MGT_RX_4_QSFP_P   QSFP2_RX_3_P Bank 115
     .ETH_TX_N(QSFP2_TX_N[2]), // P1  MGT_TX_4_N  MGT_TX_4_QSFP_N   QSFP2_TX_3_N Bank 115
