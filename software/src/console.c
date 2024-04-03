@@ -53,14 +53,33 @@ static void
 showFrequencyCounters(void)
 {
     int i;
-    static const char *names[] = { "System", "EVR recovered", "Aurora user",
-                                   "Ethernet/EVR reference",
-                                   "Aurora reference" };
+#ifdef MARBLE
+    static const char *names[] = {  "System",
+                                    "EVR recovered",
+                                    "Aurora user",
+                                    "Ethernet/EVR reference",
+                                    "Aurora reference",
+                                    "Ethernet Tx",
+                                    "Ethernet Rx" };
+#else
+    static const char *names[] = {  "System",
+                                    "EVR recovered",
+                                    "Aurora user",
+                                    "Ethernet/EVR reference",
+                                    "Aurora reference" };
+#endif
 
     for (i = 0 ; i < sizeof names / sizeof names[0] ; i++) {
         GPIO_WRITE(GPIO_IDX_FREQUENCY_MONITOR_CSR, i);
-        printf("%24s clock: %9d\n", names[i],
-                                     GPIO_READ(GPIO_IDX_FREQUENCY_MONITOR_CSR));
+        uint32_t csr = GPIO_READ(GPIO_IDX_FREQUENCY_MONITOR_CSR);
+        unsigned int rate = csr & 0xc3FFFFFFF;
+        printf("%20s clock: %3d.", names[i], rate / 1000000);
+        if (csr & 0x80000000) {
+            printf("%03d\n", (rate / 1000) % 1000);
+        }
+        else {
+            printf("%06d\n", rate % 1000000);
+        }
     }
 }
 
