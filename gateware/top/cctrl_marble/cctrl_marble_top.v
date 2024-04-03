@@ -3,19 +3,14 @@ module cctrl_marble_top #(
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
-  //input              MGT_CLK_0_P, // 125 MHz
-  //input              MGT_CLK_0_N, // 125 MHz (complement)
   //output             VCXO_EN,
   output             PHY_RSTN,
 
   input  wire        FPGA_TxD,
   output wire        FPGA_RxD,
 
-// TODO: Gateware currently expects MGT_CLK_1_P/N = 312.5 MHz? Formerly
   input wire         MGT_CLK_1_N, MGT_CLK_1_P,
-// TODO: Gateware currently expects MGT_CLK_2_P/N = 125 MHz
   input wire         MGT_CLK_2_N, MGT_CLK_2_P,
-  //input wire         MGT_CLK_3_N, MGT_CLK_3_P,
 
   input              RGMII_RX_CLK,
   input              RGMII_RX_CTRL,
@@ -406,16 +401,6 @@ wire  [8:0] evr_mgt_drp_daddr;
 (* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
 (* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
 
-`ifndef INCLUDE_FOFB
-  // Need to provide refclk for evr_mgt_top since not shared with fofb
-  IBUFDS_GTE2 ibufds_gtrefclk_top_i (
-    .I(MGT_CLK_2_P),                         // input MGT_CLK_3_P
-    .IB(MGT_CLK_2_N),                        // input MGT_CLK_3_N
-    .CEB(1'b0),
-    .O(ethRefClk125)                          // output gtrefclk_i
-  );
-`endif // `ifndef INCLUDE_FOFB
-
 evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
          .reset(gtReset),
          .ref_clk(ethRefClk125),  // Comes from bank 115
@@ -730,7 +715,6 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .SETPOINT_TLAST(FOFB_SETPOINT_AXIS_TLAST),
     .SETPOINT_TDATA(FOFB_SETPOINT_AXIS_TDATA));
 
-`ifdef INCLUDE_FOFB
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
 psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
@@ -831,6 +815,7 @@ fofbEthernet #(
 
 fofbEthernet #(
     .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
+    .PCS_PMA_SHARED_LOGIC_IN_CORE("false"),
     .SRC_IP_ADDRESS({8'd192, 8'd168, 8'd30, 8'd250}),
     .SRC_MAC_ADDRESS({8'h2A,8'h4C,8'h42,8'h4E,8'h4C,8'h33}),
     .DST_IP_ADDRESS({8'd255, 8'd255, 8'd255, 8'd255}),
@@ -914,7 +899,6 @@ errorConvert errorConvert (
           .status(GPIO_IN[GPIO_IDX_ERROR_CONVERT_CSR]),
           .resultHi(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_HI]),
           .resultLo(GPIO_IN[GPIO_IDX_ERROR_CONVERT_RDATA_LO]));
-`endif // `ifdef INCLUDE_FOFB
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
