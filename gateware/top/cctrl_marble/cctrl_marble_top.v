@@ -145,38 +145,13 @@ endgenerate
 
 //////////////////////////////////////////////////////////////////////////////
 // Timekeeping
-reg [31:0] secondsSinceBoot, microsecondsSinceBoot;
-reg [$clog2(SYSCLK_RATE/1000000)-1:0] microsecondsDivider=SYSCLK_RATE/1000000-1;
-reg             [$clog2(1000000)-1:0] secondsDivider = 1000000-1;
-reg usTick = 0, sTick = 0;
-always @(posedge sysClk) begin
-    if (microsecondsDivider == 0) begin
-        microsecondsDivider <= SYSCLK_RATE/1000000-1;
-        usTick <= 1;
-    end
-    else begin
-        microsecondsDivider <= microsecondsDivider - 1;
-        usTick <= 0;
-    end
-    if (usTick) begin
-        microsecondsSinceBoot <= microsecondsSinceBoot + 1;
-        if (secondsDivider == 0) begin
-            secondsDivider <= 1000000-1;
-            sTick <= 1;
-        end
-        else begin
-            secondsDivider <= secondsDivider - 1;
-        end
-    end
-    else begin
-        sTick <= 0;
-    end
-    if (sTick) begin
-        secondsSinceBoot <= secondsSinceBoot + 1;
-    end
-end
-assign GPIO_IN[GPIO_IDX_SECONDS]      = secondsSinceBoot;
-assign GPIO_IN[GPIO_IDX_MICROSECONDS] = microsecondsSinceBoot;
+wire sysPPSmarker;
+clkIntervalCounters #(.CLK_RATE(SYSCLK_RATE))
+  clkIntervalCounters (
+    .clk(sysClk),
+    .microsecondsSinceBoot(GPIO_IN[GPIO_IDX_MICROSECONDS]),
+    .secondsSinceBoot(GPIO_IN[GPIO_IDX_SECONDS]),
+    .PPS(sysPPSmarker));
 
 // Get EVR timestamp to system clock domain
 wire [63:0] evrTimestamp, sysTimestamp;
@@ -902,32 +877,20 @@ errorConvert errorConvert (
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
 localparam FREQ_COUNTERS_NUM = 7;
-localparam FREQ_SEL_WIDTH = $clog2(FREQ_COUNTERS_NUM+1);
-reg  [FREQ_SEL_WIDTH-1:0] frequencyMonitorSelect;
-wire [29:0] measuredFrequency;
-always @(posedge sysClk) begin
-    if (GPIO_STROBES[GPIO_IDX_FREQUENCY_MONITOR_CSR])
-        frequencyMonitorSelect <= GPIO_OUT[FREQ_SEL_WIDTH-1:0];
-end
-assign GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR] = { 2'b0, measuredFrequency };
-wire auRefClk;  // TODO FIXME
-freq_multi_count #(
-        .NF(FREQ_COUNTERS_NUM),  // number of frequency counters in a block
-        .NG(1),  // number of frequency counter blocks
-        .gw(4),  // Gray counter width
-        .cw(1),  // macro-cycle counter width
-        .rw($clog2(SYSCLK_RATE*4/3)), // reference counter width
-        .uw(30)) // unknown counter width
-  frequencyCounters(
-    .unk_clk({
+frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
+                    .CLK_RATE(SYSCLK_RATE),
+                    .DEBUG("false"))
+  frequencyCounters (
+    .clk(sysClk),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_FREQUENCY_MONITOR_CSR]),
+    .GPIO_OUT(GPIO_OUT),
+    .status(GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR]),
+    .unknownClocks({
         ethernetRxClk, ethernetTxClk,
         auRefClk,
         ethRefClk125Buff,
         auroraUserClk, evrClk, sysClk}),
-    .refclk(sysClk),
-    .refMarker(evrTriggerBus[1]),  // 1 PPS marker from event system
-    .addr(frequencyMonitorSelect),
-    .frequency(measuredFrequency));
+    .ppsMarker_a(evrTriggerBus[1]));
 
 /////////////////////////////////////////////////////////////////////////////
 // Front panel
