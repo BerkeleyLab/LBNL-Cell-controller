@@ -98,7 +98,7 @@ cmdDEBUG(int argc, char **argv)
             if (d & DEBUGFLAG_QSFP_DUMP) qsfpDump();
         }
     }
-    if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON();
+    if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);
     if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
     if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
     if (debugFlags & DEBUGFLAG_RESET_EEBI_INTERLOCK) {
