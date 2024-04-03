@@ -49,8 +49,8 @@ outbyte(char c)
         startBuf[startIdx++] = c;
 }
 
-static void
-showFrequencyCounters(void)
+static int
+cmdFMON(int argc, char **argv)
 {
     int i;
 #ifdef MARBLE
@@ -81,6 +81,8 @@ showFrequencyCounters(void)
             printf("%06d\n", rate % 1000000);
         }
     }
+
+    return 0;
 }
 
 static int
@@ -96,7 +98,7 @@ cmdDEBUG(int argc, char **argv)
             if (d & DEBUGFLAG_QSFP_DUMP) qsfpDump();
         }
     }
-    if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) showFrequencyCounters();
+    if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON();
     if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
     if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
     if (debugFlags & DEBUGFLAG_RESET_EEBI_INTERLOCK) {
@@ -395,6 +397,7 @@ static struct commandInfo commandTable[] = {
   { "evr",        cmdEVR,        "Show EVR status"                    },
   { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
   { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
+  { "fmon",       cmdFMON,        "Show clock frequencies"            },
   { "log",        cmdREPLAY,     "Replay start up messages"           },
   { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
   { "reg",        cmdREG,        "Show GPIO register(s)"              },
@@ -412,6 +415,7 @@ static struct commandInfo commandTable[] = {
   { "evr",        cmdEVR,        "Show EVR status"                    },
   { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
   { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
+  { "fmon",       cmdFMON,        "Show clock frequencies"            },
   { "log",        cmdREPLAY,     "Replay start up messages"           },
   { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
   { "reg",        cmdREG,        "Show GPIO register(s)"              },
