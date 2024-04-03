@@ -73,7 +73,7 @@ showFrequencyCounters(void)
         GPIO_WRITE(GPIO_IDX_FREQUENCY_MONITOR_CSR, i);
         uint32_t csr = GPIO_READ(GPIO_IDX_FREQUENCY_MONITOR_CSR);
         unsigned int rate = csr & 0xc3FFFFFFF;
-        printf("%20s clock: %3d.", names[i], rate / 1000000);
+        printf("%24s clock: %3d.", names[i], rate / 1000000);
         if (csr & 0x80000000) {
             printf("%03d\n", (rate / 1000) % 1000);
         }
