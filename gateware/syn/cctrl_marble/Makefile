@@ -53,6 +53,7 @@ SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
 include $(MODULES_DIR)/evr_axi_rules.mk
 include $(MODULES_DIR)/axi_lite_generic_reg_rules.mk
 include $(MODULES_DIR)/bantamweightUDP_rules.mk
+include $(MODULES_DIR)/aggregate_rules.mk
 include $(MODULES_DIR)/drp_bridge_rules.mk
 
 IP_CORES += evr_mgt_gtx fixToFloat floatMultiply floatResultFIFO floatToDouble fofbCoefficientMul fofbFIRplusIntegral fofbFixToFloat fofbGainMultiplier fofbIntegralFixToFloat fofbIntegralMultiplier fofbPCS_PMA_with_shared_logic fofbPCS_PMA_without_shared_logic fofbReadLinksMux fofbSupplyFilter forwardCellLinkMux linkStatisticsMux psSetpointCalcConvertToAmps psSetpointCalcFixToFloat readBPMlinksMux readOldBPMs_DoubleToFloat readOldBPMs_FIFO readOldBPMs_Fix readOldBPMs_Multiply ila_td256_s4096_cap
@@ -239,6 +240,7 @@ include $(BADGER_DIR)/rules.mk
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.v $(BWUDP_DIR)
+vpath %.v $(CORE_DIR) $(CRC_DIR)
 vpath %.vh $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.vhd $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
 vpath %.xdc $(IP_CORES_SRCS_DIRS) $(BD_SRCS_DIRS)
@@ -275,7 +277,7 @@ endif
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
 $(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_bds) $(IP_CORES_XCIS) $(MODULES_DIR)/qsfpMarble.v $(I2C_VH) $(I2C_DAT) $(SCRAP_FILES)
-$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/$(GPIOIDX_V) $(RTEFI_V) $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
+$(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/aggregate.v $(TOP_LVL_DIR)/$(GPIOIDX_V) $(RTEFI_V) $(IP_CORES_CUSTOM) $(IP_CORES_TOP_LVL_SRCS) $(BD_TOP_LVL_SRCS)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
 	vivado -mode batch -nojou -nolog -source $(GW_SCRIPTS_DIR)/gen_mem_info.tcl -tclargs $< $@
@@ -352,6 +354,7 @@ CLEAN += *.bin
 CLEAN += *.prm
 CLEAN += system_top.xdc
 CLEAN += $(TOP_LVL_DIR)/firmwareBuildDate.v
+CLEAN += $(TOP_LVL_DIR)/aggregate.v
 CLEAN += $(TOP_LVL_DIR)/$(GPIOIDX_V)
 CLEAN += $(IP_CORES_CUSTOM)
 CLEAN += $(VFLAGS_COMMAND_FILE)
