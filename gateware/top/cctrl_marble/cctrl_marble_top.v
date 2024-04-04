@@ -195,7 +195,7 @@ IOBUF sdaIO0 (.I(1'b0),
               .T(iic_proc_o[2] ? iic_proc_o[1] : sda_drive));
 
 assign TWI_SCL = iic_proc_o[2] ? iic_proc_o[0] : scl0;
-wire [3:0] iic_proc_i = { sda_sense[0], iic_proc_o[2:0] };
+wire [3:0] iic_proc_i = { sda_sense, iic_proc_o[2:0] };
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver
@@ -810,7 +810,7 @@ assign FP_LED2_RED = FP_LED2_STATE_YELLOW || FP_LED2_STATE_RED;
 /////////////////////////////////////////////////////////////////////////////
 // Marble LEDs
 assign MARBLE_LD16 = evrTriggerBus[0];
-assign MARBLE_LD17 = qsfp_led;
+assign MARBLE_LD17 = 0;
 
 /////////////////////////////////////////////////////////////////////////////
 // Miscellaneous

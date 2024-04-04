@@ -35,82 +35,6 @@
 #define DATE_CODE_OFFSET      212
 #define DIAG_TYPE_OFFSET      220
 
-#ifdef MARBLE
-// See marble schematic U34 ports 0 and 1.
-// QSFPx_MOD_PRS is routed to bit 5 of each port
-#define MARBLE_PRESENT_MASK   (1<<5)
-#define I2C_FREEZE            0x10000
-// Marble has 8-bit interface to QSFP readout (due to structure of i2c_chunk)
-// GPIO_OUT bit map:
-//  [16]  : i2c_freeze
-//  [8]   : QSFP number (0 or 1)
-//  [7:0] : QSFP register address to read
-//
-// GPIO_IN bit map:
-//  [9]   : i2c_chunk updated flag
-//  [8]   : i2c_chunk running status bit
-//  [7:0] : read data from QSFP register
-static const char *
-str(int qsfp, int offset, int length)
-{
-    int i;
-    int lastNonBlank = -1;
-    uint16_t v = 0;
-    static char cbuf[INFO_STRING_CHARS+1];
-
-    // First freeze
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, I2C_FREEZE);
-    // Then read data
-    for (i = 0 ; i < length ; i++, offset++) {
-        //int bidx = offset & 1;
-        unsigned char c;
-        int qidx = I2C_FREEZE + (qsfp * 256) + offset;
-        GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
-        v = GPIO_READ(GPIO_IDX_QSFP_IIC);
-        //printf("GPIO_READ: v = 0x%x\n", v);
-        c = (unsigned char)(v & 0xff);
-        if (c == 0xFF) {
-          // Returns a null string
-          lastNonBlank = -1;
-          break;
-        }
-        if (c != ' ') lastNonBlank = i;
-        cbuf[i] = c;
-    }
-    // Then unfreeze
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, 0);
-    cbuf[lastNonBlank+1] = '\0';
-    return cbuf;
-}
-
-static int
-get16(int qsfp, int offset)
-{
-    int qidx = I2C_FREEZE + qsfp * 256 + offset;
-    uint16_t v;
-
-    // First freeze
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, I2C_FREEZE);
-    // Then read two bytes and concatenate
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
-    v = GPIO_READ(GPIO_IDX_QSFP_IIC);
-    // Unfreeze and increment in the same stroke
-    qidx = qsfp * 256 + offset + 1;
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
-    v = (v<<8) | GPIO_READ(GPIO_IDX_QSFP_IIC);
-    return v & 0xFFFF;
-}
-
-static int
-get8(int qsfp, int offset)
-{
-    int qidx = qsfp * 256 + offset;
-    // Then read two bytes and concatenate
-    GPIO_WRITE(GPIO_IDX_QSFP_IIC, qidx);
-    uint8_t v = GPIO_READ(GPIO_IDX_QSFP_IIC);
-    return v & 0xFF;
-}
-#else
 // BMB7 has 16-bit interface to QSFP readout (thanks to fully-custom i2c gateware)
 static const char *
 str(int qsfp, int offset, int length)
@@ -154,7 +78,6 @@ get8(int qsfp, int offset)
     uint16_t v = get16(qsfp, offset & ~1);
     return (uint8_t)((offset & 1) ? v : v >> 8);
 }
-#endif
 
 static const char *
 date(int qsfp)
@@ -215,19 +138,11 @@ static void showInfo(int idx)
     const char *cp;
 
     printf("==== QSFP %d ====\n", idx + 1);
-#ifdef MARBLE
-    id = get8(idx, OVERRIDE_PRESENT);
-    if ((id & MARBLE_PRESENT_MASK) != 0) {
-        printf ("   NOT PRESENT!\n");
-        return;
-    }
-#else
     uint32_t csr = GPIO_READ(GPIO_IDX_QSFP_IIC);
     if ((csr & (1 << (CSR_PRESENCE_BASE + idx))) != 0) {
         printf ("   NOT PRESENT!\n");
         return;
     }
-#endif
     printf("         Vendor: %s\n", str(idx, VENDOR_NAME_OFFSET, INFO_STRING_CHARS));
     printf("      Part name: %s\n", str(idx, PART_NAME_OFFSET, INFO_STRING_CHARS));
     printf("       Revision: %s\n", str(idx, REVISION_CODE_OFFSET, 2));

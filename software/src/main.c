@@ -19,40 +19,11 @@
 #include "frontPanel.h"
 #include "gpio.h"
 #include "pilotTones.h"
-#include "qsfp.h"
 #include "softwareBuildDate.h"
 #include "util.h"
 #include "xadc.h"
 
 int udpEPICS;
-
-#ifndef MARBLE
-void rx8chk(void) {
-    static unsigned char buf[1600];
-    int i, n;
-    for (;;) {
-        if ((n = udpRxCheck8(udpEPICS, buf, sizeof buf)) > 0) {
-            printf("%4d:", n);
-            for (i = 0 ; i < n ; i++ ) {
-                int c = buf[i];
-                if (isprint(c)) {
-                    printf("%c", c);
-                }
-                else switch (c) {
-                default:   printf("\\x%02x", c); break;
-                case '\b': printf("\\b");        break;
-                case '\n': printf("\\n");        break;
-                case '\r': printf("\\r");        break;
-                case '\t': printf("\\t");        break;
-                case '\\': printf("\\\\");       break;
-                }
-            }
-            printf("\n");
-            udpTx8(udpEPICS, buf, n);
-        }
-    }
-}
-#endif
 
 int main()
 {
@@ -72,10 +43,16 @@ int main()
 #endif
 
     /*
+     * Initialize IIC chunk and give it time to complete a scan
+     */
+    iicChunkInit();
+    microsecondSpin(500000);
+    iicProcInit();
+
+    /*
      * Continue with initialization
      */
     eyescanInit();
-    qsfpInit();
     auroraInit();
     evrInit();
     evrShow();

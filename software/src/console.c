@@ -15,7 +15,6 @@
 #include "fofbEthernet.h"
 #include "gpio.h"
 #include "pilotTones.h"
-#include "qsfp.h"
 #include "util.h"
 
 #ifdef SIMULATION
@@ -95,7 +94,6 @@ cmdDEBUG(int argc, char **argv)
         d = strtol(argv[1], &endp, 16);
         if (*endp == '\0') {
             debugFlags = d;
-            if (d & DEBUGFLAG_QSFP_DUMP) qsfpDump();
         }
     }
     if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);

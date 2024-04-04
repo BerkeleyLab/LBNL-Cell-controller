@@ -47,7 +47,6 @@ __SRC_FILES = \
 	platform.c \
 	psAWG.c \
 	psWaveformRecorder.c \
-	qsfp.c \
 	util.c \
 	xadc.c
 SRC_FILES = $(addprefix $(SW_SRC_DIR)/, $(__SRC_FILES))
@@ -69,7 +68,6 @@ __HDR_FILES = \
 	platform.h \
 	psAWG.h \
 	psWaveformRecorder.h \
-	qsfp.h \
 	util.h \
 	xadc.h
 HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))

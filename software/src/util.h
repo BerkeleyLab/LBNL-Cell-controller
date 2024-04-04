@@ -26,7 +26,6 @@ extern int udpEPICS;
 #define DEBUGFLAG_SHOW_FREQUENCY_COUNTERS   0x1000
 #define DEBUGFLAG_SHOW_PS_SETPOINTS         0x4000
 #define DEBUGFLAG_BRINGUP_PS_LINKS          0x8000
-#define DEBUGFLAG_QSFP_DUMP                 0x10000
 #define DEBUGFLAG_RESET_EEBI_INTERLOCK      0x800000
 extern int debugFlags;
 
