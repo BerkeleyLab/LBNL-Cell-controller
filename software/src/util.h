@@ -23,10 +23,14 @@ extern int udpEPICS;
 #define DEBUGFLAG_PS_WAVEFORM_RECORDER      0x4
 #define DEBUGFLAG_SETPOINTS                 0x10
 #define DEBUGFLAG_EEBI_CONFIG               0x20
+#define DEBUGFLAG_IIC_PROC                  0x800
 #define DEBUGFLAG_SHOW_FREQUENCY_COUNTERS   0x1000
 #define DEBUGFLAG_SHOW_PS_SETPOINTS         0x4000
 #define DEBUGFLAG_BRINGUP_PS_LINKS          0x8000
+#define DEBUGFLAG_IIC_SCAN                  0x10000
 #define DEBUGFLAG_RESET_EEBI_INTERLOCK      0x800000
+#define DEBUGFLAG_SHOW_MGT_SWITCH           0x1000000
+#define DEBUGFLAG_DUMP_MGT_SWITCH           0x2000000
 extern int debugFlags;
 
 void fatal(const char *fmt, ...);
