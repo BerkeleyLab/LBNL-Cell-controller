@@ -52,6 +52,7 @@ int main()
     /*
      * Continue with initialization
      */
+    mgtClkSwitchInit();
     eyescanInit();
     auroraInit();
     evrInit();
