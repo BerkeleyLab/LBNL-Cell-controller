@@ -5,13 +5,15 @@ __HDR_CCTRL_BMB7_FILES = \
 	gpio.h \
 	qsfp.h \
 	iicProc.h \
-	iicChunk.h
+	iicChunk.h \
+	mgtClkSwitch.h
 HDR_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__HDR_CCTRL_BMB7_FILES))
 
 __SRC_CCTRL_BMB7_FILES = \
 	qsfp.c \
 	iicProc.c \
-	iicChunk.c
+	iicChunk.c \
+	mgtClkSwitch.c
 SRC_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__SRC_CCTRL_BMB7_FILES))
 
 # For top-level makfile
