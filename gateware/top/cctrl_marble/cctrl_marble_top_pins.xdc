@@ -31,8 +31,6 @@ set_property -dict {PACKAGE_PIN A17 IOSTANDARD LVCMOS25} [get_ports TWI_SDA]
 set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS25} [get_ports TWI_SCL]
 set_property PULLUP true [get_ports TWI_SDA]
 set_property PULLUP true [get_ports TWI_SCL]
-set_property -dict {PACKAGE_PIN B19 IOSTANDARD LVCMOS25} [get_ports TWI_SW_RST]
-set_property PULLUP true [get_ports TWI_SW_RST]
 
 # SPI from microcontroller
 #set_property -dict {PACKAGE_PIN AE21 IOSTANDARD LVCMOS25} [get_ports FPGA_SCLK]

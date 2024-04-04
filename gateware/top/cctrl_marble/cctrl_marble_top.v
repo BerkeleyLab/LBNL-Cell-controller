@@ -44,12 +44,11 @@ module cctrl_marble_top #(
 
   inout TWI_SDA,
   inout TWI_SCL,
-  inout TWI_SW_RST,
-  // Pinout to match PmodUSBUART (strangely, not Pmod UART standard)
-  input PMOD1_0,  // SCRAP ~CTS from USB-UART ~RTS (Unused)
-  output PMOD1_1, // SCRAP TxD to USB-UART RxD
-  input PMOD1_2,  // SCRAP RxD from USB-UART TxD
-  output PMOD1_3, // SCRAP ~RTS to USB-UART ~CTS (Unused)
+
+  input PMOD1_0,
+  output PMOD1_1,
+  input PMOD1_2,
+  output PMOD1_3,
 
   output PMOD2_0,
   output PMOD2_1,
@@ -161,92 +160,9 @@ forwardData #(.DATA_WIDTH(64))
               .outClk(sysClk),
               .outData(sysTimestamp));
 
-wire i2c_run_stat;
-wire qsfp_led;
-wire qsfp_scl_mon;
-wire qsfp_sda_mon;
-wire busmux_reset;
-wire busmux_reset_i;
-IOBUF iobuf_sw_rst(.T(~busmux_reset), .I(1'b0), .O(busmux_reset_i), .IO(TWI_SW_RST));
+assign PMOD1_1 = 1'b0;
+assign PMOD1_3 = 1'b0;
 
-reg qsfp_freeze=1'b0;
-`ifdef QSFP_DEBUG_BUS
-//////////////////////////////////////////////////////////////////////////////
-// SCRAP Debug Memory Interface
-
-// Bypass hardware flow control
-assign PMOD1_3 = 1'b0; // SCRAP ~RTS to USB-UART ~CTS
-
-localparam F_BAUD = 115200;
-localparam SCRAP_ADDRESS_WIDTH = 16;
-localparam SCRAP_DATA_WIDTH = 8;
-wire ext_uart_txd_out;
-wire ext_uart_rxd_in = PMOD1_2;
-assign PMOD1_1 = ext_uart_txd_out;
-wire [SCRAP_ADDRESS_WIDTH-1:0] scrap_addr;
-wire [SCRAP_DATA_WIDTH-1:0] scrap_rdata;
-wire [SCRAP_DATA_WIDTH-1:0] scrap_wdata;
-wire scrap_we;
-wire scrap_bus_claim;
-wire scrap_bus_claimed = scrap_bus_claim; // SCRAP dev has priority
-scrap_dev #(
-  .F_CLK_IN(SYSCLK_RATE),
-  .F_BAUD(F_BAUD),
-  .ADDRESS_WIDTH(SCRAP_ADDRESS_WIDTH),
-  .DATA_WIDTH(SCRAP_DATA_WIDTH),
-  .LATCH_CYCLES(2)
-) scrap_dev_inst (
-  .clk(sysClk),
-  .rst(1'b0),
-  // PHY interface
-  .uart_rxd(ext_uart_rxd_in),   // input
-  .uart_txd(ext_uart_txd_out),  // output
-  // Memory interface
-  .addr(scrap_addr),    // output [ADDRESS_WIDTH-1:0]
-  .rdata(scrap_rdata),  // input [DATA_WIDTH-1:0]
-  .wdata(scrap_wdata),  // output [DATA_WIDTH-1:0]
-  .we(scrap_we),
-  .op(),
-  // Shared bus
-  .bus_claim(scrap_bus_claim),  // output
-  .bus_claimed(scrap_bus_claimed),  // input
-  // Status
-  .error_count()
-);
-
-wire [7:0] qsfp_lb_dout;
-reg qsfp_run_cmd;
-reg [7:0] scrap_rdata_hi;
-initial begin
-  qsfp_run_cmd = 1'b1;
-  qsfp_freeze = 1'b0;
-  scrap_rdata_hi = 0;
-end
-// Memory map
-wire qsfp_we = scrap_addr[12] ? 1'b0 : scrap_we;
-assign scrap_rdata = scrap_addr[12] ? scrap_rdata_hi : qsfp_lb_dout;
-
-always @(posedge sysClk) begin
-  if (scrap_we) begin
-    case (scrap_addr)
-      'h1000 : {qsfp_freeze, qsfp_run_cmd} <= scrap_wdata[1:0];
-    endcase
-  end
-  case (scrap_addr)
-    'h1000 : scrap_rdata_hi <= {5'h0, busmux_reset_i, qsfp_buffer_freeze, i2c_run_stat};
-    default: scrap_rdata_hi <= 8'h00;
-  endcase
-end
-
-assign PMOD2_0 = qsfp_run_cmd;
-assign PMOD2_1 = i2c_run_stat;
-assign PMOD2_2 = scrap_we;
-assign PMOD2_3 = qsfp_led;
-assign PMOD2_4 = qsfp_scl_mon;
-assign PMOD2_5 = qsfp_sda_mon;
-assign PMOD2_6 = i2c_updated;
-assign PMOD2_7 = 1'b0;
-`else
 assign PMOD2_0 = 1'b0;
 assign PMOD2_1 = 1'b0;
 assign PMOD2_2 = 1'b0;
@@ -255,54 +171,31 @@ assign PMOD2_4 = 1'b0;
 assign PMOD2_5 = 1'b0;
 assign PMOD2_6 = 1'b0;
 assign PMOD2_7 = 1'b0;
-`endif
 
 //////////////////////////////////////////////////////////////////////////////
-// QSFP monitoring
-parameter QSFP_COUNT = 2;
-reg [$clog2(QSFP_COUNT)+7:0] qsfpReadAddress;
-reg i2c_buffer_freeze;
-initial begin
-  qsfpReadAddress = 0;
-  i2c_buffer_freeze = 1'b0;
-end
-wire [7:0] qsfpReadData;
-wire i2c_updated;
-assign GPIO_IN[GPIO_IDX_QSFP_IIC] = {{22{1'b0}}, i2c_updated, i2c_run_stat, qsfpReadData};
-always @(posedge sysClk) begin
-    if (GPIO_STROBES[GPIO_IDX_QSFP_IIC]) begin
-        qsfpReadAddress <= GPIO_OUT[$clog2(QSFP_COUNT)+7:0];
-        i2c_buffer_freeze <= GPIO_OUT[16];
-    end
-end
+// I2C comminication (QSFP monitoring, Board settings, Board monitoring)
+wire sda_drive, sda_sense;
+wire scl0;
+wire [3:0] iic_proc_o;
+i2cHandler #(.CLK_RATE(SYSCLK_RATE),
+             .CHANNEL_COUNT(1),
+             .DEBUG("false"))
+  i2cHandler (
+    .clk(sysClk),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_I2C_CHUNK_CSR]),
+    .GPIO_OUT(GPIO_OUT),
+    .status(GPIO_IN[GPIO_IDX_I2C_CHUNK_CSR]),
+    .scl(scl0),
+    .sda_drive(sda_drive),
+    .sda_sense(sda_sense));
 
-wire qsfp_buffer_freeze = qsfp_freeze | i2c_buffer_freeze;
-qsfpMarble #(
-  .QSFP_COUNT(QSFP_COUNT),
-  .CLOCK_RATE(SYSCLK_RATE),
-  .BIT_RATE(100000)
-  ) qsfpMarble_i (
-  .clk(sysClk), // input
-  .readAddress(qsfpReadAddress), // input [$clog2(QSFP_COUNT)+7:0]
-  .readData(qsfpReadData), // output [7:0]
-  .freeze(qsfp_buffer_freeze), // input
-  .run_stat(i2c_run_stat), // output
-  .updated(i2c_updated), // output
-  .SCL(TWI_SCL), // inout
-  .SDA(TWI_SDA), // inout
-  .scl_mon(qsfp_scl_mon),
-  .sda_mon(qsfp_sda_mon),
-`ifdef QSFP_DEBUG_BUS
-  .bus_claim(scrap_bus_claim),
-  .lb_addr(scrap_addr[11:0]), // input [11:0]
-  .lb_din(scrap_wdata),
-  .lb_dout(qsfp_lb_dout),
-  .lb_write(qsfp_we),
-  .run_cmd(qsfp_run_cmd),
-`endif
-  .led(qsfp_led),
-  .busmux_reset(busmux_reset)
-);
+IOBUF sdaIO0 (.I(1'b0),
+              .IO(TWI_SDA),
+              .O(sda_sense),
+              .T(iic_proc_o[2] ? iic_proc_o[1] : sda_drive));
+
+assign TWI_SCL = iic_proc_o[2] ? iic_proc_o[0] : scl0;
+wire [3:0] iic_proc_i = { sda_sense[0], iic_proc_o[2:0] };
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver
@@ -991,8 +884,6 @@ wire DUMMY_UART_LOOPBACK;
         .gtxReset(sysGTXreset),
         .gtxResetOut(gtxResetOut),
 
-        //.GT_DIFF_REFCLK_312_3_clk_n(MGT_CLK_1_N),
-        //.GT_DIFF_REFCLK_312_3_clk_p(MGT_CLK_1_P),
         .GT_DIFF_REFCLK_125_clk_n(MGT_CLK_1_N),
         .GT_DIFF_REFCLK_125_clk_p(MGT_CLK_1_P),
 
@@ -1099,6 +990,10 @@ wire DUMMY_UART_LOOPBACK;
         // Dummy UART to keep SDK tools happy
         .uart_rtl_rxd(DUMMY_UART_LOOPBACK),
         .uart_rtl_txd(DUMMY_UART_LOOPBACK),
+
+        .iic_proc_gpio_tri_i(iic_proc_i),
+        .iic_proc_gpio_tri_o(iic_proc_o),
+        .iic_proc_gpio_tri_t(),
 
         .GPIO_IN(GPIO_IN_FLATTENED),
         .GPIO_OUT(GPIO_OUT),
