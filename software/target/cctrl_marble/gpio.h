@@ -65,6 +65,8 @@
 #define GPIO_IDX_NET_RX_DATA              49 // BantamweightUDP RX DATA
 #define GPIO_IDX_NET_TX_CSR               50 // BantamweightUDP TX CSR & DATA
 #define GPIO_IDX_GITHASH                  51 // git 32-bit hash
+#define GPIO_IDX_I2C_CHUNK_CSR            52 // IIC state machine control/status
+#define GPIO_IDX_IIC_PROC                 53 // On-board IIC components
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
