@@ -21,6 +21,8 @@
 #include "pilotTones.h"
 #include "softwareBuildDate.h"
 #include "util.h"
+#include "iicChunk.h"
+#include "mgtClkSwitch.h"
 #include "xadc.h"
 
 int udpEPICS;

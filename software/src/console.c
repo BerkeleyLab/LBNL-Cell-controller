@@ -16,6 +16,9 @@
 #include "gpio.h"
 #include "pilotTones.h"
 #include "util.h"
+#include "qsfp.h"
+#include "iicProc.h"
+#include "mgtClkSwitch.h"
 
 #ifdef SIMULATION
 #include "simplatform.h"
@@ -98,7 +101,6 @@ cmdDEBUG(int argc, char **argv)
     }
     if (debugFlags & DEBUGFLAG_IIC_SCAN) iicProcScan();
     if (debugFlags & DEBUGFLAG_DUMP_MGT_SWITCH) mgtClkSwitchDump();
-    if (debugFlags & DEBUGFLAG_SHOW_RX_ALIGNER) mgtShowRxAligners();
     if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);
     if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
     if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
