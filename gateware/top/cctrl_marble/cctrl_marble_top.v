@@ -788,7 +788,7 @@ frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
         auroraUserClk,
         evrClk,
         sysClk}),
-    .ppsMarker_a(evrTriggerBus[1]));
+    .ppsMarker_a(sysPPSmarker));
 
 /////////////////////////////////////////////////////////////////////////////
 // Front panel
