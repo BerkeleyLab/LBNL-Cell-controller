@@ -425,7 +425,7 @@ iicProcShowQSFP(unsigned int qsfp)
     int i, value;
     if (iicProcWrite(IIC_MUX_ADDRESS, 1 << qsfpMuxPort, NULL, 0)
      && (iicProcRead(QSFP_ADDRESS, 22, buf, sizeof buf))) {
-        printf("QSFP%u:\n". qsfp);
+        printf("QSFP%u:\n", qsfp);
         value = (buf[0] << 8) | buf[1];
         value = (value * 10) / 256;
         printf("   Temp: %d.%d C\n", value / 10, value % 10);
