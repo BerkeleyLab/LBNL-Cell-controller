@@ -62,7 +62,9 @@ cmdFMON(int argc, char **argv)
                                     "Ethernet/EVR reference",
                                     "Aurora reference",
                                     "Ethernet Tx",
-                                    "Ethernet Rx" };
+                                    "Ethernet Rx",
+                                    "200 MHz reference",
+                                    "125 MHz reference clock"};
 #else
     static const char *names[] = {  "System",
                                     "EVR recovered",

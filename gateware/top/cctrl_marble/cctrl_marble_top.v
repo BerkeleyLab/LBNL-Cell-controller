@@ -769,7 +769,7 @@ errorConvert errorConvert (
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
-localparam FREQ_COUNTERS_NUM = 7;
+localparam FREQ_COUNTERS_NUM = 9;
 frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
                     .CLK_RATE(SYSCLK_RATE),
                     .DEBUG("false"))
@@ -779,10 +779,15 @@ frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
     .GPIO_OUT(GPIO_OUT),
     .status(GPIO_IN[GPIO_IDX_FREQUENCY_MONITOR_CSR]),
     .unknownClocks({
-        ethernetRxClk, ethernetTxClk,
+        clkIn125,
+        clk200,
+        ethernetRxClk,
+        ethernetTxClk,
         auRefClk,
         ethRefClk125Buff,
-        auroraUserClk, evrClk, sysClk}),
+        auroraUserClk,
+        evrClk,
+        sysClk}),
     .ppsMarker_a(evrTriggerBus[1]));
 
 /////////////////////////////////////////////////////////////////////////////
