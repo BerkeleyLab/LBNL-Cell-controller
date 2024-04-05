@@ -110,11 +110,12 @@ mgtClkSwitchInit(void)
         case MGT_CLK_SWITCH_OUTPUT_MGTCLK1: /* Bank 116 REFCLK1 */
             input = MGT_CLK_SWITCH_INPUT_FPGA_REFCLK0;
             break;
-        }
+
         case MGT_CLK_SWITCH_OUTPUT_MGTCLK2: /* Bank 115 REFCLK0 */
             input = MGT_CLK_SWITCH_INPUT_FPGA_REFCLK0;
             break;
         }
+
         if (input >= 0) {
             clkConnect(output, input);
             outputEnable(output, 1);
