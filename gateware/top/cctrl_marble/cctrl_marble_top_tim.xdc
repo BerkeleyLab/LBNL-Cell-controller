@@ -1,6 +1,5 @@
-# Create this clock first
-# Note: other clocks are created in cctrl_marble_top_pins.xdc
-#create_clock -name clk62 -period 16.000 system_i/Aurora/aurora_8b10b_0/inst/system_marble_aurora_8b10b_0_0_core_i/gt_wrapper_i/system_marble_aurora_8b10b_0_0_multi_gt_i/gt0_system_marble_aurora_8b10b_0_0_i/gtxe2_i/TXOUTCLK
+# Aurora user clock
+create_clock -name clkAuroraUser -period 12.800	 [get_pins -filter {REF_PIN_NAME=~*TXOUTCLK} -of_objects [get_cells -hierarchical -filter {NAME =~ *gt_wrapper_i*system_marble_aurora_8b10b_0_0_multi_gt_i*gt0_system_marble_aurora_8b10b_0_0_i*gtxe2_i*}]]
 
 set_false_path -from [get_clocks clkAuroraGTREF] -to [get_clocks -of_objects [get_pins system_i/clk_wiz_1/inst/mmcm_adv_inst/CLKOUT0]]
 set_false_path -from [get_clocks -of_objects [get_pins system_i/clk_wiz_1/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/RXOUTCLK]
