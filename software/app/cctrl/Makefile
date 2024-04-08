@@ -72,6 +72,13 @@ __HDR_FILES = \
 	xadc.h
 HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))
 
+__HDR_BWUDP_FILES = \
+	bwudp_config.h \
+	bwudp.h
+HDR_BWUDP_FILES = $(addprefix $(BANTAMWEIGHT_DIR)/, $(__HDR_BWUDP_FILES))
+
+HDR_FILES += $(HDR_BWUDP_FILES)
+
 __HDR_GEN_FILES = \
 	softwareBuildDate.h
 HDR_GEN_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_GEN_FILES))
@@ -131,7 +138,7 @@ else ifeq ($(TARGET),cctrl_marble)
 USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
 USER_FLAGS += -DMARBLE
 USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H
-INCLUDE_DIRS += $(SW_SRC_DIR)/bwudp
+INCLUDE_DIRS += $(BWUDP_DIR)
 else
 USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
 endif
