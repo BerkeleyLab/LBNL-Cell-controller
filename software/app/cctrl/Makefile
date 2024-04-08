@@ -36,7 +36,6 @@ __SRC_FILES = \
 	aurora.c \
 	console.c \
 	eebi.c \
-	epics.c \
 	evr.c \
 	eyescan.c \
 	fastFeedback.c \
@@ -57,7 +56,6 @@ __HDR_FILES = \
 	cellControllerProtocol.h \
 	console.h \
 	eebi.h \
-	epics.h \
 	evr.h \
 	eyescan.h \
 	fastFeedback.h \
