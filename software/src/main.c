@@ -22,6 +22,7 @@
 #include "softwareBuildDate.h"
 #include "util.h"
 #include "iicChunk.h"
+#include "iicProc.h"
 #include "mgtClkSwitch.h"
 #include "xadc.h"
 
