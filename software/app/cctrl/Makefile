@@ -75,7 +75,7 @@ HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))
 __HDR_BWUDP_FILES = \
 	bwudp_config.h \
 	bwudp.h
-HDR_BWUDP_FILES = $(addprefix $(BANTAMWEIGHT_DIR)/, $(__HDR_BWUDP_FILES))
+HDR_BWUDP_FILES = $(addprefix $(BWUDP_DIR)/, $(__HDR_BWUDP_FILES))
 
 HDR_FILES += $(HDR_BWUDP_FILES)
 
