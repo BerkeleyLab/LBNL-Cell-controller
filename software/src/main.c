@@ -37,7 +37,7 @@ int main()
     init_platform();
     printf("\n");
 #ifdef MARBLE
-    printf("Git ID (32-bit): %08x\n", GPIO_READ(GPIO_IDX_GITHASH));
+    printf("Git ID (32-bit): 0x%08x\n", GPIO_READ(GPIO_IDX_GITHASH));
 #else
     printf("Firmware build POSIX seconds: %d\n",
                                     GPIO_READ(GPIO_IDX_FIRMWARE_BUILD_DATE));
