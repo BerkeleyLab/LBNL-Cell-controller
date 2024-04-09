@@ -18,7 +18,7 @@ variables:
 # Gitlab doesn't seem to suport the usage of variables in
 # a "dependencies" or "needs" statement. So, unroll the job
 # description, as to simplify job descriptions
-.gw_cctrl_bmb7:
+gw_cctrl_bmb7:
   before_script:
     - cd gateware/syn/cctrl_bmb7 && ls /non-free
   stage: gateware
@@ -52,7 +52,7 @@ gw_cctrl_marble:
 # Gitlab doesn't seem to suport the usage of variables in
 # a "dependencies" or "needs" statement. So, unroll the job
 # description...
-.sw_cctrl_bmb7:
+sw_cctrl_bmb7:
   before_script:
     - cd software/app/cctrl
   stage: software
