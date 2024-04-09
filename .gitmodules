@@ -13,3 +13,6 @@
 [submodule "gateware/submodules/scrap"]
 	path = gateware/submodules/scrap
 	url = ../../kpenney/scrap.git
+[submodule "software/submodules/spiflash_driver"]
+	path = software/submodules/spiflash_driver
+	url = https://github.com/BerkeleyLab/spiflash_driver.git
