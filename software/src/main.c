@@ -55,6 +55,7 @@ int main()
     /*
      * Continue with initialization
      */
+    bootFlashInit();
     mmcMailboxInit();
     mgtClkSwitchInit();
     eyescanInit();
