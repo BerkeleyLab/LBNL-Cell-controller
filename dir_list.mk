@@ -24,6 +24,9 @@ SW_TGT_DIR         = $(SOFTWARE_DIR)/target
 SW_SCRIPTS_DIR     = $(SOFTWARE_DIR)/scripts
 SW_SRC_DIR     	   = $(SOFTWARE_DIR)/src
 SW_APP_DIR         = $(SOFTWARE_DIR)/app
+SW_SUBMODULES_DIR  = $(SOFTWARE_DIR)/submodules
+
+SW_SPIFLASHDRIVER_DIR = $(SW_SUBMODULES_DIR)/spiflash_driver/src
 
 include $(BEDROCK_DIR)/dir_list.mk
 # Don't include this as it will overwrite some previously defined variables
