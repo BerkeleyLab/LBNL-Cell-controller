@@ -68,8 +68,8 @@ set_property -dict {PACKAGE_PIN AD9 IOSTANDARD DIFF_SSTL15} [get_ports DDR_REF_C
 create_clock -name clkDDRRef -period 8.000 -waveform {0.000 4.000} [get_ports DDR_REF_CLK_P]
 set clkDDRRef_period                [get_property PERIOD [get_clocks clkDDRRef]]
 
-# VCXO
-#set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
+# 20MHz VCXO
+set_property -dict {PACKAGE_PIN V9 IOSTANDARD LVCMOS15} [get_ports VCXO_EN]
 
 # UART to USB (marble schematic: FPGA_RxD is FPGA-to-host, FPGA_TxD is host-to-FPGA)
 set_property -dict {PACKAGE_PIN C16 IOSTANDARD LVCMOS25} [get_ports FPGA_TxD]

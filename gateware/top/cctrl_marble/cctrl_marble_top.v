@@ -3,7 +3,7 @@ module cctrl_marble_top #(
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
-  //output             VCXO_EN,
+  output             VCXO_EN,
   output             PHY_RSTN,
 
   input  wire        FPGA_TxD,
@@ -77,8 +77,9 @@ wire INTLK_RESET_BUTTON_N = 1'b0;
 wire FP_LED0_RED, FP_LED0_GRN;  // TODO - Will these exist on marble port?
 wire FP_LED1_RED, FP_LED1_GRN;  // TODO - Will these exist on marble port?
 wire FP_LED2_RED, FP_LED2_GRN;  // TODO - Will these exist on marble port?
-assign PHY_RSTN = 1'b1; // Release the ethernet PHY from reset
 
+assign VCXO_EN = 1'b0;  // Always enable the 20MHz VCXO
+assign PHY_RSTN = 1'b1; // Release the ethernet PHY from reset
 
 //////////////////////////////////////////////////////////////////////////////
 // Static outputs
