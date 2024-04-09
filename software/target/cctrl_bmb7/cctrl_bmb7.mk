@@ -8,7 +8,8 @@ __HDR_CCTRL_BMB7_FILES = \
 	iicChunk.h \
 	mgtClkSwitch.h \
 	epics.h \
-	mmcMailbox.h
+	mmcMailbox.h \
+	bootFlash.h
 HDR_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__HDR_CCTRL_BMB7_FILES))
 
 __SRC_CCTRL_BMB7_FILES = \
@@ -17,7 +18,8 @@ __SRC_CCTRL_BMB7_FILES = \
 	iicChunk.c \
 	mgtClkSwitch.c \
 	epics.c \
-	mmcMailbox.c
+	mmcMailbox.c \
+	bootFlash.c
 SRC_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__SRC_CCTRL_BMB7_FILES))
 
 # For top-level makfile
