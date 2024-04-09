@@ -7,7 +7,8 @@ __HDR_CCTRL_MARBLE_FILES = \
 	iicProc.h \
 	iicChunk.h \
 	mgtClkSwitch.h \
-	epics.h
+	epics.h \
+	mmcMailbox.h
 HDR_CCTRL_MARBLE_FILES = $(addprefix $(CCTRL_MARBLE_DIR)/, $(__HDR_CCTRL_MARBLE_FILES))
 
 __SRC_CCTRL_MARBLE_FILES = \
@@ -15,7 +16,8 @@ __SRC_CCTRL_MARBLE_FILES = \
 	iicProc.c \
 	iicChunk.c \
 	mgtClkSwitch.c \
-	epics.c
+	epics.c \
+	mmcMailbox.c
 SRC_CCTRL_MARBLE_FILES = $(addprefix $(CCTRL_MARBLE_DIR)/, $(__SRC_CCTRL_MARBLE_FILES))
 
 # For top-level makfile

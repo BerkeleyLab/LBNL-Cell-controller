@@ -55,6 +55,7 @@ int main()
     /*
      * Continue with initialization
      */
+    mmcMailboxInit();
     mgtClkSwitchInit();
     eyescanInit();
     auroraInit();
