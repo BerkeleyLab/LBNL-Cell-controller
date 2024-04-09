@@ -9,6 +9,11 @@ module cctrl_marble_top #(
   input  wire        FPGA_TxD,
   output wire        FPGA_RxD,
 
+  // FPGA flash
+  output wire        BOOT_CS_B,
+  output wire        BOOT_MOSI,
+  input              BOOT_MISO,
+
   // SPI between FPGA and microcontroller
   input              FPGA_SCLK,
   input              FPGA_CSB,
@@ -178,6 +183,24 @@ assign PMOD2_4 = 1'b0;
 assign PMOD2_5 = 1'b0;
 assign PMOD2_6 = 1'b0;
 assign PMOD2_7 = 1'b0;
+
+//////////////////////////////////////////////////////////////////////////////
+// Boot Flash
+wire spiFlashClk;
+`ifndef SIMULATE
+STARTUPE2 aspiClkPin(.USRCCLKO(spiFlashClk), .USRCCLKTS(1'b0));
+`endif // `ifndef SIMULATE
+// Trivial bit-banging connection to bootstrap flash memory
+spiFlashBitBang #(.DEBUG("false"))
+  spiFlash_i (
+    .sysClk(sysClk),
+    .sysGPIO_OUT(GPIO_OUT),
+    .sysCSRstrobe(GPIO_STROBES[GPIO_IDX_QSPI_FLASH_CSR]),
+    .sysStatus(GPIO_IN[GPIO_IDX_QSPI_FLASH_CSR]),
+    .spiFlashClk(spiFlashClk),
+    .spiFlashMOSI(BOOT_MOSI),
+    .spiFlashCS_B(BOOT_CS_B),
+    .spiFlashMISO(BOOT_MISO));
 
 ///////////////////////////////////////////////////////////////////////////////
 // Microcontroller I/O

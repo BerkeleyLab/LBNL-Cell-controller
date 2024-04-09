@@ -68,6 +68,7 @@
 #define GPIO_IDX_I2C_CHUNK_CSR            52 // IIC state machine control/status
 #define GPIO_IDX_IIC_PROC                 53 // On-board IIC components
 #define GPIO_IDX_MMC_MAILBOX              54 // Microcontroller communication
+#define GPIO_IDX_QSPI_FLASH_CSR           55 // Bootstrap flash
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
