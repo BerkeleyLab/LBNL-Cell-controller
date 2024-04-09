@@ -9,6 +9,12 @@ module cctrl_marble_top #(
   input  wire        FPGA_TxD,
   output wire        FPGA_RxD,
 
+  // SPI between FPGA and microcontroller
+  input              FPGA_SCLK,
+  input              FPGA_CSB,
+  input              FPGA_MOSI,
+  output             FPGA_MISO,
+
   input wire         MGT_CLK_1_N, MGT_CLK_1_P,
   input wire         MGT_CLK_2_N, MGT_CLK_2_P,
 
@@ -171,6 +177,19 @@ assign PMOD2_4 = 1'b0;
 assign PMOD2_5 = 1'b0;
 assign PMOD2_6 = 1'b0;
 assign PMOD2_7 = 1'b0;
+
+///////////////////////////////////////////////////////////////////////////////
+// Microcontroller I/O
+mmcMailbox #(.DEBUG("false"))
+  mmcMailbox (
+    .clk(sysClk),
+    .GPIO_OUT(GPIO_OUT),
+    .GPIO_STROBE(GPIO_STROBES[GPIO_IDX_MMC_MAILBOX]),
+    .csr(GPIO_IN[GPIO_IDX_MMC_MAILBOX]),
+    .SCLK(FPGA_SCLK),
+    .CSB(FPGA_CSB),
+    .MOSI(FPGA_MOSI),
+    .MISO(FPGA_MISO));
 
 //////////////////////////////////////////////////////////////////////////////
 // I2C comminication (QSFP monitoring, Board settings, Board monitoring)
