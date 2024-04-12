@@ -6,11 +6,11 @@ __HDR_CCTRL_BMB7_FILES = \
 HDR_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__HDR_CCTRL_BMB7_FILES))
 
 __SRC_CCTRL_BMB7_FILES = \
-	qsfpStub.c \
+	qsfp.c \
+	epics.c \
 	iicProcStub.c \
 	iicChunkStub.c \
 	mgtClkSwitchStub.c \
-	epicsStub.c \
 	mmcMailboxStub.c \
 	bootFlashStub.c \
 	tftpStub.c \
