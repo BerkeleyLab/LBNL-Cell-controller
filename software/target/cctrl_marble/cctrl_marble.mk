@@ -2,14 +2,7 @@ __CCTRL_MARBLE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 CCTRL_MARBLE_DIR := $(__CCTRL_MARBLE_DIR:/=)
 
 __HDR_CCTRL_MARBLE_FILES = \
-	gpio.h \
-	qsfp.h \
-	iicProc.h \
-	iicChunk.h \
-	mgtClkSwitch.h \
-	epics.h \
-	mmcMailbox.h \
-	bootFlash.h
+	gpio.h
 HDR_CCTRL_MARBLE_FILES = $(addprefix $(CCTRL_MARBLE_DIR)/, $(__HDR_CCTRL_MARBLE_FILES))
 
 __SRC_CCTRL_MARBLE_FILES = \

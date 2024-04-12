@@ -51,6 +51,12 @@ __SRC_FILES = \
 SRC_FILES = $(addprefix $(SW_SRC_DIR)/, $(__SRC_FILES))
 
 __HDR_FILES = \
+	epics.h \
+	iicChunk.h \
+	iicProc.h \
+	mgtClkSwitch.h \
+	mmcMailbox.h \
+	qsfp.h \
 	ad9520Tables.h \
 	aurora.h \
 	cellControllerProtocol.h \
