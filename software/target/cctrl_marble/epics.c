@@ -22,6 +22,7 @@
 #include "xadc.h"
 
 #include "bwudp.h"
+#include "systemParameters.h"
 
 #define BPM_COUNT_MASK 0x3F
 
@@ -31,14 +32,14 @@ static int replyCount;
 static void parseCmd(struct ccProtocolPacket *cmd, int length);
 static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
 
-static const ethernetMAC defaultMAC = {{0x00, 0x11, 0x22, 0x33, 0x44, 0x55}};
-static const ipv4Address defaultIP = {{192, 168, 20, 20}};
-static const ipv4Address defaultNetmask = {{255, 255, 255, 0}};   // Ignored when no client support
-static const ipv4Address defaultGateway = {{0, 0, 0, 0}};         // Ignored when no client support
 static bwudpHandle handleNonce;
 
 int epicsInit(void) {
-    int rval = bwudpRegisterInterface(&defaultMAC, &defaultIP, &defaultNetmask, &defaultGateway);
+    int rval = bwudpRegisterInterface(
+                         (ethernetMAC *)&systemParameters.netConfig.ethernetMAC,
+                         (ipv4Address *)&systemParameters.netConfig.np.address,
+                         (ipv4Address *)&systemParameters.netConfig.np.netmask,
+                         (ipv4Address *)&systemParameters.netConfig.np.gateway);
     rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
     return rval;
 }
