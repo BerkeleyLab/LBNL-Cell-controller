@@ -19,6 +19,7 @@
 #include "qsfp.h"
 #include "iicProc.h"
 #include "mgtClkSwitch.h"
+#include "systemParameters.h"
 
 #ifdef SIMULATION
 #include "simplatform.h"
@@ -27,8 +28,10 @@
 #define UART_CSR_TX_FULL    0x80000000
 #define UART_CSR_RX_READY   0x100
 
-enum consoleMode { consoleModeCommand };
-static enum consoleMode consoleMode;
+/*
+ * Special modes
+ */
+static int (*modalHandler)(int argc, char **argv);
 
 /*
  * Hang on to start messages
@@ -216,6 +219,134 @@ cmdFOFBlink(int argc, char **argv)
     return 0;
 }
 
+#ifdef MARBLE
+static int
+cmdNET(int argc, char **argv)
+{
+    int bad = 0;
+    int i;
+    char *cp;
+    uint32_t netmask;
+    unsigned int netLen = 24;
+    char *endp;
+    static struct sysNetParms np;
+
+    if (modalHandler) {
+        if (argc == 1) {
+            if (strcasecmp(argv[0], "Y") == 0) {
+                systemParameters.netConfig.np = np;
+                systemParametersStash();
+                modalHandler = NULL;
+                return 0;
+            }
+            if (strcasecmp(argv[0], "N") == 0) {
+                modalHandler = NULL;
+                return 0;
+            }
+        }
+    }
+    else {
+        if (argc == 1) {
+            np = systemParameters.netConfig.np;
+        }
+        else if (argc == 2) {
+            cp = argv[1];
+            i = parseIP(cp, &np.address);
+            if (i < 0) {
+                bad = 1;
+            }
+            else if (cp[i] == '/') {
+                netLen = strtol(cp + i + 1, &endp, 0);
+                if ((*endp != '\0')
+                 || (netLen < 8)
+                 || (netLen > 24)) {
+                    bad = 1;
+                    netLen = 24;
+                }
+            }
+            netmask = ~0U << (32 - netLen);
+            np.netmask.a[0] = netmask >> 24;
+            np.netmask.a[1] = netmask >> 16;
+            np.netmask.a[2] = netmask >> 8;
+            np.netmask.a[3] = netmask;
+            np.gateway.a[0] = np.address.a[0] & np.netmask.a[0];
+            np.gateway.a[1] = np.address.a[1] & np.netmask.a[1];
+            np.gateway.a[2] = np.address.a[2] & np.netmask.a[2];
+            np.gateway.a[3] = (np.address.a[3] & np.netmask.a[3]) | 1;
+        }
+        else {
+            bad = 1;
+        }
+        if (bad) {
+            printf("Command takes single optional argument of the form "
+                   "www.xxx.yyy.xxx[/n]\n");
+            return 1;
+        }
+    }
+    showNetworkConfig(&np);
+    if (!memcmp(&np.address, &systemParameters.netConfig.np.address, sizeof(ipv4Address))
+     && !memcmp(&np.netmask, &systemParameters.netConfig.np.netmask, sizeof(ipv4Address))
+     && !memcmp(&np.gateway, &systemParameters.netConfig.np.gateway, sizeof(ipv4Address))) {
+        return 0;
+    }
+    printf("Write parameters to flash (y or n)? ");
+    fflush(stdout);
+    modalHandler = cmdNET;
+    return 0;
+}
+#endif
+
+#ifdef MARBLE
+static int
+cmdMAC(int argc, char **argv)
+{
+    int bad = 0;
+    int i;
+    static ethernetMAC mac;
+
+    if (modalHandler) {
+        if (argc == 1) {
+            if (strcasecmp(argv[0], "Y") == 0) {
+                memcpy(&systemParameters.netConfig.ethernetMAC,&mac,sizeof mac);
+                systemParametersStash();
+                modalHandler = NULL;
+                return 0;
+            }
+            if (strcasecmp(argv[0], "N") == 0) {
+                modalHandler = NULL;
+                return 0;
+            }
+        }
+    }
+    else {
+        if (argc == 1) {
+            memcpy(&mac, &systemParameters.netConfig.ethernetMAC, sizeof mac);
+        }
+        else if (argc == 2) {
+            i = parseMAC(argv[1], &mac);
+            if ((i < 0) || (argv[1][i] != '\0')) {
+                bad = 1;
+            }
+        }
+        else {
+            bad = 1;
+        }
+        if (bad) {
+            printf("Command takes single optional argument of the form "
+                   "aa:bb:cc:dd:ee:ff\n");
+            return 1;
+        }
+    }
+    printf("   ETHERNET ADDRESS: %s\n", formatMAC(&mac));
+    if (!(memcmp(&systemParameters.netConfig.ethernetMAC, &mac, sizeof mac))) {
+        return 0;
+    }
+    printf("Write to flash (y or n)? ");
+    fflush(stdout);
+    modalHandler = cmdMAC;
+    return 0;
+}
+#endif
 
 static int
 cmdREG(int argc, char **argv)
@@ -402,8 +533,10 @@ static struct commandInfo commandTable[] = {
   { "evr",        cmdEVR,        "Show EVR status"                    },
   { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
   { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
-  { "fmon",       cmdFMON,        "Show clock frequencies"            },
+  { "fmon",       cmdFMON,       "Show clock frequencies"             },
   { "log",        cmdREPLAY,     "Replay start up messages"           },
+  { "mac",        cmdMAC,        "Set Ethernet MAC address"           },
+  { "net",        cmdNET,        "Set network parameters"             },
   { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
   { "reg",        cmdREG,        "Show GPIO register(s)"              },
   { "stats",      cmdSTATS,      "Show Aurora link statistics"        },
@@ -483,8 +616,11 @@ handleLine(char *line)
         tokArg = NULL;
     }
     argv[argc] = NULL;
-    switch (consoleMode) {
-    case consoleModeCommand:   commandCallback(argc, argv);           break;
+    if (modalHandler) {
+        (*modalHandler)(argc, argv);
+    }
+    else {
+        commandCallback(argc, argv);
     }
 }
 

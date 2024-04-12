@@ -53,9 +53,15 @@ int main()
     iicProcInit();
 
     /*
-     * Continue with initialization
+     * Boot, default configration
      */
     bootFlashInit();
+    systemParametersInit();
+
+    /*
+     * Continue with initialization
+     */
+    tftpInit();
     mmcMailboxInit();
     mgtClkSwitchInit();
     eyescanInit();
