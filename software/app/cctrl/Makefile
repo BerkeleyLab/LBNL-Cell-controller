@@ -57,6 +57,8 @@ __HDR_FILES = \
 	mgtClkSwitch.h \
 	mmcMailbox.h \
 	qsfp.h \
+	tftp.h \
+	systemParameters.h \
 	ad9520Tables.h \
 	aurora.h \
 	cellControllerProtocol.h \
