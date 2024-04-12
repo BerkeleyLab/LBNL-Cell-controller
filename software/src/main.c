@@ -25,6 +25,10 @@
 #include "iicProc.h"
 #include "mgtClkSwitch.h"
 #include "xadc.h"
+#include "systemParameters.h"
+#include "tftp.h"
+#include "mmcMailbox.h"
+#include "bootFlash.h"
 
 int udpEPICS;
 
