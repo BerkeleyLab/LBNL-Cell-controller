@@ -85,11 +85,8 @@ void
 systemParametersInit(void)
 {
     const char *cp = NULL;
-    if (resetRecoverySwitchPressed()) {
-        cp = "Recovery mode";
-    }
-    else if ((tftpReadSystemParameters(sizeof systemParameters,
-                                                         &systemParameters) < 0)
+    if ((tftpReadSystemParameters(sizeof systemParameters,
+                    &systemParameters) < 0)
           || (checksum() != systemParameters.checksum)) {
         cp = "Invalid parameters in flash";
     }
