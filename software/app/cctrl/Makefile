@@ -58,7 +58,6 @@ __HDR_FILES = \
 	mmcMailbox.h \
 	qsfp.h \
 	tftp.h \
-	systemParameters.h \
 	ad9520Tables.h \
 	aurora.h \
 	cellControllerProtocol.h \
