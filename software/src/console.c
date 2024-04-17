@@ -19,7 +19,10 @@
 #include "qsfp.h"
 #include "iicProc.h"
 #include "mgtClkSwitch.h"
-#include "systemParameters.h"
+
+#ifdef MARBLE
+# include "systemParameters.h"
+#endif
 
 #ifdef SIMULATION
 #include "simplatform.h"
