@@ -39,5 +39,8 @@ void warn(const char *fmt, ...);
 void microsecondSpin(unsigned int us);
 void uintPrint(unsigned int n);
 void showReg(int i);
+void resetFPGA(int bootAlternateImage);
+
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
 #endif /* _UTIL_H_ */

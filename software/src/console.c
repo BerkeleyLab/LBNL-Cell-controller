@@ -389,6 +389,47 @@ cmdREPLAY(int argc, char **argv)
     return 0;
 }
 
+#ifdef MARBLE
+static int
+cmdBOOT(int argc, char **argv)
+{
+    static int bootAlternateImage;
+    if (modalHandler) {
+        if (argc == 1) {
+            if (strcasecmp(argv[0], "Y") == 0) {
+                microsecondSpin(1000);
+                resetFPGA(bootAlternateImage);
+                modalHandler = NULL;
+                return 0;
+            }
+            if (strcasecmp(argv[0], "N") == 0) {
+                modalHandler = NULL;
+                return 0;
+            }
+        }
+    }
+    else {
+        if (argc == 1) {
+            bootAlternateImage = 0;
+        }
+        else if ((argc == 2)
+              && (argv[1][0] == '-')
+              && ((argv[1][1] == 'b') || (argv[1][1] == 'B'))
+              && (argv[1][2] == '\0')) {
+            bootAlternateImage = 1;
+        }
+        else {
+            printf("Invalid argument.\n");
+            return 0;
+        }
+        modalHandler = cmdBOOT;
+    }
+    printf("Reboot FPGA image %c (y or n)? ", 'A' + bootAlternateImage);
+    fflush(stdout);
+    return 0;
+}
+#endif
+
 static int
 cmdSTATS(int argc, char **argv)
 {
@@ -526,8 +567,9 @@ struct commandInfo {
 #ifdef MARBLE
 static struct commandInfo commandTable[] = {
 //  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
-  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
-  { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
+  { "boot",       cmdBOOT,       "Reboot FPGA"                        },
+  { "qsfp",       cmdQSFP,       "Show QSFP status"                   },
+  { "bpmInhibit", cmdBPMinhibit, "Inhibit BPM link(s)"                },
   { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
   { "debug",      cmdDEBUG,      "Set debug flags"                    },
   { "evr",        cmdEVR,        "Show EVR status"                    },
