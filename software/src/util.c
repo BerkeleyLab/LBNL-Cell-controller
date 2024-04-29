@@ -112,7 +112,6 @@ void
 resetFPGA(int bootAlternateImage)
 {
     printf("====== FPGA REBOOT ======\n\n");
-    st7789vBacklightEnable(0);
     microsecondSpin(50000);
     writeICAP(0xFFFFFFFF); /* Dummy word */
     writeICAP(0xAA995566); /* Sync word */
