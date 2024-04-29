@@ -5,6 +5,9 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+#define MiB(x) ((x)*1024*1024)
+#define KiB(x) ((x)*1024)
+
 /*
  * UDP port
  */

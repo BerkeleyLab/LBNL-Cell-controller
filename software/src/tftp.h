@@ -37,6 +37,9 @@
 
 #include <stdint.h>
 
+#define FLASH_BISTREAM_A_OFFSET       0 // in MiB
+#define FLASH_BISTREAM_B_OFFSET       8 // in MiB
+
 void tftpInit(void);
 int tftpReadSystemParameters(uint32_t length, void *buf);
 int tftpWriteSystemParameters(uint32_t length, const void *buf);

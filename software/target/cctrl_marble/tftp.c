@@ -54,8 +54,6 @@
 
 #define TRANSFER_TIMEOUT_USEC 30000000 /* Assume client is gone after this */
 
-#define MiB(x) ((x)*1024*1024)
-#define KiB(x) ((x)*1024)
 #define FMC_EEPROM_SELECT (1UL<<31)
 
 #define SYSTEM_PARAMETERS_NAME  "SystemParameters.bin"
@@ -68,16 +66,16 @@ struct fileInfo {
 };
 
 /* Assume that largest sector in flash is no larger than 64 KiB.
- * CCTRL_A.bit and CCTRL_B.bit size is 7 MiB. CCTRL_B.bit was
- * moved to 8 MiB because the first half of flash is write protected.
+ * CCTRL_A.bit and CCTRL_B.bit size is 7 MiB. The first half of
+ * flash is write protected.
  */
 static const struct fileInfo fileTable[] = {
-    { "CCTRL_A.bit",            MiB(0),              MiB(7),   0   },
-    { "CCTRL_B.bit",            MiB(8),              MiB(7),   0   },
-    { SYSTEM_PARAMETERS_NAME,   MiB(15)+KiB(0),      KiB(4),   0   },
-    { "FullFlash.bin",          MiB(0),              MiB(16),  0   },
-    { "FMC1_EEPROM.bin",        FMC_EEPROM_SELECT+0, 256,      0   },
-    { "FMC2_EEPROM.bin",        FMC_EEPROM_SELECT+1, 256,      0   } };
+    { "CCTRL_A.bit",            MiB(FLASH_BISTREAM_A_OFFSET), MiB(7),   0   },
+    { "CCTRL_B.bit",            MiB(FLASH_BISTREAM_B_OFFSET), MiB(7),   0   },
+    { SYSTEM_PARAMETERS_NAME,   MiB(15)+KiB(0),               KiB(4),   0   },
+    { "FullFlash.bin",          MiB(0),                       MiB(16),  0   },
+    { "FMC1_EEPROM.bin",        FMC_EEPROM_SELECT+0,          256,      0   },
+    { "FMC2_EEPROM.bin",        FMC_EEPROM_SELECT+1,          256,      0   } };
 struct tftpPacket {
     uint16_t opcode;
     uint16_t arg;
