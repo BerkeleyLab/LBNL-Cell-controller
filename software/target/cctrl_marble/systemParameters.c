@@ -196,8 +196,8 @@ resetFPGA(int bootAlternateImage)
     writeICAP(0xAA995566); /* Sync word */
     writeICAP(0x20000000); /* Type 1 NO-OP */
     writeICAP(0x30020001); /* Type 1 write 1 to Warm Boot STart Address Reg */
-    writeICAP(bootAlternateImage ? MiB(FLASH_BISTREAM_B_OFFSET)
-                                 : MiB(FLASH_BISTREAM_A_OFFSET); /* Warm boot start addr */
+    writeICAP(bootAlternateImage ? MiB(FLASH_BITSTREAM_B_OFFSET)
+                                 : MiB(FLASH_BITSTREAM_A_OFFSET); /* Warm boot start addr */
     writeICAP(0x20000000); /* Type 1 NO-OP */
     writeICAP(0x30008001); /* Type 1 write 1 to CMD */
     writeICAP(0x0000000F); /* IPROG command */

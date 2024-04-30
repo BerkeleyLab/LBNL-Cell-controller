@@ -40,6 +40,7 @@
 #include "gpio.h"
 #include "iicProc.h"
 #include "util.h"
+#include "tftp.h"
 
 #define TFTP_PORT 69
 
@@ -70,8 +71,8 @@ struct fileInfo {
  * flash is write protected.
  */
 static const struct fileInfo fileTable[] = {
-    { "CCTRL_A.bit",            MiB(FLASH_BISTREAM_A_OFFSET), MiB(7),   0   },
-    { "CCTRL_B.bit",            MiB(FLASH_BISTREAM_B_OFFSET), MiB(7),   0   },
+    { "CCTRL_A.bit",            MiB(FLASH_BITSTREAM_A_OFFSET), MiB(7),   0   },
+    { "CCTRL_B.bit",            MiB(FLASH_BITSTREAM_B_OFFSET), MiB(7),   0   },
     { SYSTEM_PARAMETERS_NAME,   MiB(15)+KiB(0),               KiB(4),   0   },
     { "FullFlash.bin",          MiB(0),                       MiB(16),  0   },
     { "FMC1_EEPROM.bin",        FMC_EEPROM_SELECT+0,          256,      0   },
