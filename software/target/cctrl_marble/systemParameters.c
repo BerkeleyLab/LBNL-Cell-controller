@@ -187,6 +187,16 @@ showNetworkConfig(const struct sysNetParms *np)
     printf("   GATEWAY: %s\n", formatIP(&np->gateway));
 }
 
+/*
+ * Write to the ICAP instance to force a warm reboot
+ * Command sequence from UG470
+ */
+static void
+writeICAP(int value)
+{
+    Xil_Out32(XPAR_HWICAP_0_BASEADDR+0x100, value); /* Write FIFO */
+}
+
 void
 resetFPGA(int bootAlternateImage)
 {
@@ -197,7 +207,7 @@ resetFPGA(int bootAlternateImage)
     writeICAP(0x20000000); /* Type 1 NO-OP */
     writeICAP(0x30020001); /* Type 1 write 1 to Warm Boot STart Address Reg */
     writeICAP(bootAlternateImage ? MiB(FLASH_BITSTREAM_B_OFFSET)
-                                 : MiB(FLASH_BITSTREAM_A_OFFSET); /* Warm boot start addr */
+                                 : MiB(FLASH_BITSTREAM_A_OFFSET)); /* Warm boot start addr */
     writeICAP(0x20000000); /* Type 1 NO-OP */
     writeICAP(0x30008001); /* Type 1 write 1 to CMD */
     writeICAP(0x0000000F); /* IPROG command */

@@ -97,13 +97,3 @@ showReg(int i)
     r = GPIO_READ(i);
     printf("  R%d = %04X:%04X %11d\n", i, (r>>16)&0xFFFF, r&0xFFFF, r);
 }
-
-/*
- * Write to the ICAP instance to force a warm reboot
- * Command sequence from UG470
- */
-static void
-writeICAP(int value)
-{
-    Xil_Out32(XPAR_HWICAP_0_BASEADDR+0x100, value); /* Write FIFO */
-}
