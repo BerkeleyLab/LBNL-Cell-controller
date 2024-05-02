@@ -34,6 +34,7 @@
 #include "systemParameters.h"
 #include "tftp.h"
 #include "util.h"
+#include "gpio.h"
 
 struct systemParameters systemParameters;
 const struct sysNetConfig netDefault = {
