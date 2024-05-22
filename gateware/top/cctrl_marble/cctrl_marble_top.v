@@ -1,6 +1,5 @@
-module cctrl_marble_top #(
-  parameter PILOT_TONE_REFERENCE_DIRECT_OUTPUT_ENABLE = "false"
-  ) (
+module cctrl_marble_top
+  (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
   output             VCXO_EN,
@@ -75,9 +74,6 @@ module cctrl_marble_top #(
 );
 
 wire gtReset = 1'b0;
-wire INTLK_RELAY_NO = 1'b0;
-wire INTLK_RELAY_CTL;
-wire INTLK_RESET_BUTTON_N = 1'b0;
 
 wire FP_LED0_RED, FP_LED0_GRN;  // TODO - Will these exist on marble port?
 wire FP_LED1_RED, FP_LED1_GRN;  // TODO - Will these exist on marble port?
@@ -781,23 +777,6 @@ fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),
     .rx_S_AXIS_TVALID(PS_READBACK_AXIS_TVALID),
     .rx_S_AXIS_TDATA(PS_READBACK_AXIS_TDATA),
     .rx_S_AXIS_TUSER(PS_READBACK_AXIS_TUSER));
-
-//////////////////////////////////////////////////////////////////////////////
-// Errant Electron Beam Interlock
-eebi #(.SYSCLK_RATE(SYSCLK_RATE), .dbg("false")) eebi (
-            .sysClk(sysClk),
-            .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_EEBI_CSR]),
-            .sysCsrWriteData(GPIO_OUT),
-            .sysCsr(GPIO_IN[GPIO_IDX_EEBI_CSR]),
-            .sysTimestamp(sysTimestamp),
-            .sysMostRecentFaultTime({GPIO_IN[GPIO_IDX_EEBI_FAULT_TIME_SECONDS],
-                                     GPIO_IN[GPIO_IDX_EEBI_FAULT_TIME_TICKS]}),
-            .auroraUserClk(auroraUserClk),
-            .auroraFAstrobe(auroraFAstrobe),
-            .localBPMvalues(localBPMvalues),
-            .localBPMvaluesVALID(localBPMvaluesVALID),
-            .eebiRelay(INTLK_RELAY_CTL),
-            .eebiResetButton_n(INTLK_RESET_BUTTON_N));
 
 //////////////////////////////////////////////////////////////////////////////
 // Convert value from integer nm to double precision mm
