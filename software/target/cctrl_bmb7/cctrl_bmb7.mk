@@ -14,7 +14,9 @@ __SRC_CCTRL_BMB7_FILES = \
 	mmcMailboxStub.c \
 	bootFlashStub.c \
 	tftpStub.c \
-	systemParametersStub.c
+	systemParametersStub.c \
+	eebi.c \
+	pilotTones.c
 SRC_CCTRL_BMB7_FILES = $(addprefix $(CCTRL_BMB7_DIR)/, $(__SRC_CCTRL_BMB7_FILES))
 
 # For top-level makfile

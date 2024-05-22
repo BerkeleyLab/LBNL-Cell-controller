@@ -35,14 +35,12 @@ all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
 __SRC_FILES = \
 	aurora.c \
 	console.c \
-	eebi.c \
 	evr.c \
 	eyescan.c \
 	fastFeedback.c \
 	fofbEthernet.c \
 	frontPanel.c \
 	main.c \
-	pilotTones.c \
 	platform.c \
 	psAWG.c \
 	psWaveformRecorder.c \

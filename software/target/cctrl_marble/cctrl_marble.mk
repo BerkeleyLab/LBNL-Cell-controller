@@ -14,7 +14,9 @@ __SRC_CCTRL_MARBLE_FILES = \
 	mmcMailbox.c \
 	bootFlash.c \
 	tftp.c \
-	systemParameters.c
+	systemParameters.c \
+	eebiStub.c \
+	pilotTonesStub.c
 SRC_CCTRL_MARBLE_FILES = $(addprefix $(CCTRL_MARBLE_DIR)/, $(__SRC_CCTRL_MARBLE_FILES))
 
 # For top-level makfile
