@@ -2,10 +2,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 // Company:          BNL
 // Engineer:         J. DeLong
-// 
-// Create Date:      09:49:15 03/16/2010 
-// Design Name: 
-// Module Name:      timeofDayReceiver 
+//
+// Create Date:      09:49:15 03/16/2010
+// Design Name:
+// Module Name:      timeofDayReceiver
 // Project Name:     embedded event receiver
 // Target Devices:   FX70T
 // Tool versions:    ISE 12.1
@@ -13,9 +13,9 @@
 //                   time of day from the GPS locked NTP server. The offset to the
 //                   time of day is incremented at the system clock rate.
 //
-// Dependencies: 
+// Dependencies:
 //
-// Revision: 
+// Revision:
 // Revision 0.01 - File Created
 // Additional Comments
 //  2017-10-10, W. Eric Norum -- Rewrite to make more robust

@@ -1,24 +1,24 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: Lawrence Berkeley National Lab  
+// Company: Lawrence Berkeley National Lab
 // Engineer: Jonah Weber
-// 
+//
 // Create Date: 11/10/2014 04:09:27 PM
-// Design Name: 
+// Design Name:
 // Module Name: evr_mgt_top
-// Project Name: 
+// Project Name:
 // Target Devices: xc7z
 // Tool Versions:
 // Description: Multi-gigabit transceiver for use with MRF-compatible embedded
-// event receiver. Includes support for force phase alignment to fix phase of RX 
+// event receiver. Includes support for force phase alignment to fix phase of RX
 // recovered clock with respect to Event Generator RF clock.
-// 
+//
 // Dependencies:
-// 
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -42,7 +42,7 @@ module evr_mgt_top(
     output reset_done,  // MGT reset is done
     output [15:0] debug   // Debug port
     );
-    
+
     // Include force phase align support. Comment next line to remove support.
     `define FORCE_PHASE_ALIGN
 
@@ -75,15 +75,15 @@ module evr_mgt_top(
     // comma_is_lsb == 1: comma characted falls into parallel_word_out[7:0]
     // comma_is_lsb == 0: comma characted falls into parallel_word_out[15:8]
     reg comma_is_lsb = 1'b0;
-       
+
     reg gt0_rxresetdone_r;
     reg gt0_rxresetdone_r2;
     reg gt0_rxresetdone_r3;
-    
-    //  Static signal Assigments    
+
+    //  Static signal Assigments
     assign tied_to_ground_i             = 1'b0;
     assign tied_to_vcc_i                = 1'b1;
- 
+
 
    // Insert device-specific MGT instance here
      evr_mgt_gtx  evr_mgt_gtx_i
@@ -94,7 +94,7 @@ module evr_mgt_top(
          .gt0_tx_fsm_reset_done_out(), // output wire gt0_tx_fsm_reset_done_out
          .gt0_rx_fsm_reset_done_out(), // output wire gt0_rx_fsm_reset_done_out
          .gt0_data_valid_in(tied_to_vcc_i), // input wire gt0_data_valid_in
-    
+
         //_________________________________________________________________________
         //GT0  (X0Y0)
         //____________________________CHANNEL PORTS________________________________
@@ -155,23 +155,23 @@ module evr_mgt_top(
             .gt0_rxresetdone_out            (gt0_rxresetdone_i), // output wire gt0_rxresetdone_out
         //------------------- TX Initialization and Reset Ports --------------------
             .gt0_gttxreset_in               (tied_to_ground_i), // input wire gt0_gttxreset_in
-    
-    
+
+
         //____________________________COMMON PORTS________________________________
          .gt0_qplloutclk_in(tied_to_ground_i), // input wire gt0_qplloutclk_in
          .gt0_qplloutrefclk_in(tied_to_ground_i) // input wire gt0_qplloutrefclk_in
         );
-        
+
     // Route the MGT recovered clock to a clock buffer for distribution to the rest of the fabric
     BUFG rxoutclk_bufg_i
     (
         .I(gt0_rxoutclk_i),
         .O(rec_clk_out)
     );
-    
+
     // Indicates that a comma was detected in either byte of parallel word
     assign comma_detected_i = (chariscomma[0] | chariscomma[1]);
-    
+
     // Assign soft reset
 //    assign soft_reset_i = gt0_gtrxreset_i || wdog_mgt_reset;
 //    assign soft_reset_i = reset || wdog_mgt_reset;
@@ -183,29 +183,29 @@ module evr_mgt_top(
         gt0_rxresetdone_r2   <=   gt0_rxresetdone_r;
         gt0_rxresetdone_r3   <=   gt0_rxresetdone_r2;
     end
-    
+
     assign reset_done_i = gt0_rxresetdone_r3;
 
     // Pass a reset out of the tile to use for the next level up in the hierarchy
     assign reset_done = reset_done_i;
-    
-    
+
+
     // Conditionally generated logic to support force phase alignment
     `ifdef FORCE_PHASE_ALIGN
 
         // Compile-time configurable phase and word alignment
-                
-        
+
+
         // Indicate the bitlslide state machine whether parallel word is aligned (byteisaligned == 1)
         gtx_byteisaligned gtx_byteisaligned_i(
             .ref_clk(rec_clk_out),
             .comma_detected(comma_detected_i),
             .byteisaligned_out(byteisaligned)
         );
-        
-        // Detect which 8-bit word alignment within the 16-bit word stream 
+
+        // Detect which 8-bit word alignment within the 16-bit word stream
         always @(posedge rec_clk_out) if (comma_detected_i == 1'b1) comma_is_lsb <= chariscomma[0];
-        
+
         gtx_rx_phase_force #(.BITSLIDE_COUNTER_FORCE(BITSLIDE_COUNTER_FORCE), .COMMA_IS_LSB_FORCE(COMMA_IS_LSB_FORCE))
         gtx_rx_phase_force_i(
             .ref_clk(rec_clk_out),
@@ -214,7 +214,7 @@ module evr_mgt_top(
             .comma_is_lsb(comma_is_lsb),
             .gtx_reset_out(phase_align_force_reset)
         );
-        
+
         // Manual Bitslide mechanism for word alignment:
         // Needed to achieve deterministic phase relationship between the recovered clock (rec_clk_out), and the clock source at the transmitter end.
         gtp_bitslide my_gtp_bitslide(
@@ -228,19 +228,19 @@ module evr_mgt_top(
             .bitslide_o(bitslide_count_out),
             .synced_o(bitslide_sync_out)
         );
-        
+
         // MGT reset logic
         assign gt0_gtrxreset_i = reset || phase_align_force_reset || gt0_bitslide_reset_i;
-        
+
         //top level debug port
         assign debug = {bitslide_count_out,gt0_rxcommadet_i,phase_align_force_reset,byteisaligned,gt0_rxslide_i,gt0_gtrxreset_i,bitslide_sync_out,gt0_bitslide_reset_i,comma_is_lsb,comma_detected_i,soft_reset_i,1'b0};
-        
+
     `else
         assign gt0_rxslide_i = tied_to_ground_i;
         assign gt0_bitslide_reset_i =  tied_to_ground_i;
         assign gt0_gtrxreset_i = reset;
         assign bitslide_sync_out = tied_to_vcc_i;
-        
+
     `endif
-   
+
 endmodule

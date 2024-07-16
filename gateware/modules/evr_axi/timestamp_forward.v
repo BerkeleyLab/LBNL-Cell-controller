@@ -9,7 +9,7 @@ input                        clk_in;
 input  [TIMESTAMP_WIDTH-1:0] timestamp_in;
 input                        clk_out;
 output [TIMESTAMP_WIDTH-1:0] timestamp_out;
- 
+
 // clk_in domain
 reg req_in = 0;
 reg ack_in = 0;
@@ -28,7 +28,7 @@ begin
     end
     ack_in <= req_d_out;
 end
-        
+
 always @(posedge clk_out)
 begin
     req_out <= req_in;
