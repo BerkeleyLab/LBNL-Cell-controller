@@ -137,7 +137,7 @@ sysmon(void)
 static int
 fetchEEBI(void)
 {
-    reply.args[0] = GPIO_READ(GPIO_IDX_EEBI_CSR);
+    reply.args[0] = 0;
     eebiFetchFaultInfo(&reply.args[1], &reply.args[2], &reply.args[3]);
     return 4;
 }
