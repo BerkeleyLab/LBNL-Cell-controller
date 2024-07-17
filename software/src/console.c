@@ -8,13 +8,11 @@
 #include <xparameters.h>
 #include "aurora.h"
 #include "cellControllerProtocol.h"
-#include "eebi.h"
 #include "evr.h"
 #include "eyescan.h"
 #include "fastFeedback.h"
 #include "fofbEthernet.h"
 #include "gpio.h"
-#include "pilotTones.h"
 #include "util.h"
 #include "qsfp.h"
 #include "iicProc.h"
@@ -58,7 +56,6 @@ static int
 cmdFMON(int argc, char **argv)
 {
     int i;
-#ifdef MARBLE
     static const char *names[] = {  "System",
                                     "EVR recovered",
                                     "Aurora user",
@@ -68,13 +65,6 @@ cmdFMON(int argc, char **argv)
                                     "Ethernet Rx",
                                     "200 MHz reference",
                                     "125 MHz reference clock"};
-#else
-    static const char *names[] = {  "System",
-                                    "EVR recovered",
-                                    "Aurora user",
-                                    "Ethernet/EVR reference",
-                                    "Aurora reference" };
-#endif
 
     for (i = 0 ; i < sizeof names / sizeof names[0] ; i++) {
         GPIO_WRITE(GPIO_IDX_FREQUENCY_MONITOR_CSR, i);
@@ -109,22 +99,9 @@ cmdDEBUG(int argc, char **argv)
     if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);
     if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
     if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
-    if (debugFlags & DEBUGFLAG_RESET_EEBI_INTERLOCK) {
-        debugFlags &= ~DEBUGFLAG_RESET_EEBI_INTERLOCK;
-        eebiResetInterlock();
-    }
     printf("Debug flags: %x\n", debugFlags);
     return 0;
 }
-
-#ifndef MARBLE
-static int
-cmdAD9520(int argc, char **argv)
-{
-    ad9520show();
-    return 0;
-}
-#endif
 
 static int
 cmdQSFP(int argc, char **argv)
@@ -219,7 +196,6 @@ cmdFOFBlink(int argc, char **argv)
     return 0;
 }
 
-#ifdef MARBLE
 static int
 cmdNET(int argc, char **argv)
 {
@@ -294,9 +270,7 @@ cmdNET(int argc, char **argv)
     modalHandler = cmdNET;
     return 0;
 }
-#endif
 
-#ifdef MARBLE
 static int
 cmdMAC(int argc, char **argv)
 {
@@ -346,7 +320,6 @@ cmdMAC(int argc, char **argv)
     modalHandler = cmdMAC;
     return 0;
 }
-#endif
 
 static int
 cmdREG(int argc, char **argv)
@@ -389,7 +362,6 @@ cmdREPLAY(int argc, char **argv)
     return 0;
 }
 
-#ifdef MARBLE
 static int
 cmdBOOT(int argc, char **argv)
 {
@@ -428,7 +400,6 @@ cmdBOOT(int argc, char **argv)
     fflush(stdout);
     return 0;
 }
-#endif
 
 static int
 cmdSTATS(int argc, char **argv)
@@ -564,9 +535,7 @@ struct commandInfo {
     const char *description;
 };
 
-#ifdef MARBLE
 static struct commandInfo commandTable[] = {
-//  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
   { "boot",       cmdBOOT,       "Reboot FPGA"                        },
   { "qsfp",       cmdQSFP,       "Show QSFP status"                   },
   { "bpmInhibit", cmdBPMinhibit, "Inhibit BPM link(s)"                },
@@ -585,25 +554,6 @@ static struct commandInfo commandTable[] = {
   { "tlog",       cmdTLOG,       "Start timing system event logger"   },
   { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
 };
-#else
-static struct commandInfo commandTable[] = {
-  { "ad9520",     cmdAD9520,     "Show AD9520 registers"              },
-  { "qsfp",       cmdQSFP,      "Show QSFP status"                    },
-  { "bpmInhibit", cmdBPMinhibit,"Inhibit BPM link(s)"                 },
-  { "cellInhibit",cmdCellInhibit,"Inhibit cell controller link(s)"    },
-  { "debug",      cmdDEBUG,      "Set debug flags"                    },
-  { "evr",        cmdEVR,        "Show EVR status"                    },
-  { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
-  { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
-  { "fmon",       cmdFMON,        "Show clock frequencies"            },
-  { "log",        cmdREPLAY,     "Replay start up messages"           },
-  { "pslink",     cmdFOFBlink,   "Show power supply ethernet status"  },
-  { "reg",        cmdREG,        "Show GPIO register(s)"              },
-  { "stats",      cmdSTATS,      "Show Aurora link statistics"        },
-  { "tlog",       cmdTLOG,       "Start timing system event logger"   },
-  { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
-};
-#endif
 
 static void
 commandCallback(int argc, char **argv)

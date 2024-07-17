@@ -118,12 +118,12 @@ IP_CORES_SRCS_DIRS += $(addsuffix /example_design, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /synth, $(IP_CORES_DIRS))
 IP_CORES_SRCS_DIRS += $(addsuffix /hdl, $(IP_CORES_DIRS))
 
-BD += system_marble
-system_marble_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system_marble
-system_marble_TOP = $(system_marble_DIR)/synth/system_marble.v
+BD += system
+system_DIR = $(PLATFORM_7SERIES_CCTRL_DIR)/system
+system_TOP = $(system_DIR)/synth/system.v
 
-BD_TOP_LVL_SRCS += $(system_marble_TOP)
-BD_DIRS += $(system_marble_DIR)
+BD_TOP_LVL_SRCS += $(system_TOP)
+BD_DIRS += $(system_DIR)
 
 BD_SRCS_DIRS = $(BD_DIRS)
 BD_SRCS_DIRS += $(addsuffix /synth, $(BD_DIRS))

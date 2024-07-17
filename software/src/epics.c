@@ -7,21 +7,19 @@
 #include <string.h>
 #include "aurora.h"
 #include "cellControllerProtocol.h"
-#include "eebi.h"
 #include "epics.h"
 #include "evr.h"
 #include "fastFeedback.h"
 #include "fofbEthernet.h"
 #include "gpio.h"
-#include "pilotTones.h"
 #include "psAWG.h"
 #include "psWaveformRecorder.h"
 #include "qsfp.h"
-#include "softwareBuildDate.h"
 #include "util.h"
 #include "xadc.h"
-#include "bmb7_udp.h"
-#include <xparameters.h>
+
+#include "bwudp.h"
+#include "systemParameters.h"
 
 #define BPM_COUNT_MASK 0x3F
 
@@ -29,45 +27,38 @@ static struct ccProtocolPacket reply;
 static int replyCount;
 
 static void parseCmd(struct ccProtocolPacket *cmd, int length);
-static void pollEPICS(void);
+static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
+
+static bwudpHandle handleNonce;
 
 int epicsInit(void) {
-    return udpInit(XPAR_EPICS_UDP_BASEADDR, "EPICS");
+    int rval = bwudpRegisterInterface(
+                         (ethernetMAC *)&systemParameters.netConfig.ethernetMAC,
+                         (ipv4Address *)&systemParameters.netConfig.np.address,
+                         (ipv4Address *)&systemParameters.netConfig.np.netmask,
+                         (ipv4Address *)&systemParameters.netConfig.np.gateway);
+    rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
+    return rval;
+}
+
+static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
+    // Handle the packet
+    handleNonce = handle;
+    parseCmd((struct ccProtocolPacket *)payload, length);
+    return;
 }
 
 static void sendReply(void) {
     if (debugFlags & DEBUGFLAG_EPICS)
         printf("%d REPLY %X %X %X\n", replyCount, reply.magic,
                                             reply.identifier, reply.command);
-    udpTx32(udpEPICS, (uint32_t *)&reply, replyCount);
+    bwudpSend(handleNonce, (const char *)&reply, replyCount);
 }
 
 void epicsService(void) {
-    pollEPICS();
+    bwudpCrank();
 }
 
-/*
- * Handle an EEBI reset request
- */
-static void
-crankEEBIresetStateMachine(int value)
-{
-    static uint16_t match[] = { 1, 100, 10000 };
-    static int i;
-
-    if (value == match[i]) {
-        i++;
-        if (i == (sizeof match / sizeof match[0])) {
-            eebiResetInterlock();
-        }
-    }
-    else if (value == match[0]) {
-        i = 1;
-    }
-    else {
-        i = 0;
-    }
-}
 /*
  * Return system monitors
  */
@@ -94,18 +85,6 @@ sysmon(void)
         }
     }
     reply.args[rIndex++] = (GPIO_READ(GPIO_IDX_EVENT_STATUS) << 16);
-    for (i = 0 ; i < PILOT_TONE_ADC_COUNT ; i += 2)
-        reply.args[rIndex++] = (ptADC(i+1) << 16) | ptADC(i);
-    for (i = 0 ; i < PILOT_TONE_TEMPERATURE_COUNT ; i++)
-        reply.args[rIndex++] = ptTemperature(i);
-    for (pll = 0 ; pll < 2 ; pll++) {
-        for (i = 0 ; i < PILOT_TONE_PLL_OUTPUT_COUNT ; i += 2) {
-            reply.args[rIndex++] = (ptPLLvalue(pll, i+1)<<16) |
-                                    ptPLLvalue(pll, i);
-        }
-        reply.args[rIndex++] = (ptPLLtable(pll) << 16) |
-                                ptPLLvalue(pll, PILOT_TONE_PLL_OUTPUT_COUNT);
-    }
     reply.args[rIndex++] = (evrNtooManySecondEvents() << 16) |
                             evrNtooFewSecondEvents();
     reply.args[rIndex++] = evrNoutOfSequenceSeconds();
@@ -113,17 +92,6 @@ sysmon(void)
     reply.args[rIndex++] = GPIO_READ(GPIO_IDX_WFR_CSR);
     reply.args[rIndex++] = fofbEthernetGetPCSPMAstatus();
     return rIndex;
-}
-
-/*
- * Return EEBI status
- */
-static int
-fetchEEBI(void)
-{
-    reply.args[0] = GPIO_READ(GPIO_IDX_EEBI_CSR);
-    eebiFetchFaultInfo(&reply.args[1], &reply.args[2], &reply.args[3]);
-    return 4;
 }
 
 /*
@@ -311,12 +279,8 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
     case CC_PROTOCOL_CMD_HI_LONGIN:
         switch (idx) {
         case CC_PROTOCOL_CMD_LONGIN_IDX_FIRMWARE_BUILD_DATE:
-            reply.args[0] = GPIO_READ(GPIO_IDX_FIRMWARE_BUILD_DATE);
-            replyArgCount = 1;
             break;
         case CC_PROTOCOL_CMD_LONGIN_IDX_SOFTWARE_BUILD_DATE:
-            reply.args[0] = SOFTWARE_BUILD_DATE;
-            replyArgCount = 1;
             break;
         default: return;
         }
@@ -359,7 +323,6 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
                 break;
 
             case CC_PROTOCOL_CMD_LONGOUT_IDX_CLEAR_EEBI_TRIP:
-                crankEEBIresetStateMachine(cmdp->args[0]);
                 break;
 
             default: return;
@@ -390,40 +353,30 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_ATTENUATOR:
-        ptAttenWrite(idx, cmdp->args[0]);
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_PLL_OUTPUT:
-        ptPLLoutputControl(lo != 0, idx, cmdp->args[0]);
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_PLL_TABLE:
-        ad9520SetTable(idx, cmdp->args[0]);
         break;
 
     case CC_PROTOCOL_CMD_HI_PLL_REG_IO:
-        reply.args[0] = ad9520RegIO(idx, cmdp->args[0]);
-        replyArgCount = 1;
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_EEBI_CONFIG:
-        if (argc != EEBI_ARG_COUNT) return;
-        eebiConfig(cmdp->args);
         break;
 
     case CC_PROTOCOL_CMD_HI_GET_EEBI:
-        replyArgCount = fetchEEBI();
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_DAC:
-        max5802write(idx, cmdp->args[0]);
         break;
 
     case CC_PROTOCOL_CMD_HI_I32ARRAY_OUT:
         switch (lo) {
         case CC_PROTOCOL_CMD_LO_I32A_BPM_SETPOINTS:
             ffbStashSetpoints(argc, cmdp->args, cmdp->cellInfo);
-            eebiHaveSetpoints();
             break;
         default: return;
         }
@@ -451,26 +404,17 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         for (i = 0 ; i < replyArgCount ; i++)
             reply.args[i] = __builtin_bswap32(reply.args[i]);
     }
-    replyCount = CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(replyArgCount);
+    replyCount = CC_PROTOCOL_ARG_COUNT_TO_SIZE(replyArgCount);
     sendReply();
-}
-
-static void pollEPICS(void) {
-    int l;
-    static struct ccProtocolPacket cmd;
-
-    l = udpRxCheck32(udpEPICS, (uint32_t *)&cmd, sizeof cmd/sizeof(int32_t));
-    parseCmd(&cmd, l);
-    return;
 }
 
 static void parseCmd(struct ccProtocolPacket *cmd, int length) {
     if (length >= (int)CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(0)) {
         if (debugFlags & DEBUGFLAG_EPICS)
             printf("%d CMD %X %X %X\n", length, cmd->magic, cmd->identifier,
-                                                                cmd->command);
+                    cmd->command);
         if ((cmd->magic == reply.magic)
-         && (cmd->identifier == reply.identifier)) {
+                && (cmd->identifier == reply.identifier)) {
             sendReply();
         }
         else {

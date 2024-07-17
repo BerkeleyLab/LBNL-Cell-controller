@@ -24,11 +24,7 @@ SW_TGT_SCRIPTS_DIR = $(SW_APP_DIR)/$(APP)/scripts
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
-ifeq ($(TARGET), cctrl_bmb7)
 BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
-else
-BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/system_marble/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
-endif
 
 all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
 
@@ -39,40 +35,46 @@ __SRC_FILES = \
 	eyescan.c \
 	fastFeedback.c \
 	fofbEthernet.c \
-	frontPanel.c \
 	main.c \
 	platform.c \
 	psAWG.c \
 	psWaveformRecorder.c \
 	util.c \
-	xadc.c
+	xadc.c \
+	qsfp.c \
+	iicProc.c \
+	iicChunk.c \
+	mgtClkSwitch.c \
+	epics.c \
+	mmcMailbox.c \
+	bootFlash.c \
+	systemParameters.c \
+	tftp.c
 SRC_FILES = $(addprefix $(SW_SRC_DIR)/, $(__SRC_FILES))
 
 __HDR_FILES = \
-	epics.h \
-	iicChunk.h \
-	iicProc.h \
-	mgtClkSwitch.h \
-	mmcMailbox.h \
-	qsfp.h \
-	tftp.h \
-	ad9520Tables.h \
 	aurora.h \
 	cellControllerProtocol.h \
 	console.h \
-	eebi.h \
 	evr.h \
 	eyescan.h \
 	fastFeedback.h \
 	fofbEthernet.h \
-	frontPanel.h \
-	pilotTones.h \
 	platform_config.h \
 	platform.h \
 	psAWG.h \
 	psWaveformRecorder.h \
 	util.h \
-	xadc.h
+	xadc.h \
+	qsfp.h \
+	iicProc.h \
+	iicChunk.h \
+	mgtClkSwitch.h \
+	epics.h \
+	mmcMailbox.h \
+	bootFlash.h \
+	systemParameters.h \
+	tftp.h
 HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))
 
 __HDR_BWUDP_FILES = \
@@ -88,42 +90,18 @@ __HDR_SPIFLASHDRIVER_FILES = \
     spiflash.h
 HDR_SPIFLASHDRIVER_FILES = $(addprefix $(SW_SPIFLASHDRIVER_DIR)/, $(__HDR_SPIFLASHDRIVER_FILES))
 
-__HDR_GEN_FILES = \
-	softwareBuildDate.h
+__HDR_GEN_FILES =
 HDR_GEN_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_GEN_FILES))
-
-__SRC_BMB7UDP_FILES = \
-	bmb7_udp.c
-SRC_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__SRC_BMB7UDP_FILES))
 
 __SRC_BWUDP_FILES = \
 	badger.c \
 	bwudp.c
 SRC_BWUDP_FILES = $(addprefix $(BWUDP_DIR)/, $(__SRC_BWUDP_FILES))
 
-__HDR_BMB7UDP_FILES = \
-	bmb7_udp.h
-HDR_BMB7UDP_FILES = $(addprefix $(BMB7UDP_DIR)/, $(__HDR_BMB7UDP_FILES))
-
-ifeq ($(TARGET),cctrl_marble)
 SRC_FILES += $(SRC_BWUDP_FILES)
 HDR_FILES += $(HDR_BWUDP_FILES)
 SRC_FILES += $(SRC_SPIFLASHDRIVER_FILES)
 HDR_FILES += $(HDR_SPIFLASHDRIVER_FILES)
-else
-SRC_FILES += $(SRC_BMB7UDP_FILES)
-HDR_FILES += $(HDR_BMB7UDP_FILES)
-endif
-
-__STP_FILES = \
-	AD9520-4_IDLE.stp \
-	AD9520-4_PT_HI_11_19.stp \
-	AD9520-4_PT_HI_1_2.stp \
-	AD9520-4_PT_LO_11_19.stp \
-	AD9520-4_PT_LO_1_2.stp \
-	AD9520-4_RF_11_19_compat.stp \
-	AD9520-4_RF.stp
-STP_FILES = $(addprefix $(SW_TGT_SCRIPTS_DIR)/, $(__STP_FILES))
 
 include $(TARGET_DIR)/$(TARGET).mk
 
@@ -142,10 +120,7 @@ INCLUDE_DIRS = \
 	$(TARGET_DIR) \
 	$(BSP_DIR)/include
 
-ifeq ($(TARGET),cctrl_bmb7)
-USER_FLAGS += -D__TARGET_CCTRL_BMB7__
-INCLUDE_DIRS += $(BMB7UDP_DIR)
-else ifeq ($(TARGET),cctrl_marble)
+ifeq ($(TARGET),cctrl_marble)
 USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
 USER_FLAGS += -DMARBLE
 USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H
@@ -164,19 +139,9 @@ vpath *.h $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.o $(SW_SRC_DIR)
 vpath *.mmi $(GW_TGT_DIR)
 
-%softwareBuildDate.h: $(SRC_FILES) $(HDR_FILES)
-	sh $(SW_TGT_SCRIPTS_DIR)/setSoftwareBuildDate.sh > $@
-
-%ad9520Tables.h: $(STP_FILES)
-	bash $(SW_TGT_SCRIPTS_DIR)/createPLLtables.sh $^ > $@
-
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
-ifeq ($(TARGET),cctrl_marble)
-XSA_FILE=$(GW_TGT_DIR)/system_marble.xsa
-else
 XSA_FILE=$(GW_TGT_DIR)/system.xsa
-endif
 
 $(TARGET):
 	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(XSA_FILE) $(CPU_NAME)
