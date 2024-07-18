@@ -24,6 +24,7 @@
 #include "tftp.h"
 #include "mmcMailbox.h"
 #include "bootFlash.h"
+#include "mgt.h"
 
 int main()
 {
@@ -56,6 +57,7 @@ int main()
     mmcMailboxInit();
     mgtClkSwitchInit();
     eyescanInit();
+    mgtInit();
     auroraInit();
     evrInit();
     evrShow();
@@ -72,6 +74,7 @@ int main()
             lastDiagnostic = now;
             xadcUpdate();
         }
+        mgtCrankRxAligner();
         epicsService();
         consoleCheck();
     }

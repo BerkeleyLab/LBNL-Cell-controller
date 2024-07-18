@@ -49,7 +49,9 @@ __SRC_FILES = \
 	mmcMailbox.c \
 	bootFlash.c \
 	systemParameters.c \
-	tftp.c
+	tftp.c \
+	drp.c \
+	mgt.c
 SRC_FILES = $(addprefix $(SW_SRC_DIR)/, $(__SRC_FILES))
 
 __HDR_FILES = \
@@ -74,7 +76,9 @@ __HDR_FILES = \
 	mmcMailbox.h \
 	bootFlash.h \
 	systemParameters.h \
-	tftp.h
+	tftp.h \
+	drp.h \
+	mgt.h
 HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))
 
 __HDR_BWUDP_FILES = \

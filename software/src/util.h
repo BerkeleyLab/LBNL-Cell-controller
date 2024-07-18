@@ -9,11 +9,6 @@
 #define KiB(x) ((x)*1024)
 
 /*
- * UDP port
- */
-extern int udpEPICS;
-
-/*
  * Allow code to refer  to printf without actually pulling it in
  */
 #define printf(...) xil_printf(__VA_ARGS__)
@@ -32,6 +27,8 @@ extern int udpEPICS;
 #define DEBUGFLAG_SHOW_PS_SETPOINTS         0x4000
 #define DEBUGFLAG_BRINGUP_PS_LINKS          0x8000
 #define DEBUGFLAG_IIC_SCAN                  0x10000
+#define DEBUGFLAG_SHOW_MGT_RESETS           0x20000
+#define DEBUGFLAG_SHOW_RX_ALIGNER           0x40000
 #define DEBUGFLAG_SHOW_MGT_SWITCH           0x1000000
 #define DEBUGFLAG_DUMP_MGT_SWITCH           0x2000000
 extern int debugFlags;

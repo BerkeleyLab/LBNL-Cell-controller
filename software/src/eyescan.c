@@ -35,6 +35,8 @@
 #include "eyescan.h"
 #include "gpio.h"
 #include "util.h"
+#include "drp.h"
+#include "evr.h"
 
 #define PRESCALE_CODE  5
 
@@ -50,26 +52,6 @@
 
 #define VRANGE         128
 #define VSTRIDE        8
-
-#define DRP_REG_ES_QUAL_MASK0     0x031
-#define DRP_REG_ES_QUAL_MASK1     0x032
-#define DRP_REG_ES_QUAL_MASK2     0x033
-#define DRP_REG_ES_QUAL_MASK3     0x034
-#define DRP_REG_ES_QUAL_MASK4     0x035
-#define DRP_REG_ES_SDATA_MASK0    0x036
-#define DRP_REG_ES_SDATA_MASK1    0x037
-#define DRP_REG_ES_SDATA_MASK2    0x038
-#define DRP_REG_ES_SDATA_MASK3    0x039
-#define DRP_REG_ES_SDATA_MASK4    0x03A
-#define DRP_REG_ES_PS_VOFF        0x03B
-#define DRP_REG_ES_HORZ_OFFSET    0x03C
-#define DRP_REG_ES_CSR            0x03D
-#define DRP_REG_ES_ERROR_COUNT    0x14F
-#define DRP_REG_ES_SAMPLE_COUNT   0x150
-#define DRP_REG_ES_STATUS         0x151
-#define DRP_REG_PMA_RSV2          0x082
-#define DRP_REG_TXOUT_RXOUT_DIV   0x088
-#define DRP_LANE_SELECT_SHIFT 11 /* 2048 bytes per DRP lane */
 
 #define ES_CSR_CONTROL_RUN      0x01
 #define ES_CSR_CONTROL_ARM      0x02
@@ -93,9 +75,84 @@
 #define ES_PS_VOFF_PRESCALE_SHIFT 11
 #define ES_PS_VOFF_VOFFSET_MASK   0x1FF
 
-#define ADDR(base,reg) ((base)+((reg)<<2))
+struct laneMap {
+    const char *name;
+    uint32_t csrIdx;
+    void (*writeCSR)(uint32_t, int, int);
+    int (*readCSR)(uint32_t, int);
+};
 
-static const char *laneNames[] = EYESCAN_LANE_NAMES;
+static struct laneMap laneMapTable[] = {
+    {
+        .name = "BPM CCW",
+        .csrIdx = EYSCAN_BASEADDR+(0<<DRP_LANE_SELECT_SHIFT),
+        .writeCSR = drp_gen_write,
+        .readCSR = drp_gen_read,
+    },
+    {
+        .name = "BPM CW",
+        .csrIdx = EYSCAN_BASEADDR+(1<<DRP_LANE_SELECT_SHIFT),
+        .writeCSR = drp_gen_write,
+        .readCSR = drp_gen_read,
+    },
+    {
+        .name = "CELL CCW",
+        .csrIdx = EYSCAN_BASEADDR+(2<<DRP_LANE_SELECT_SHIFT),
+        .writeCSR = drp_gen_write,
+        .readCSR = drp_gen_read,
+    },
+    {
+        .name = "CELL CW",
+        .csrIdx = EYSCAN_BASEADDR+(3<<DRP_LANE_SELECT_SHIFT),
+        .writeCSR = drp_gen_write,
+        .readCSR = drp_gen_read,
+    },
+    {
+        .name = "EVR",
+        .csrIdx = XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*GPIO_IDX_EVR_GTX_DRP),
+        .writeCSR = drp_evr_write,
+        .readCSR = drp_evr_read,
+    },
+};
+
+#define EYESCAN_LANECOUNT   (ARRAY_SIZE(laneMapTable))
+
+static void
+drp_write(unsigned int lane, int regOffset, int value)
+{
+    if(lane > EYESCAN_LANECOUNT-1) return;
+
+    struct laneMap *laneMap = &laneMapTable[lane];
+    uint32_t csrIdx = laneMap->csrIdx;
+
+    if(laneMap->writeCSR) {
+        laneMap->writeCSR(csrIdx, regOffset, value);
+    }
+}
+
+static int
+drp_read(unsigned int lane, int regOffset)
+{
+    if(lane > EYESCAN_LANECOUNT-1) return 0;
+
+    struct laneMap *laneMap = &laneMapTable[lane];
+    uint32_t csrIdx = laneMap->csrIdx;
+
+    if(laneMap->readCSR) {
+        return laneMap->readCSR(csrIdx, regOffset);
+    }
+
+    return 0;
+}
+
+static const char *
+drp_lane_name(unsigned lane)
+{
+    if(lane > EYESCAN_LANECOUNT-1) return 0;
+
+    struct laneMap *laneMap = &laneMapTable[lane];
+    return laneMap->name;
+}
 
 static enum eyescanFormat {
     FMT_ASCII_ART,
@@ -104,41 +161,28 @@ static enum eyescanFormat {
 } eyescanFormat;
 
 static void
-drp_write(uint32_t base, int regOffset, int value)
+drp_rmw(unsigned int lane, int regOffset, int mask, int value)
 {
-
-    Xil_Out32(ADDR(base, regOffset), value);
-}
-
-static int
-drp_read(uint32_t base, int regOffset)
-{
-    return Xil_In32(ADDR(base, regOffset));
-}
-
-static void
-drp_rmw(uint32_t base, int regOffset, int mask, int value)
-{
-    uint16_t v = drp_read(base, regOffset);
+    uint16_t v = drp_read(lane, regOffset);
     v &= ~mask;
     v |= value & mask;
-    drp_write(base, regOffset, v);
+    drp_write(lane, regOffset, v);
 }
 
 static void
-drp_set(uint32_t base, int regOffset, int bits)
+drp_set(unsigned int lane, int regOffset, int bits)
 {
-    drp_rmw(base, regOffset, bits, bits);
+    drp_rmw(lane, regOffset, bits, bits);
 }
 
 static void
-drp_clr(uint32_t base, int regOffset, int bits)
+drp_clr(unsigned int lane, int regOffset, int bits)
 {
-    drp_rmw(base, regOffset, bits, 0);
+    drp_rmw(lane, regOffset, bits, 0);
 }
 
 static void
-drp_showReg(uint32_t base, const char *msg)
+drp_showReg(unsigned int lane, const char *msg)
 {
     int i;
     static const uint16_t regMap[] = {
@@ -148,9 +192,9 @@ drp_showReg(uint32_t base, const char *msg)
         DRP_REG_ES_SDATA_MASK4, DRP_REG_ES_PS_VOFF,     DRP_REG_ES_HORZ_OFFSET,
         DRP_REG_ES_CSR,         DRP_REG_ES_ERROR_COUNT, DRP_REG_ES_SAMPLE_COUNT,
         DRP_REG_ES_STATUS, DRP_REG_PMA_RSV2, DRP_REG_TXOUT_RXOUT_DIV };
-    printf("\nEYE SCAN REGISTERS AT %X (%s):\n", base, msg);
+    printf("\nEYE SCAN REGISTERS AT %X (%s):\n", lane, msg);
     for (i = 0 ; i < (sizeof regMap / sizeof regMap[0]) ; i++) {
-        printf("  %03X: %04X\n", regMap[i], drp_read(base, regMap[i]));
+        printf("  %03X: %04X\n", regMap[i], drp_read(lane, regMap[i]));
     }
 }
 
@@ -158,15 +202,15 @@ drp_showReg(uint32_t base, const char *msg)
  * Show RXCDR settings
  */
 static void
-showRXCDR(int lane, uint32_t base)
+showRXCDR(unsigned int lane)
 {
     int r;
 
     printf("Lane %d RXCDR_CFG:", lane);
     for (r = 0xAC ; r >= 0xA8 ; r--) {
-        printf(r == 0xAC ? " %02X" : " %04X", drp_read(base, r));
+        printf(r == 0xAC ? " %02X" : " %04X", drp_read(lane, r));
     }
-    printf("  %s\n", laneNames[lane]);
+    printf("  %s\n", drp_lane_name(lane));
 }
 
 /*
@@ -178,31 +222,30 @@ showRXCDR(int lane, uint32_t base)
 void
 eyescanInit(void)
 {
-    int lane, r;
-    uint32_t base;
+    int r;
+    unsigned int lane;
 
     for (lane = 0 ; lane < EYESCAN_LANECOUNT ; lane++) {
-        base = EYSCAN_BASEADDR+(lane<<DRP_LANE_SELECT_SHIFT);
         /* Aurora wizard configures PMA_RSV2[5]=0. Eye scan requires 1. */
-        drp_set(base, DRP_REG_PMA_RSV2, 1 << 5);
+        drp_set(lane, DRP_REG_PMA_RSV2, 1 << 5);
 
         /* Enable statistical eye scan */
-        drp_set(base, DRP_REG_ES_CSR, ES_CSR_EYE_SCAN_EN | ES_CSR_ERRDET_EN);
+        drp_set(lane, DRP_REG_ES_CSR, ES_CSR_EYE_SCAN_EN | ES_CSR_ERRDET_EN);
 
         /* Set prescale */
-        drp_rmw(base, DRP_REG_ES_PS_VOFF, ES_PS_VOFF_PRESCALE_MASK,
+        drp_rmw(lane, DRP_REG_ES_PS_VOFF, ES_PS_VOFF_PRESCALE_MASK,
                                     PRESCALE_CODE << ES_PS_VOFF_PRESCALE_SHIFT);
 
         /* Set 80 bit ES_SDATA_MASK to check 40 or 20 bit data */
-        drp_write(base, DRP_REG_ES_SDATA_MASK0, DRP_REG_ES_SDATA_MASK0_VALUE);
-        drp_write(base, DRP_REG_ES_SDATA_MASK1, DRP_REG_ES_SDATA_MASK1_VALUE);
-        drp_write(base, DRP_REG_ES_SDATA_MASK2, 0xFF00);
-        drp_write(base, DRP_REG_ES_SDATA_MASK3, 0xFFFF);
-        drp_write(base, DRP_REG_ES_SDATA_MASK4, 0xFFFF);
+        drp_write(lane, DRP_REG_ES_SDATA_MASK0, DRP_REG_ES_SDATA_MASK0_VALUE);
+        drp_write(lane, DRP_REG_ES_SDATA_MASK1, DRP_REG_ES_SDATA_MASK1_VALUE);
+        drp_write(lane, DRP_REG_ES_SDATA_MASK2, 0xFF00);
+        drp_write(lane, DRP_REG_ES_SDATA_MASK3, 0xFFFF);
+        drp_write(lane, DRP_REG_ES_SDATA_MASK4, 0xFFFF);
 
         /* Enable all bits in ES_QUAL_MASK (count all bits) */
         for (r = DRP_REG_ES_QUAL_MASK0 ; r <= DRP_REG_ES_QUAL_MASK4 ; r++) {
-            drp_write(base, r, 0xFFFF);
+            drp_write(lane, r, 0xFFFF);
         }
 
         /*
@@ -210,9 +253,9 @@ eyescanInit(void)
          * Default is +/-200 PPM.
          * Write register to change this to +/-700 PPM.
          */
-        showRXCDR(lane, base);
-        drp_write(base, 0xAB, 0x8000);
-        showRXCDR(lane, base);
+        showRXCDR(lane);
+        drp_write(lane, 0xAB, 0x8000);
+        showRXCDR(lane);
     }
 }
 
@@ -242,10 +285,10 @@ xBorderCrank(int lane)
             if (i == PLOT_WIDTH / 2) {
                 c = '+';
             }
-            else if ((laneIndex < (sizeof laneNames/sizeof laneNames[0]))
+            else if ((laneIndex < EYESCAN_LANECOUNT)
                   && (i >= titleOffset)
-                  && (laneNames[laneIndex][nameIndex] != '\0')) {
-                c = laneNames[laneIndex][nameIndex++];
+                  && (drp_lane_name(laneIndex)[nameIndex] != '\0')) {
+                c = drp_lane_name(laneIndex)[nameIndex++];
             }
             else {
                 c = '-';
@@ -290,20 +333,20 @@ eyescanStep(int lane)
     static int hRange, hStride;
     static int hOffset, vOffset, utFlag;
     static int errorCount;
-    static uint32_t base;
+    static unsigned int laneIdx;
 
     if ((lane >= 0) && !eyescanActive) {
-        base = EYSCAN_BASEADDR + (lane << DRP_LANE_SELECT_SHIFT);
+        laneIdx = lane;
         /* Want 32 horizontal offsets on either side of baseline */
-        int rxDiv = 1 << (drp_read(base, DRP_REG_TXOUT_RXOUT_DIV) & 0x3);
-        hRange = 32 * rxDiv; 
+        int rxDiv = 1 << (drp_read(laneIdx, DRP_REG_TXOUT_RXOUT_DIV) & 0x3);
+        hRange = 32 * rxDiv;
         hStride = 2 * rxDiv;
         hOffset = -hRange;
         vOffset = -VRANGE;
         utFlag = 0;
         errorCount = 0;
-        xBorderCrank(lane);
-        eyescanLane = lane;
+        xBorderCrank(laneIdx);
+        eyescanLane = laneIdx;
         eyescanAcquiring = 0;
         eyescanActive = 1;
         return 1;
@@ -313,13 +356,13 @@ eyescanStep(int lane)
     }
     if (eyescanActive) {
         if (eyescanAcquiring) {
-            int status = drp_read(base, DRP_REG_ES_STATUS);
+            int status = drp_read(laneIdx, DRP_REG_ES_STATUS);
             if ((status & ES_STATUS_DONE) || (++passCount > 10000000)) {
-                drp_clr(base, DRP_REG_ES_CSR, ES_CSR_CONTROL_RUN);
+                drp_clr(laneIdx, DRP_REG_ES_CSR, ES_CSR_CONTROL_RUN);
                 eyescanAcquiring = 0;
                 if (status == (ES_STATUS_STATE_END | ES_STATUS_DONE)) {
                     char border = vOffset == 0 ? '+' : '|';
-                    errorCount += drp_read(base, DRP_REG_ES_ERROR_COUNT);
+                    errorCount += drp_read(laneIdx, DRP_REG_ES_ERROR_COUNT);
                     utFlag = !utFlag;
                     if (!utFlag) {
                         if (eyescanFormat == FMT_RAW) {
@@ -345,7 +388,7 @@ eyescanStep(int lane)
                     }
                 }
                 else {
-                    drp_showReg(base, "SCAN FAILURE");
+                    drp_showReg(laneIdx, "SCAN FAILURE");
                     eyescanActive = 0;
                 }
             }
@@ -357,7 +400,7 @@ eyescanStep(int lane)
         else {
             int hSign;
             int vSign, vAbs;
-            
+
             hSign = (hOffset < 0) ? 1 << 11 : 0;
             if (vOffset < 0) {
                 vAbs = -vOffset;
@@ -368,10 +411,10 @@ eyescanStep(int lane)
                 vSign = 0;
             }
             if (vAbs > 127) vAbs = 127;
-            drp_rmw(base, DRP_REG_ES_PS_VOFF, ES_PS_VOFF_VOFFSET_MASK,
+            drp_rmw(laneIdx, DRP_REG_ES_PS_VOFF, ES_PS_VOFF_VOFFSET_MASK,
                                         (utFlag ? (1 << 9) : 0) | vSign | vAbs);
-            drp_write(base, DRP_REG_ES_HORZ_OFFSET, hSign | (hOffset & 0x7FF));
-            drp_set(base, DRP_REG_ES_CSR, ES_CSR_CONTROL_RUN);
+            drp_write(laneIdx, DRP_REG_ES_HORZ_OFFSET, hSign | (hOffset & 0x7FF));
+            drp_set(laneIdx, DRP_REG_ES_CSR, ES_CSR_CONTROL_RUN);
             passCount = 0;
             eyescanAcquiring = 1;
         }

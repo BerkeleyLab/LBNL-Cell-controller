@@ -6,6 +6,11 @@
 #include "evr.h"
 #include "util.h"
 
+#define DRP_CSR_W_WE            (1U << 30)
+#define DRP_CSR_W_ADDR_SHIFT    16
+#define DRP_CSR_R_BUSY          (1U << 31)
+#define DRP_CSR_RW_DATA_MASK    0xFFFF
+
 #define EVENT_HEARTBEAT         122
 #define EVENT_PPS               125
 
@@ -94,7 +99,7 @@ evrInit(void)
                 break;
             }
         }
-        if (((MICROSECONDS_SINCE_BOOT() - then) > 5100000) 
+        if (((MICROSECONDS_SINCE_BOOT() - then) > 5100000)
          || ((heartbeat.count >= 2) && (pps.count >= 2))) break;
     }
     evChk("Heartbeat", &heartbeat);
@@ -287,4 +292,37 @@ unsigned int
 evrNtooManySecondEvents(void)
 {
     return (Xil_In32(EVR_REG(28)) >> 22) & 0x3FF;
+}
+
+/*
+ * DRP EVR
+ */
+
+static int
+drp_evr_wait(uint32_t csrIdx)
+{
+    uint32_t csr;
+    int pass = 0;
+    while ((csr = Xil_In32(csrIdx)) & DRP_CSR_R_BUSY) {
+        if (++pass > 10) {
+            return -1;
+        }
+        microsecondSpin(5);
+    }
+    return csr & DRP_CSR_RW_DATA_MASK;
+}
+
+void
+drp_evr_write(uint32_t csrIdx, int regOffset, int value)
+{
+    Xil_Out32(csrIdx, DRP_CSR_W_WE | (regOffset << DRP_CSR_W_ADDR_SHIFT) |
+                                      (value & DRP_CSR_RW_DATA_MASK));
+    drp_evr_wait(csrIdx);
+}
+
+int
+drp_evr_read(uint32_t csrIdx, int regOffset)
+{
+    Xil_Out32(csrIdx, regOffset << DRP_CSR_W_ADDR_SHIFT);
+    return drp_evr_wait(csrIdx);
 }

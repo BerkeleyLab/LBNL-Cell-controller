@@ -66,7 +66,6 @@ static int
 sysmon(void)
 {
     int i;
-    int pll;
     int rIndex = 0;
 
     xadcUpdate();
