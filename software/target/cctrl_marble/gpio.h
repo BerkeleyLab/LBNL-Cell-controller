@@ -10,7 +10,7 @@
 #ifndef _GPIO_H_
 #define _GPIO_H_
 
-#define GPIO_IDX_COUNT 64
+#define GPIO_IDX_COUNT 128
 
 #define GPIO_IDX_FIRMWARE_BUILD_DATE       0 // Firmware build POSIX seconds(R)
 #define GPIO_IDX_MICROSECONDS              1 // 1 MHz counter(R)
