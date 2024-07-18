@@ -57,7 +57,7 @@ cmdFMON(int argc, char **argv)
 {
     int i;
     static const char *names[] = {  "System",
-                                    "EVR TX clock"
+                                    "EVR TX clock",
                                     "EVR recovered clock",
                                     "Aurora user",
                                     "Ethernet/EVR reference",
