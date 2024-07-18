@@ -240,7 +240,7 @@ wire [3:0] iic_proc_i = { sda_sense, iic_proc_o[2:0] };
 // Event receiver
 wire [7:0] evrTriggerBus, evrDataBus;
 wire evrFAmarker, evrRxLocked, evrIsSynchronized, evrHeartbeatPresent;
-reg sysFAenable = 0, evrFAenable_m, evrFAenable;
+reg sysFAenable = 0, evrFAenable;
 evrSync evrSync(.clk(evrClk),
                 .triggerIn(evrTriggerBus[0]),
                 .FAenable(evrFAenable),
@@ -251,18 +251,23 @@ assign GPIO_IN[GPIO_IDX_EVENT_STATUS] = { 29'b0,
                                           evrRxLocked,
                                           evrIsSynchronized,
                                           evrHeartbeatPresent };
+(*ASYNC_REG="true"*) reg evrFAenable_m;
 always @(posedge evrClk) begin
     evrFAenable_m <= sysFAenable;
     evrFAenable   <= evrFAenable_m;
 end
-reg auroraFAmarker_m, auroraFAmarker, auroraFAmarker_d, auroraFAstrobe;
+
+(*ASYNC_REG="true"*) reg auroraFAmarker_m;
+reg auroraFAmarker, auroraFAmarker_d, auroraFAstrobe;
 always @(posedge auroraUserClk) begin
     auroraFAmarker_m <= evrFAmarker;
     auroraFAmarker   <= auroraFAmarker_m;
     auroraFAmarker_d <= auroraFAmarker;
     auroraFAstrobe <= (auroraFAmarker && !auroraFAmarker_d);
 end
-reg sysFAmarker_m, sysFAmarker, sysFAmarker_d, sysFAstrobe;
+
+(*ASYNC_REG="true"*) reg sysFAmarker_m;
+reg sysFAmarker, sysFAmarker_d, sysFAstrobe;
 always @(posedge sysClk) begin
     sysFAmarker_m <= evrFAmarker;
     sysFAmarker   <= sysFAmarker_m;
@@ -273,7 +278,8 @@ end
 //////////////////////////////////////////////////////////////////////////////
 // BPM and cell readout
 wire pll_not_locked_out, gt0_qplllock_out, gt0_qpllrefclklost_out, gtxResetOut;
-reg sysGTXreset = 1, sysAuroraReset = 1, auroraReset_m = 1, auroraReset = 1;
+reg sysGTXreset = 1, sysAuroraReset = 1, auroraReset = 1;
+
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_AURORA_CSR]) begin
         sysGTXreset    <= GPIO_OUT[0];
@@ -281,10 +287,13 @@ always @(posedge sysClk) begin
         sysFAenable    <= GPIO_OUT[2];
     end
 end
+
+(*ASYNC_REG="true"*) reg auroraReset_m = 1;
 always @(posedge auroraUserClk) begin
     auroraReset_m <= sysAuroraReset;
     auroraReset   <= auroraReset_m;
 end
+
 assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 8'b0,
      CELL_CW_AuroraCoreStatus_hard_err, CELL_CCW_AuroraCoreStatus_hard_err,
      BPM_CW_AuroraCoreStatus_hard_err, BPM_CCW_AuroraCoreStatus_hard_err,
