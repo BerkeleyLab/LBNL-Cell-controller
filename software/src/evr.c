@@ -60,11 +60,12 @@ evGot(struct eventCheck *ep)
     ep->count++;
 }
 
+static struct eventCheck heartbeat, pps;
 void
 evrInit(void)
 {
     unsigned int then;
-    struct eventCheck heartbeat, pps;
+    int firstEvent0 = 1;
 
     /*
      * Generate and remove reset
@@ -94,6 +95,14 @@ evrInit(void)
             case EVENT_HEARTBEAT: evGot(&heartbeat); break;
             case EVENT_PPS:       evGot(&pps);       break;
             default:
+                /*
+                 * For unknown reasons the event receiver often (always?)
+                 * emits a spurious event 0 on startup.
+                 */
+                if ((eventCode == 0) && firstEvent0) {
+                    firstEvent0 = 0;
+                    break;
+                }
                 printf("Warning -- Unexpected event %d (seconds/ticks:%d/%d)\n",
                                                     eventCode, seconds, ticks);
                 break;
