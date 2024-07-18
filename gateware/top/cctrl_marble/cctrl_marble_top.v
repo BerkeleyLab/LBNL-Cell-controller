@@ -778,7 +778,7 @@ errorConvert errorConvert (
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
-localparam FREQ_COUNTERS_NUM = 9;
+localparam FREQ_COUNTERS_NUM = 10;
 frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
                     .CLK_RATE(SYSCLK_RATE),
                     .DEBUG("false"))
@@ -796,6 +796,7 @@ frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
         ethRefClk125Buff,
         auroraUserClk,
         evrClk,
+        evrTxClk,
         sysClk}),
     .ppsMarker_a(sysPPSmarker));
 
