@@ -1,6 +1,7 @@
 # Aurora user clock
 create_clock -name clkAuroraUser -period 12.800	 [get_pins -filter {REF_PIN_NAME=~*TXOUTCLK} -of_objects [get_cells -hierarchical -filter {NAME =~ *gt_wrapper_i*system_aurora_8b10b_0_0_multi_gt_i*gt0_system_aurora_8b10b_0_0_i*gtxe2_i*}]]
-set clkAuroraUser_period                [get_property PERIOD [get_clocks clkAuroraUser]]
+set clkAuroraUser_clk                   [get_clocks clkAuroraUser]
+set clkAuroraUser_period                [get_property PERIOD $clkAuroraUser_clk]
 
 # system MMCM clocks
 set CLKOUT0_clk                         [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *system_i/clk_wiz_1/inst/mmcm_adv_inst/CLKOUT0}]]
@@ -40,6 +41,8 @@ set_max_delay -datapath_only -from $EVRRXOUTCLK_clk -to $EVRTXOUTCLK_clk $EVRTXO
 
 set_max_delay -datapath_only -from $EVRRXOUTCLK_clk -to $CLKOUT0_clk $CLKOUT0_period
 
+set_max_delay -datapath_only -from $EVRRXOUTCLK_clk -to $clkAuroraUser_clk $clkAuroraUser_period
+
 set_max_delay -datapath_only -from [get_clocks clkDDRRef] -to $CLKOUT0_clk $CLKOUT0_period
 
 set_max_delay -datapath_only -from $FOFBETHCLK_clk -to $CLKOUT0_clk $CLKOUT0_period
@@ -56,8 +59,9 @@ set_max_delay -datapath_only -from $CLKOUT0_clk -to $CLKOUT4_clk $CLKOUT4_period
 set_max_delay -datapath_only -from $CLKOUT4_clk -to $CLKOUT0_clk $CLKOUT0_period
 
 # Aurora to/from System clock
-set_max_delay -datapath_only -from [get_clocks clkAuroraUser] -to $CLKOUT0_clk $CLKOUT0_period
-set_max_delay -datapath_only -from $CLKOUT0_clk -to [get_clocks clkAuroraUser] $clkAuroraUser_period
+set_max_delay -datapath_only -from $clkAuroraUser_clk -to $CLKOUT0_clk $CLKOUT0_period
+set_max_delay -datapath_only -from $CLKOUT0_clk -to $clkAuroraUser_clk $clkAuroraUser_period
 
 # Frequency counter clocks
 set_max_delay -datapath_only -from [get_clocks clk125] -to $CLKOUT0_clk $CLKOUT0_period
+set_max_delay -datapath_only -from $EVRTXOUTCLK_clk -to $CLKOUT0_clk $CLKOUT0_period
