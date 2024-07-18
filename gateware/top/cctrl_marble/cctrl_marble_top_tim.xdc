@@ -19,10 +19,10 @@ set CLKOUT4_clk                         [get_clocks -of_objects [get_pins system
 set CLKOUT4_period                      [get_property PERIOD $CLKOUT4_clk]
 
 # EVR clocks
-set EVRRXOUTCLK_clk                     [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/RXOUTCLK]
+set EVRRXOUTCLK_clk                     [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *evrmgt_i/inst/evrmgt_i/gt0_evrmgt_i/gtxe2_i/RXOUTCLK}]]
 set EVRRXOUTCLK_period                  [get_property PERIOD $EVRRXOUTCLK_clk]
 
-set EVRTXOUTCLK_clk                     [get_clocks evr_mgt_top_i/evr_mgt_gtx_i/inst/evr_mgt_gtx_i/gt0_evr_mgt_gtx_i/gtxe2_i/TXOUTCLK]
+set EVRTXOUTCLK_clk                     [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *evrmgt_i/inst/evrmgt_i/gt0_evrmgt_i/gtxe2_i/TXOUTCLK}]]
 set EVRTXOUTCLK_period                  [get_property PERIOD $EVRTXOUTCLK_clk]
 
 # FOFB Ethernet clocks
