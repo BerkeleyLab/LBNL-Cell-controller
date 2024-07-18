@@ -104,8 +104,8 @@ set clk125_period                [get_property PERIOD [get_clocks clk125]]
 # Transceivers
 ###########################
 # QSFP1-1/12, Bank 116 MGT 1, X0Y5
-# set_property -dict {PACKAGE_PIN D2} [get_ports {QSFP1_TX_P[0]}]
-# set_property -dict {PACKAGE_PIN D1} [get_ports {QSFP1_TX_N[0]}]
+set_property -dict {PACKAGE_PIN D2} [get_ports {QSFP1_TX_P[0]}]
+set_property -dict {PACKAGE_PIN D1} [get_ports {QSFP1_TX_N[0]}]
 set_property -dict {PACKAGE_PIN E4} [get_ports {QSFP1_RX_P[0]}]
 set_property -dict {PACKAGE_PIN E3} [get_ports {QSFP1_RX_N[0]}]
 # QSFP1-2/11, Bank 116 MGT 2, X0Y6
