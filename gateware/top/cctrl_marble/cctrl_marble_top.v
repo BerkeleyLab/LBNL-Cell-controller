@@ -239,7 +239,7 @@ wire [3:0] iic_proc_i = { sda_sense, iic_proc_o[2:0] };
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver
 wire [7:0] evrTriggerBus, evrDataBus;
-wire evrFAmarker, evrIsSynchronized, evrHeartbeatPresent;
+wire evrFAmarker, evrRxLocked, evrIsSynchronized, evrHeartbeatPresent;
 reg sysFAenable = 0, evrFAenable_m, evrFAenable;
 evrSync evrSync(.clk(evrClk),
                 .triggerIn(evrTriggerBus[0]),
@@ -306,11 +306,11 @@ wire evrTxClk;
 evrGTXwrapper #(.DEBUG("false"))
   evrGTXwrapper (
     .sysClk(sysClk),
+    .sysGPIO_OUT(GPIO_OUT),
     .csrStrobe(GPIO_STROBES[GPIO_IDX_GTX_CSR]),
+    .csrStatus(GPIO_IN[GPIO_IDX_GTX_CSR]),
     .drpStrobe(GPIO_STROBES[GPIO_IDX_EVR_GTX_DRP]),
-    .GPIO_OUT(GPIO_OUT),
-    .csr(GPIO_IN[GPIO_IDX_GTX_CSR]),
-    .drp(GPIO_IN[GPIO_IDX_EVR_GTX_DRP]),
+    .drpStatus(GPIO_IN[GPIO_IDX_EVR_GTX_DRP]),
     .refClk(ethRefClk125),
     .evrTxClk(evrTxClk),
     .RX_N(QSFP1_RX_N[0]),
