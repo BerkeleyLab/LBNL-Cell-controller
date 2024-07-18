@@ -11,15 +11,19 @@ module evrGTXwrapper #(
     parameter DEBUG = "false"
     ) (
     input              sysClk,
+    input       [31:0] sysGPIO_OUT,
+
     input              csrStrobe,
+    output wire [31:0] csrStatus,
+
     input              drpStrobe,
-    input       [31:0] GPIO_OUT,
-    output wire [31:0] csr,
-    output wire [31:0] drp,
+    output wire [31:0] drpStatus,
 
     input              refClk,
-    input              RX_P, RX_N,
-    output             TX_P, TX_N,
+    input              RX_P,
+    input              RX_N,
+    output             TX_P,
+    output             TX_N,
     output             evrTxClk,
 
     output wire                            evrClk,
@@ -27,6 +31,9 @@ module evrGTXwrapper #(
     (*mark_debug=DEBUG*) output reg [15:0] evrChars,
     (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsK,
     (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsComma);
+
+(*mark_debug=DEBUG*) wire [15:0] rxData;
+(*mark_debug=DEBUG*) wire [1:0] rxIsK, rxNotInTable, rxDispErr;
 
 //////////////////////////////////////////////////////////////////////////////
 // Receiver alignment detection
@@ -36,7 +43,7 @@ localparam COMMA_COUNTER_WIDTH = $clog2(COMMA_COUNTER_RELOAD+1) + 1;
 (*mark_debug=DEBUG*) reg [COMMA_COUNTER_WIDTH-1:0] commaCounter =
                                                            COMMA_COUNTER_RELOAD;
 wire rxIsAligned = commaCounter[COMMA_COUNTER_WIDTH-1];
-assign mgtAligned = rxIsAligned;
+assign evrRxSynchronized = rxIsAligned;
 // K character can only appear on word 0
 wire rxDataErr = (rxNotInTable != 0) || rxIsK[1] || (rxDispErr != 0);
 
@@ -147,7 +154,7 @@ assign mgtStatus = {rxIsAligned,
 //=========================================================================================
 
 wire [4:0] rxPhaseMonitor, rxSlipMonitor;
-assign mgtRxStatus = { 22'b0, rxSlipMonitor, rxPhaseMonitor };
+assign csrStatus = { 22'b0, rxSlipMonitor, rxPhaseMonitor };
 
 localparam LOOPBACK = 3'd4; // 4 == Far end PMA loopback
 
@@ -169,7 +176,7 @@ evrmgt evrmgt_i (
     .gt0_cplllockdetclk_in   (sysClk), // input wire gt0_cplllockdetclk_in
     .gt0_cpllreset_in        (cpllreset), // input wire gt0_cpllreset_in
     //------------------------ Channel - Clocking Ports ------------------------
-    .gt0_gtrefclk0_in        (mgtRefClk), // input wire gt0_gtrefclk0_in
+    .gt0_gtrefclk0_in        (refClk), // input wire gt0_gtrefclk0_in
     .gt0_gtrefclk1_in        (1'b0), // input wire gt0_gtrefclk1_in
     //-------------------------- Channel - DRP Ports  --------------------------
     //-------------------------- Channel - DRP Ports  --------------------------
@@ -199,9 +206,9 @@ evrmgt evrmgt_i (
     .gt0_rxdisperr_out       (rxDispErr), // output wire [1:0] gt0_rxdisperr_out
     .gt0_rxnotintable_out    (rxNotInTable), // output wire [1:0] gt0_rxnotintable_out
     //------------------------- Receive Ports - RX AFE -------------------------
-    .gt0_gtxrxp_in           (MGT_RX_P), // input wire gt0_gtxrxp_in
+    .gt0_gtxrxp_in           (RX_P), // input wire gt0_gtxrxp_in
     //---------------------- Receive Ports - RX AFE Ports ----------------------
-    .gt0_gtxrxn_in           (MGT_RX_N), // input wire gt0_gtxrxn_in
+    .gt0_gtxrxn_in           (RX_N), // input wire gt0_gtxrxn_in
     //----------------- Receive Ports - RX Buffer Bypass Ports -----------------
     .gt0_rxphmonitor_out     (rxPhaseMonitor), // output wire [4:0] gt0_rxphmonitor_out
     .gt0_rxphslipmonitor_out (rxSlipMonitor), // output wire [4:0] gt0_rxphslipmonitor_out
@@ -231,8 +238,8 @@ evrmgt evrmgt_i (
     //---------------- Transmit Ports - TX Data Path interface -----------------
     .gt0_txdata_in           (16'h0), // input wire [15:0] gt0_txdata_in
     //-------------- Transmit Ports - TX Driver and OOB signaling --------------
-    .gt0_gtxtxn_out          (MGT_TX_N), // output wire gt0_gtxtxn_out
-    .gt0_gtxtxp_out          (MGT_TX_P), // output wire gt0_gtxtxp_out
+    .gt0_gtxtxn_out          (TX_N), // output wire gt0_gtxtxn_out
+    .gt0_gtxtxp_out          (TX_P), // output wire gt0_gtxtxp_out
     //--------- Transmit Ports - TX Fabric Clock Output Control Ports ----------
     .gt0_txoutclk_out        (txoutclk), // output wire gt0_txoutclk_out
     .gt0_txoutclkfabric_out  (), // output wire gt0_txoutclkfabric_out
@@ -260,7 +267,7 @@ localparam QPLL_FBDIV_RATIO = 1'b1;
 wire [15:0] tied_to_ground_vec_i = 0;
 wire tied_to_ground_i = 0;
 wire tied_to_vcc_i = 1;
-wire GT0_GTREFCLK0_COMMON_IN = mgtRefClk;
+wire GT0_GTREFCLK0_COMMON_IN = refClk;
 wire GT0_QPLLLOCKDETCLK_IN = sysClk;
 wire GT0_QPLLRESET_IN = cpllreset;
 wire GT0_QPLLLOCK_OUT;
