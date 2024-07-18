@@ -48,7 +48,7 @@ module cctrl_marble_top
 */
 
   input  wire  [2:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn; [2]->BPM_CW_GT_RX_rxn
-  output wire  [2:1] QSFP1_TX_N, QSFP1_TX_P, // [0]->Unused;  [1]->BPM_CCW; [2]->BPM_CW
+  output wire  [2:0] QSFP1_TX_N, QSFP1_TX_P, // [0]->EVR;     [1]->BPM_CCW; [2]->BPM_CW
   input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
   output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
 
@@ -296,51 +296,38 @@ assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 8'b0,
      5'b0, sysFAenable, sysAuroraReset, sysGTXreset };
 
 /////////////////////////////////////////////////////////////////////////////
-// Event receiver GTX
-localparam EVR_DEBUG = "false";
-wire        evr_mgt_drp_den, evr_mgt_drp_drdy, evr_mgt_drp_dwe;
-wire [15:0] evr_mgt_drp_di, evr_mgt_drp_do;
-wire  [8:0] evr_mgt_drp_daddr;
-(* mark_debug=EVR_DEBUG *) wire  [1:0] evr_mgt_chariscomma, evr_mgt_charisk;
-(* mark_debug=EVR_DEBUG *) wire  [1:0] evr_notintable;
-(* mark_debug=EVR_DEBUG *) wire [15:0] evr_mgt_par_data;
-(* mark_debug=EVR_DEBUG *) wire        evr_mgt_reset_done;
+// Event receiver support
+wire        evrRxSynchronized;
+wire [15:0] evrChars;
+wire  [1:0] evrCharIsK;
+wire  [1:0] evrCharIsComma;
 
-evr_mgt_top #(.COMMA_IS_LSB_FORCE(1)) evr_mgt_top_i (
-         .reset(gtReset),
-         .ref_clk(ethRefClk125),  // Comes from bank 115
-         .drp_clk(sysClk),
-         .drp_den(evr_mgt_drp_den),
-         .drp_dwe(evr_mgt_drp_dwe),
-         .drp_daddr(evr_mgt_drp_daddr),
-         .drp_di(evr_mgt_drp_di),
-         .drp_drdy(evr_mgt_drp_drdy),
-         .drp_do(evr_mgt_drp_do),
-         .rx_in_n(QSFP1_RX_N[0]), // Bank 116!
-         .rx_in_p(QSFP1_RX_P[0]), // Bank 116!
-         .rec_clk_out(evrClk),
-         .rx_par_data_out(evr_mgt_par_data),
-         .chariscomma(evr_mgt_chariscomma),
-         .notintable(evr_notintable),
-         .charisk(evr_mgt_charisk),
-         .reset_done(evr_mgt_reset_done));
+wire evrTxClk;
+evrGTXwrapper #(.DEBUG("false"))
+  evrGTXwrapper (
+    .sysClk(sysClk),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_GTY_CSR]),
+    .drpStrobe(GPIO_STROBES[GPIO_IDX_EVR_GTY_DRP]),
+    .GPIO_OUT(GPIO_OUT),
+    .csr(GPIO_IN[GPIO_IDX_GTY_CSR]),
+    .drp(GPIO_IN[GPIO_IDX_EVR_GTY_DRP]),
+    .refClk(ethRefClk125),
+    .evrTxClk(evrTxClk),
+    .RX_N(QSFP1_RX_N[0]),
+    .RX_P(QSFP1_RX_P[0]),
+    .TX_N(QSFP1_TX_N[0]),
+    .TX_P(QSFP1_TX_P[0]),
+    .evrClk(evrClk),
+    .evrRxSynchronized(evrRxSynchronized),
+    .evrChars(evrChars),
+    .evrCharIsK(evrCharIsK),
+    .evrCharIsComma(evrCharIsComma));
 
-// Announce that receiver clock is locked only when all
-// characters have been valid 8b/10b codes for a while.
-(* mark_debug = EVR_DEBUG *) reg       evrRxLocked = 0;
-                             reg [3:0] evrGoodCount = 0;
-always @(posedge evrClk) begin
-    if (|evr_notintable) begin
-        evrRxLocked <= 0;
-        evrGoodCount <= 0;
-    end
-    else if (evrGoodCount == 15) begin
-        evrRxLocked <= 1;
-    end
-    else begin
-        evrGoodCount <= evrGoodCount + 1;
-    end
-end
+// For now, assume if is synchronizes, all fo these
+// are present and functional.
+assign evrRxLocked = evrRxSynchronized;
+assign evrIsSynchronized = evrRxSynchronized;
+assign evrHeartbeatPresent = evrRxSynchronized;
 
 //////////////////////////////////////////////////////////////////////////////
 // Event stream logger
@@ -352,8 +339,8 @@ evrLogger #(.ADDR_WIDTH(8))
     .sysCsr(GPIO_IN[GPIO_IDX_EVENT_LOG_CSR]),
     .sysDataTicks(GPIO_IN[GPIO_IDX_EVENT_LOG_TICKS]),
     .evrClk(evrClk),
-    .evrTVALID(!evr_mgt_charisk[0]),
-    .evrTDATA(evr_mgt_par_data[7:0]));
+    .evrTVALID(!evrCharIsK[0]),
+    .evrTDATA(evrChars[7:0]));
 
 //////////////////////////////////////////////////////////////////////////////
 // Aurora streams
@@ -993,20 +980,14 @@ system system_i (
     .CELL_CW_GT_TX_txn(QSFP2_TX_N[1]),
     .CELL_CW_GT_TX_txp(QSFP2_TX_P[1]),
 
-    .evr_mgt_rec_clk(evrClk),
-    .evr_mgt_par_data(evr_mgt_par_data & {16{evrRxLocked}}),
-    .evr_mgt_chariscomma(evr_mgt_chariscomma),
-    .evr_mgt_charisk(evr_mgt_charisk),
-    .evr_mgt_reset_done(evr_mgt_reset_done),
+    .evrCharIsComma(evrCharIsComma),
+    .evrCharIsK(evrCharIsK),
+    .evrClk(evrClk),
+    .evrChars(evrChars),
+    .evrMgtResetDone(evrRxSynchronized),
     .evrTriggerBus(evrTriggerBus),
     .evrDataBus(evrDataBus),
     .evrTimestamp(evrTimestamp),
-    .evr_mgt_drp_daddr(evr_mgt_drp_daddr),
-    .evr_mgt_drp_den(evr_mgt_drp_den),
-    .evr_mgt_drp_di(evr_mgt_drp_di),
-    .evr_mgt_drp_do(evr_mgt_drp_do),
-    .evr_mgt_drp_drdy(evr_mgt_drp_drdy),
-    .evr_mgt_drp_dwe(evr_mgt_drp_dwe),
 
     .BRAM_BPM_SETPOINTS_ADDR(BRAM_BPM_SETPOINTS_ADDR),
     .BRAM_BPM_SETPOINTS_WDATA(BRAM_BPM_SETPOINTS_WDATA),
