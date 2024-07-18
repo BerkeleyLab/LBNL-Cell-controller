@@ -66,6 +66,8 @@
 #define GPIO_IDX_IIC_PROC                 53 // On-board IIC components
 #define GPIO_IDX_MMC_MAILBOX              54 // Microcontroller communication
 #define GPIO_IDX_QSPI_FLASH_CSR           55 // Bootstrap flash
+#define GPIO_IDX_GTX_CSR                  56 // GTX control/status
+#define GPIO_IDX_EVR_GTX_DRP              57 // EVR GTX dynamic reconfig (R/W)
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1

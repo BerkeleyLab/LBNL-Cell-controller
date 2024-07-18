@@ -306,11 +306,11 @@ wire evrTxClk;
 evrGTXwrapper #(.DEBUG("false"))
   evrGTXwrapper (
     .sysClk(sysClk),
-    .csrStrobe(GPIO_STROBES[GPIO_IDX_GTY_CSR]),
-    .drpStrobe(GPIO_STROBES[GPIO_IDX_EVR_GTY_DRP]),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_GTX_CSR]),
+    .drpStrobe(GPIO_STROBES[GPIO_IDX_EVR_GTX_DRP]),
     .GPIO_OUT(GPIO_OUT),
-    .csr(GPIO_IN[GPIO_IDX_GTY_CSR]),
-    .drp(GPIO_IN[GPIO_IDX_EVR_GTY_DRP]),
+    .csr(GPIO_IN[GPIO_IDX_GTX_CSR]),
+    .drp(GPIO_IN[GPIO_IDX_EVR_GTX_DRP]),
     .refClk(ethRefClk125),
     .evrTxClk(evrTxClk),
     .RX_N(QSFP1_RX_N[0]),
