@@ -323,11 +323,7 @@ evrGTXwrapper #(.DEBUG("false"))
     .evrCharIsK(evrCharIsK),
     .evrCharIsComma(evrCharIsComma));
 
-// For now, assume if is synchronizes, all fo these
-// are present and functional.
 assign evrRxLocked = evrRxSynchronized;
-assign evrIsSynchronized = evrRxSynchronized;
-assign evrHeartbeatPresent = evrRxSynchronized;
 
 //////////////////////////////////////////////////////////////////////////////
 // Event stream logger
