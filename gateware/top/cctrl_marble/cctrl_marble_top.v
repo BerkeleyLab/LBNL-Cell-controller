@@ -1,5 +1,5 @@
-module cctrl_marble_top
-  (
+module cctrl_marble_top #(
+  parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE") (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
   output             VCXO_EN,
@@ -1012,5 +1012,32 @@ system system_i (
     .GPIO_OUT(GPIO_OUT),
     .GPIO_STROBES(GPIO_STROBES));
 `endif // `ifndef SIMULATE
+
+generate
+if (EVR_ILA_CHIPSCOPE_DBG != "TRUE" && EVR_ILA_CHIPSCOPE_DBG != "FALSE") begin
+    EVR_ILA_CHIPSCOPE_DBG_only_TRUE_or_FALSE_SUPPORTED();
+end
+endgenerate
+
+generate
+if (EVR_ILA_CHIPSCOPE_DBG == "TRUE") begin
+
+`ifndef SIMULATE
+wire [255:0] probe;
+ila_td256_s4096_cap dac_ila_td256_s4096_cap_inst (
+    .clk(evrClk),
+    .probe0(probe)
+);
+
+assign probe[0]       = evrRxSynchronized;
+assign probe[2:1]     = evrCharIsK;
+assign probe[4:3]     = evrCharIsComma;
+
+assign probe[31:16]   = evrChars;
+
+`endif
+
+end // end if
+endgenerate
 
 endmodule
