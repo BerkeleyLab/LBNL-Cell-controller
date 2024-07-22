@@ -311,6 +311,12 @@ wire [15:0] evrChars;
 wire  [1:0] evrCharIsK;
 wire  [1:0] evrCharIsComma;
 
+wire [15:0] dbgRxData;
+wire  [1:0] dbgRxIsK;
+wire  [1:0] dbgRxIsComma;
+wire  [1:0] dbgRxNotInTable;
+wire  [1:0] dbgRxDispErr;
+
 wire evrTxClk;
 evrGTXwrapper #(.DEBUG("false"))
   evrGTXwrapper (
@@ -330,7 +336,14 @@ evrGTXwrapper #(.DEBUG("false"))
     .evrRxSynchronized(evrRxSynchronized),
     .evrChars(evrChars),
     .evrCharIsK(evrCharIsK),
-    .evrCharIsComma(evrCharIsComma));
+    .evrCharIsComma(evrCharIsComma),
+
+    .dbgRxData(dbgRxData),
+    .dbgRxIsK(dbgRxIsK),
+    .dbgRxIsComma(dbgRxIsComma),
+    .dbgRxNotInTable(dbgRxNotInTable),
+    .dbgRxDispErr(dbgRxDispErr)
+);
 
 assign evrRxLocked = evrRxSynchronized;
 
@@ -1032,8 +1045,13 @@ ila_td256_s4096_cap dac_ila_td256_s4096_cap_inst (
 assign probe[0]       = evrRxSynchronized;
 assign probe[2:1]     = evrCharIsK;
 assign probe[4:3]     = evrCharIsComma;
+assign probe[6:5]     = dbgRxIsK;
+assign probe[8:7]     = dbgRxIsComma;
+assign probe[10:9]    = dbgRxNotInTable;
+assign probe[12:11]   = dbgRxDispErr;
 
 assign probe[31:16]   = evrChars;
+assign probe[63:32]   = dbgRxData;
 
 `endif
 
