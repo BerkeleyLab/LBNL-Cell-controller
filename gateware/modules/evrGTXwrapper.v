@@ -33,7 +33,7 @@ module evrGTXwrapper #(
     (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsComma);
 
 (*mark_debug=DEBUG*) wire [15:0] rxData;
-(*mark_debug=DEBUG*) wire [1:0] rxIsK, rxNotInTable, rxDispErr;
+(*mark_debug=DEBUG*) wire [1:0] rxIsK, rxIsComma, rxNotInTable, rxDispErr;
 
 //////////////////////////////////////////////////////////////////////////////
 // Receiver alignment detection
@@ -60,10 +60,12 @@ always @(posedge evrClk) begin
     if (rxIsAligned && !rxDataErr) begin
         evrChars <= rxData;
         evrCharIsK <= rxIsK;
+        evrCharIsComma <= rxIsComma;
     end
     else begin
         evrChars <= 0;
         evrCharIsK <= 0;
+        evrCharIsComma <= 0;
     end
 
     if (rxDataErr) begin
@@ -226,6 +228,7 @@ evrmgt evrmgt_i (
     //-------------------- Receive Ports - RX gearbox ports --------------------
     .gt0_rxslide_in          (bitSlide), // input wire gt0_rxslide_in
     //----------------- Receive Ports - RX8B/10B Decoder Ports -----------------
+    .gt0_rxchariscomma_out   (rxIsComma), // output wire [1:0] gt0_rxchariscomma_out
     .gt0_rxcharisk_out       (rxIsK), // output wire [1:0] gt0_rxcharisk_out
     //------------ Receive Ports -RX Initialization and Reset Ports ------------
     .gt0_rxresetdone_out     (rxresetdone), // output wire gt0_rxresetdone_out
