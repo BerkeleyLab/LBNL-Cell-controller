@@ -1051,7 +1051,7 @@ assign probe[10:9]    = dbgRxNotInTable;
 assign probe[12:11]   = dbgRxDispErr;
 
 assign probe[31:16]   = evrChars;
-assign probe[63:32]   = dbgRxData;
+assign probe[47:32]   = dbgRxData;
 
 `endif
 
