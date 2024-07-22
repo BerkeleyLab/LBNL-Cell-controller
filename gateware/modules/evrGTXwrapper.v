@@ -30,10 +30,22 @@ module evrGTXwrapper #(
     output wire                            evrRxSynchronized,
     (*mark_debug=DEBUG*) output reg [15:0] evrChars,
     (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsK,
-    (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsComma);
+    (*mark_debug=DEBUG*) output reg  [1:0] evrCharIsComma,
+
+    (*mark_debug=DEBUG*) output wire [15:0] dbgRxData,
+    (*mark_debug=DEBUG*) output wire  [1:0] dbgRxIsK,
+    (*mark_debug=DEBUG*) output wire  [1:0] dbgRxIsComma,
+    (*mark_debug=DEBUG*) output wire  [1:0] dbgRxNotInTable,
+    (*mark_debug=DEBUG*) output wire  [1:0] dbgRxDispErr);
 
 (*mark_debug=DEBUG*) wire [15:0] rxData;
 (*mark_debug=DEBUG*) wire [1:0] rxIsK, rxIsComma, rxNotInTable, rxDispErr;
+
+assign dbgRxData = rxData;
+assign dbgRxIsK = rxIsK;
+assign dbgRxIsComma = rxIsComma;
+assign dbgRxNotInTable = rxNotInTable;
+assign dbgRxDispErr = rxDispErr;
 
 //////////////////////////////////////////////////////////////////////////////
 // Receiver alignment detection
