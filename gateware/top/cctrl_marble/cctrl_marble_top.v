@@ -349,16 +349,15 @@ assign evrRxLocked = evrRxSynchronized;
 
 //////////////////////////////////////////////////////////////////////////////
 // Event stream logger
-evrLogger #(.ADDR_WIDTH(8))
-  evrLogger (
+evFIFO evFIFOtlog (
     .sysClk(sysClk),
-    .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_EVENT_LOG_CSR]),
+    .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_EVR_TLOG_CSR]),
     .sysGpioOut(GPIO_OUT),
-    .sysCsr(GPIO_IN[GPIO_IDX_EVENT_LOG_CSR]),
-    .sysDataTicks(GPIO_IN[GPIO_IDX_EVENT_LOG_TICKS]),
-    .evrClk(evrClk),
-    .evrTVALID(!evrCharIsK[0]),
-    .evrTDATA(evrChars[7:0]));
+    .sysCsr(GPIO_IN[GPIO_IDX_EVR_TLOG_CSR]),
+    .sysDataTicks(GPIO_IN[GPIO_IDX_EVR_TLOG_TICKS]),
+    .evClk(evrClk),
+    .evChar(evrChars[7:0]),
+    .evCharIsK(evrCharIsK[0]));
 
 //////////////////////////////////////////////////////////////////////////////
 // Aurora streams
