@@ -1037,7 +1037,7 @@ if (EVR_ILA_CHIPSCOPE_DBG == "TRUE") begin
 
 `ifndef SIMULATE
 wire [255:0] probe;
-ila_td256_s4096_cap dac_ila_td256_s4096_cap_inst (
+ila_td256_s4096_cap evr_ila_td256_s4096_cap_inst (
     .clk(evrClk),
     .probe0(probe)
 );
