@@ -412,105 +412,102 @@ cmdSTATS(int argc, char **argv)
     return 0;
 }
 
-#define CMD_TLOG_ARGC_CRANK 0
-#define CMD_TLOG_ARGC_STOP  -1
-#define CMD_TLOG_ARGC_START 1
 static int
 cmdTLOG(int argc, char **argv)
 {
     uint32_t csr;
-    int event;
-    uint32_t ticks;
-    static enum { s_idle, s_recording, s_header, s_printing } state = s_idle;
-    int entryState = state;
-    static unsigned int nOutOfSequenceSeconds;
-    static unsigned int nTooFewSecondEvents;
-    static unsigned int nTooManySecondEvents;
-    static int rIdx, wIdx, addrMask;
-    static uint32_t firstTicks, previousTicks, sec;
-    static int bitCount;
+    static int isActive, isFirstHB, todBitCount;
+    static int rAddr;
+    static int addrMask;
+    int pass = 0;
+    uint32_t gpioIdxEventLogCsr = GPIO_IDX_EVR_TLOG_CSR;
+    uint32_t gpioIdxEventLogTicks = GPIO_IDX_EVR_TLOG_TICKS;
 
-    switch (state) {
-    case s_idle:
-        if (argc >= CMD_TLOG_ARGC_START) {
-            GPIO_WRITE(GPIO_IDX_EVENT_LOG_CSR, 0x80000000);
-            nOutOfSequenceSeconds = evrNoutOfSequenceSeconds();
-            nTooFewSecondEvents = evrNtooFewSecondEvents();
-            nTooManySecondEvents = evrNtooManySecondEvents();
-            printf("--- Event logger started --- Press any key to terminate ---\n");
-            state = s_recording;
+    if (argc < 0) {
+        if (isActive) {
+            GPIO_WRITE(gpioIdxEventLogCsr, 0);
+            isActive = 0;
         }
-        break;
-    case s_recording:
-        if ((nOutOfSequenceSeconds != evrNoutOfSequenceSeconds())
-         || (nTooFewSecondEvents != evrNtooFewSecondEvents())
-         || (nTooManySecondEvents != evrNtooManySecondEvents())
-         || (argc == CMD_TLOG_ARGC_STOP)) {
-            GPIO_WRITE(GPIO_IDX_EVENT_LOG_CSR, 0);
-            state = s_header;
-        }
-        break;
-    case s_header:
-        csr = GPIO_READ(GPIO_IDX_EVENT_LOG_CSR);
-        addrMask = ~(~0UL << ((csr >> 24) & 0xF));
-        wIdx = csr & addrMask;
-        if (csr & 0x40000000) {  /* Write address has wrapped, buffer full */
-            rIdx = wIdx;
-        }
-        else {
-            rIdx = 0;
-            if (wIdx == 0) {
-                printf("\nNo events!\n");
-                state = s_idle;
-                break;
-            }
-        }
-        GPIO_WRITE(GPIO_IDX_EVENT_LOG_CSR, rIdx);
-        printf("\n Event    Delta Ticks          Ticks      Seconds\n");
-        ticks = GPIO_READ(GPIO_IDX_EVENT_LOG_TICKS);
-        firstTicks = ticks;
-        previousTicks = ticks;
-        bitCount = 0;
-        state = s_printing;
-        break;
-    case s_printing:
-        if (argc == CMD_TLOG_ARGC_STOP) {
-            state = s_idle;
-        }
-        else {
-            GPIO_WRITE(GPIO_IDX_EVENT_LOG_CSR, rIdx);
-            microsecondSpin(1);
-            csr = GPIO_READ(GPIO_IDX_EVENT_LOG_CSR);
-            event = (csr >> 16) & 0xFF;
-            ticks = GPIO_READ(GPIO_IDX_EVENT_LOG_TICKS);
-            printf("%3d ", event);
-            switch(event) {
-            case 112: printf("  0 ");  sec=(sec<<1)|0; bitCount++ ; break;
-            case 113: printf("  1 ");  sec=(sec<<1)|1; bitCount++ ; break;
-            case 122: printf(" HB ");  break;
-            case 125: printf("PPS ");  break;
-            default:  printf("    ");  break;
-            }
-            uintPrint((uint32_t)(ticks - previousTicks));
-            printf("  ");
-            uintPrint((uint32_t)(ticks - firstTicks));
-            if (event == 125) {
-                if (bitCount == 32) {
-                    printf("  %10u", (unsigned int)sec);
-                }
-                else {
-                    printf("    <%d BIT%s>", bitCount, bitCount==1?"":"S");
-                }
-                bitCount = 0;
-            }
-            printf("\n");
-            previousTicks = ticks;
-            rIdx = (rIdx + 1) & addrMask;
-            if (rIdx == wIdx) state = s_idle;
-        }
-        break;
+        return 0;
     }
-    return (entryState != s_idle);
+    if (argc > 0) {
+        csr = GPIO_READ(gpioIdxEventLogCsr);
+        addrMask = ~(~0UL << ((csr >> 24) & 0xF));
+        GPIO_WRITE(gpioIdxEventLogCsr, 0x80000000);
+        rAddr = 0;
+        isActive = 1;
+        isFirstHB = 1;
+        todBitCount = 0;
+        return 0;
+    }
+    if (isActive) {
+        int wAddr, wAddrOld;
+        static uint32_t lastHbTicks, lastEvTicks, todShift;
+        csr = GPIO_READ(gpioIdxEventLogCsr);
+        wAddrOld = csr & addrMask;
+        for (;;) {
+            csr = GPIO_READ(gpioIdxEventLogCsr);
+            wAddr = csr & addrMask;
+            if (wAddr == wAddrOld) break;
+            if (++pass > 10) {
+                printf("Event logger unstable!\n");
+                isActive = 0;
+                return 0;
+            }
+            wAddrOld = wAddr;
+        }
+        for (pass = 0 ; rAddr != wAddr ; ) {
+            int event;
+            GPIO_WRITE(gpioIdxEventLogCsr, 0x80000000 | rAddr);
+            rAddr = (rAddr + 1) & addrMask;
+            event = (GPIO_READ(gpioIdxEventLogCsr) >> 16) & 0xFF;
+            if (event == 112) {
+                todBitCount++;
+                todShift = (todShift << 1) | 0;
+            }
+            else if (event == 113) {
+                todBitCount++;
+                todShift = (todShift << 1) | 1;
+            }
+            else {
+                uint32_t ticks = GPIO_READ(gpioIdxEventLogTicks);
+                switch(event) {
+                case 122:
+                    if (isFirstHB) {
+                        printf("HB\n");
+                        isFirstHB = 0;
+                    }
+                    else {
+                        printf("HB %d\n", ticks - lastHbTicks);
+                    }
+                    lastHbTicks = ticks;
+                    break;
+
+                case 125:
+                    if (todBitCount == 32) {
+                        printf("PPS %d\n", todShift);
+                    }
+                    else {
+                        printf("PPS\n");
+                    }
+                    todBitCount = 0;
+                    break;
+
+                default:
+                    printf("%d %d\n", event, ticks - lastEvTicks);
+                    lastEvTicks = ticks;
+                    break;
+                }
+            }
+            if (++pass >= addrMask) {
+                printf("Event logger can't keep up.\n");
+                isActive = 0;
+                return 0;
+            }
+        }
+        return 1;
+    }
+    return 0;
 }
 
 static int
@@ -634,11 +631,10 @@ consoleCheck(void)
     if (eyescanCrank()) return;
     c = GPIO_READ(GPIO_IDX_UART_CSR);
     if ((c & UART_CSR_RX_READY) == 0) {
-        cmdTLOG(CMD_TLOG_ARGC_CRANK, NULL);
+        cmdTLOG(0, NULL);
         return;
     }
     GPIO_WRITE(GPIO_IDX_UART_CSR, UART_CSR_RX_READY);
-    if (cmdTLOG(CMD_TLOG_ARGC_STOP, NULL)) return;
     c &= 0xFF;
     if (c > '\177') return;
     if (c == '\t') c = ' ';
@@ -652,6 +648,7 @@ consoleCheck(void)
         handleLine(line);
         return;
     }
+    cmdTLOG(-1, NULL);
     if (c == '\b') {
         if (idx) {
             outbyte('\b');
