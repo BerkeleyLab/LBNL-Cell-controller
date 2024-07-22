@@ -57,15 +57,15 @@ cmdFMON(int argc, char **argv)
 {
     int i;
     static const char *names[] = {  "System",
-                                    "EVR TX clock",
-                                    "EVR recovered clock",
+                                    "EVR TX",
+                                    "EVR RX (recovered)",
                                     "Aurora user",
                                     "Ethernet/EVR reference",
                                     "Aurora reference",
                                     "Ethernet Tx",
                                     "Ethernet Rx",
                                     "200 MHz reference",
-                                    "125 MHz reference clock"};
+                                    "125 MHz reference"};
 
     for (i = 0 ; i < sizeof names / sizeof names[0] ; i++) {
         GPIO_WRITE(GPIO_IDX_FREQUENCY_MONITOR_CSR, i);
