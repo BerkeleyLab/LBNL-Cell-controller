@@ -111,7 +111,7 @@ drpControl #(
 
 wire rxoutclk;
 BUFG evrClkBUFG (.I(rxoutclk), .O(evrClk));
-wire txoutclk, evrTxClk;
+wire txoutclk;
 BUFG evrTxClkBUFG (.I(txoutclk), .O(evrTxClk));
 //=========================================================================================
 /* MGT control signals table
