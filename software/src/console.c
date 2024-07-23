@@ -57,10 +57,11 @@ cmdFMON(int argc, char **argv)
 {
     int i;
     static const char *names[] = {  "System",
+                                    "EVR reference"
                                     "EVR TX",
                                     "EVR RX (recovered)",
                                     "Aurora user",
-                                    "Ethernet/EVR reference",
+                                    "Ethernet reference",
                                     "Aurora reference",
                                     "Ethernet Tx",
                                     "Ethernet Rx",
@@ -511,6 +512,28 @@ cmdTLOG(int argc, char **argv)
 }
 
 static int
+cmdUMGT(int argc, char **argv)
+{
+    if (argc > 1) {
+        char *endp;
+        int offsetPPM = strtol(argv[1], &endp, 10);
+        if (*endp == '\0') {
+            if (offsetPPM > 3500) offsetPPM = 3500;
+            else if (offsetPPM < -3500) offsetPPM = -3500;
+            if (userMGTrefClkAdjust(offsetPPM)) {
+                if (systemParameters.userMGTrefClkOffsetPPM != offsetPPM) {
+                    systemParameters.userMGTrefClkOffsetPPM = offsetPPM;
+                    systemParametersStash();
+                }
+            }
+        }
+    }
+
+    showUserMGTrefClkOffsetPPM();
+    return 0;
+}
+
+static int
 cmdWAURORA(int argc, char **argv)
 {
     char *endp;
@@ -550,6 +573,7 @@ static struct commandInfo commandTable[] = {
   { "reg",        cmdREG,        "Show GPIO register(s)"              },
   { "stats",      cmdSTATS,      "Show Aurora link statistics"        },
   { "tlog",       cmdTLOG,       "Start timing system event logger"   },
+  { "userMGT",    cmdUMGT,       "User MGT reference clock adjustment" },
   { "wAurora",    cmdWAURORA,    "Write Aurora CSR"                   },
 };
 

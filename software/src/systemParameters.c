@@ -94,9 +94,13 @@ systemParametersInit(void)
     if (cp) {
         printf("\n====== %s -- Assigning default parameters ===\n\n", cp);
         systemParameters.netConfig = netDefault;
+        systemParameters.userMGTrefClkOffsetPPM = 0;
         systemParameters.startupDebugFlags = 0;
     }
     debugFlags = systemParameters.startupDebugFlags;
+    if (userMGTrefClkAdjust(systemParameters.userMGTrefClkOffsetPPM)) {
+        systemParametersShowUserMGTrefClkOffsetPPM();
+    }
     showNetworkConfig(&systemParameters.netConfig.np);
 }
 
@@ -186,6 +190,13 @@ showNetworkConfig(const struct sysNetParms *np)
     printf("   IP ADDR: %s\n", formatIP(&np->address));
     printf("  NET MASK: %s\n", formatIP(&np->netmask));
     printf("   GATEWAY: %s\n", formatIP(&np->gateway));
+}
+
+void
+showUserMGTrefClkOffsetPPM(void)
+{
+    printf("MGT reference clock offset: %d PPM\n",
+                                       systemParameters.userMGTrefClkOffsetPPM);
 }
 
 /*

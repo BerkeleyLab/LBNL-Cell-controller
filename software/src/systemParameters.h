@@ -49,6 +49,7 @@ struct sysNetConfig {
 
 extern struct systemParameters {
     struct sysNetConfig netConfig;
+    int                 userMGTrefClkOffsetPPM
     uint32_t            startupDebugFlags;
     uint32_t            checksum;
 } systemParameters;
@@ -62,5 +63,6 @@ char *formatMAC(const void *val);
 int   parseMAC(const char *str, void *val);
 
 void showNetworkConfig(const struct sysNetParms *np);
+void showUserMGTrefClkOffsetPPM(void);
 
 #endif

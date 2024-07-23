@@ -107,6 +107,10 @@ mgtClkSwitchInit(void)
     for (output = 0 ; output < 8 ; output++) {
         input = -1;
         switch (output) {
+        case MGT_CLK_SWITCH_OUTPUT_MGTCLK0: /* Bank 116 REFCLK0 (EVR ref) */
+            input = MGT_CLK_SWITCH_INPUT_SI570;
+            break;
+
         case MGT_CLK_SWITCH_OUTPUT_MGTCLK1: /* Bank 116 REFCLK1 */
             input = MGT_CLK_SWITCH_INPUT_FPGA_REFCLK0;
             break;
