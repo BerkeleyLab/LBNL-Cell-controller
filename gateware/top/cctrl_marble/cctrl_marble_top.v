@@ -19,6 +19,7 @@ module cctrl_marble_top #(
   input              FPGA_MOSI,
   output             FPGA_MISO,
 
+  input wire         MGT_CLK_0_N, MGT_CLK_0_P,
   input wire         MGT_CLK_1_N, MGT_CLK_1_P,
   input wire         MGT_CLK_2_N, MGT_CLK_2_P,
 
@@ -306,6 +307,16 @@ assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 8'b0,
 
 /////////////////////////////////////////////////////////////////////////////
 // Event receiver support
+
+wire evrRefClk, evrRefClkMonitor;
+IBUFDS_GTE2 evrRef (.I(MGT_CLK_0_P),
+                    .IB(MGT_CLK_0_N),
+                    .CEB(1'b0),
+                    .O(evrRefClk),
+                    .ODIV2());
+
+BUFG evrRefBUFG (.I(evrRefClk), .O(evrRefClkMonitor));
+
 wire        evrRxSynchronized;
 wire [15:0] evrChars;
 wire  [1:0] evrCharIsK;
@@ -326,7 +337,7 @@ evrGTXwrapper #(.DEBUG("false"))
     .csrStatus(GPIO_IN[GPIO_IDX_GTX_CSR]),
     .drpStrobe(GPIO_STROBES[GPIO_IDX_EVR_GTX_DRP]),
     .drpStatus(GPIO_IN[GPIO_IDX_EVR_GTX_DRP]),
-    .refClk(ethRefClk125),
+    .refClk(evrRefClk),
     .evrTxClk(evrTxClk),
     .RX_N(QSFP1_RX_N[0]),
     .RX_P(QSFP1_RX_P[0]),
@@ -795,7 +806,7 @@ errorConvert errorConvert (
 
 /////////////////////////////////////////////////////////////////////////////
 // Frequency counters
-localparam FREQ_COUNTERS_NUM = 10;
+localparam FREQ_COUNTERS_NUM = 11;
 frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
                     .CLK_RATE(SYSCLK_RATE),
                     .DEBUG("false"))
@@ -814,6 +825,7 @@ frequencyCounters #(.NF(FREQ_COUNTERS_NUM),
         auroraUserClk,
         evrClk,
         evrTxClk,
+        evrRefClkMonitor,
         sysClk}),
     .ppsMarker_a(sysPPSmarker));
 

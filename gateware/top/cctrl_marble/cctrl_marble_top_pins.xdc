@@ -79,9 +79,11 @@ set_property -dict {PACKAGE_PIN K15 IOSTANDARD LVCMOS25} [get_ports FPGA_RxD]
 set_property -dict {PACKAGE_PIN B9 IOSTANDARD LVCMOS25} [get_ports PHY_RSTN]
 
 # MGTREFCLK0_116 (schematic MGT_CLK_0), U2 output 0
-#set_property -dict {PACKAGE_PIN D6} [get_ports MGT_CLK_0_P]
-#set_property -dict {PACKAGE_PIN D5} [get_ports MGT_CLK_0_N]
-#create_clock -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_0_P]
+set_property -dict {PACKAGE_PIN D6} [get_ports MGT_CLK_0_P]
+set_property -dict {PACKAGE_PIN D5} [get_ports MGT_CLK_0_N]
+create_clock -name clkEVRRef -period 8.000 [get_ports MGT_CLK_0_P]
+set clkEVRRef_clk                [get_clocks clkEVRRef]
+set clkEVRRef_period             [get_property PERIOD $clkEVRRef_clk]
 
 # MGTREFCLK1_116 (schematic MGT_CLK_1), U2 output 1
 set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
