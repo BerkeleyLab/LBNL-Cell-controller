@@ -90,19 +90,51 @@ cmdDEBUG(int argc, char **argv)
 {
     char *endp;
     int d;
+    int sFlag = 0;
 
+    if ((argc > 1) && (strcmp(argv[1], "-s") == 0)) {
+        sFlag = 1;
+        argc--;
+        argv++;
+    }
+    if ((argc > 1) && (strcmp(argv[1], "-h") == 0)) {
+        argc--;
+        argv++;
+        printDebugFlags();
+    }
+    if (argc > 2) {
+            printf("Too many arguments.\n");
+            return 0;
+    }
     if (argc > 1) {
         d = strtol(argv[1], &endp, 16);
-        if (*endp == '\0') {
-            debugFlags = d;
+        if (*endp != '\0') {
+            printf("Bad argument.\n");
+            return 0;
         }
     }
-    if (debugFlags & DEBUGFLAG_IIC_SCAN) iicProcScan();
-    if (debugFlags & DEBUGFLAG_DUMP_MGT_SWITCH) mgtClkSwitchDump();
-    if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);
-    if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
-    if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
-    printf("Debug flags: %x\n", debugFlags);
+    else {
+        d = debugFlags;
+    }
+
+    if (sFlag) {
+        if ((argc > 1) && (systemParameters.startupDebugFlags != d)) {
+            systemParameters.startupDebugFlags = d;
+            systemParametersStash();
+        }
+        printf("Startup debug flags: 0x%x\n",
+                                            systemParameters.startupDebugFlags);
+    }
+    else {
+        if (debugFlags & DEBUGFLAG_IIC_SCAN) iicProcScan();
+        if (debugFlags & DEBUGFLAG_DUMP_MGT_SWITCH) mgtClkSwitchDump();
+        if (debugFlags & DEBUGFLAG_SHOW_FREQUENCY_COUNTERS) cmdFMON(0, NULL);
+        if (debugFlags & DEBUGFLAG_SHOW_PS_SETPOINTS) ffbShowPowerSupplySetpoints();
+        if (debugFlags & DEBUGFLAG_BRINGUP_PS_LINKS) fofbEthernetBringUp();
+        debugFlags = d;
+        printf("Debug flags: 0x%x\n", debugFlags);
+    }
+
     return 0;
 }
 

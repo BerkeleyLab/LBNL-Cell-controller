@@ -40,6 +40,7 @@ void microsecondSpin(unsigned int us);
 void uintPrint(unsigned int n);
 void showReg(int i);
 void resetFPGA(int bootAlternateImage);
+void printDebugFlags();
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))
 
