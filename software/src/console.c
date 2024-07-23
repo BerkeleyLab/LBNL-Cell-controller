@@ -57,7 +57,7 @@ cmdFMON(int argc, char **argv)
 {
     int i;
     static const char *names[] = {  "System",
-                                    "EVR reference"
+                                    "EVR reference",
                                     "EVR TX",
                                     "EVR RX (recovered)",
                                     "Aurora user",
