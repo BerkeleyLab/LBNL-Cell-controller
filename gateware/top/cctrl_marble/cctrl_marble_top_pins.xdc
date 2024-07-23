@@ -86,14 +86,16 @@ set_property -dict {PACKAGE_PIN B9 IOSTANDARD LVCMOS25} [get_ports PHY_RSTN]
 # MGTREFCLK1_116 (schematic MGT_CLK_1), U2 output 1
 set_property -dict {PACKAGE_PIN F6} [get_ports MGT_CLK_1_P]
 set_property -dict {PACKAGE_PIN F5} [get_ports MGT_CLK_1_N]
-create_clock -name clkAuroraGTREF -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_1_P]
-set clkAuroraGTREF_period                [get_property PERIOD [get_clocks clkAuroraGTREF]]
+create_clock -name clkAuroraRef -period 8.000 [get_ports MGT_CLK_1_P]
+set clkAuroraRef_clk                [get_clocks clkAuroraRef]
+set clkAuroraRef_period             [get_property PERIOD $clkAuroraRef_clk]
 
 # MGTREFCLK0_115 (schematic MGT_CLK_2), U2 output 4
 set_property -dict {PACKAGE_PIN H6} [get_ports MGT_CLK_2_P]
 set_property -dict {PACKAGE_PIN H5} [get_ports MGT_CLK_2_N]
-create_clock -name clk125 -period 8.000 -waveform {0.000 4.000} [get_ports MGT_CLK_2_P]
-set clk125_period                [get_property PERIOD [get_clocks clk125]]
+create_clock -name clk125 -period 8.000 [get_ports MGT_CLK_2_P]
+set clk125_clk                   [get_clocks clk125]
+set clk125_period                [get_property PERIOD $clk125_clk]
 
 # MGTREFCLK1_115 (schematic MGT_CLK_3), U2 output 5
 #set_property -dict {PACKAGE_PIN K6} [get_ports MGT_CLK_3_P]
