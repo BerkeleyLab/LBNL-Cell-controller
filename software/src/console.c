@@ -18,6 +18,7 @@
 #include "iicProc.h"
 #include "mgtClkSwitch.h"
 #include "systemParameters.h"
+#include "user_mgt_refclk.h"
 
 #ifdef SIMULATION
 #include "simplatform.h"
