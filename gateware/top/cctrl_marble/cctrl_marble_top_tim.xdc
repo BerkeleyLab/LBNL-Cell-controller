@@ -65,3 +65,4 @@ set_max_delay -datapath_only -from $CLKOUT0_clk -to $clkAuroraUser_clk $clkAuror
 # Frequency counter clocks
 set_max_delay -datapath_only -from $clk125_clk -to $CLKOUT0_clk $CLKOUT0_period
 set_max_delay -datapath_only -from $EVRTXOUTCLK_clk -to $CLKOUT0_clk $CLKOUT0_period
+set_max_delay -datapath_only -from $clkEVRRef_clk -to $CLKOUT0_clk $CLKOUT0_period
