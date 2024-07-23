@@ -49,7 +49,7 @@ struct sysNetConfig {
 
 extern struct systemParameters {
     struct sysNetConfig netConfig;
-    int                 userMGTrefClkOffsetPPM
+    int                 userMGTrefClkOffsetPPM;
     uint32_t            startupDebugFlags;
     uint32_t            checksum;
 } systemParameters;

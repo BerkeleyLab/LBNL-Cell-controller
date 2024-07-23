@@ -35,6 +35,7 @@
 #include "tftp.h"
 #include "util.h"
 #include "gpio.h"
+#include "user_mgt_refclk.h"
 
 struct systemParameters systemParameters;
 const struct sysNetConfig netDefault = {
@@ -99,7 +100,7 @@ systemParametersInit(void)
     }
     debugFlags = systemParameters.startupDebugFlags;
     if (userMGTrefClkAdjust(systemParameters.userMGTrefClkOffsetPPM)) {
-        systemParametersShowUserMGTrefClkOffsetPPM();
+        showUserMGTrefClkOffsetPPM();
     }
     showNetworkConfig(&systemParameters.netConfig.np);
 }
