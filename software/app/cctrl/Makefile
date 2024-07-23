@@ -51,7 +51,8 @@ __SRC_FILES = \
 	systemParameters.c \
 	tftp.c \
 	drp.c \
-	mgt.c
+	mgt.c \
+	user_mgt_refclk.c
 SRC_FILES = $(addprefix $(SW_SRC_DIR)/, $(__SRC_FILES))
 
 __HDR_FILES = \
@@ -78,7 +79,8 @@ __HDR_FILES = \
 	systemParameters.h \
 	tftp.h \
 	drp.h \
-	mgt.h
+	mgt.h \
+	user_mgt_refclk.h
 HDR_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_FILES))
 
 __HDR_BWUDP_FILES = \
