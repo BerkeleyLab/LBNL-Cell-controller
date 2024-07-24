@@ -21,10 +21,8 @@ fatal(const char *fmt, ...)
     va_list args;
     unsigned int now, then = MICROSECONDS_SINCE_BOOT();
     unsigned int limit = 0;
-    static int enterCount = 0;
     unsigned int a[4];
 
-    enterCount++;
     for (;;) {
         if (((now = MICROSECONDS_SINCE_BOOT()) - then) >= limit) {
             printf("*** Fatal error:  ");
@@ -39,7 +37,8 @@ fatal(const char *fmt, ...)
             then = now;
             limit = 10000000;
         }
-        if (enterCount == 1) consoleCheck();
+
+        consoleCheck();
     }
 }
 
