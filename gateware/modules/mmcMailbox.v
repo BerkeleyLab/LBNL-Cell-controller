@@ -72,6 +72,7 @@ always @(posedge clk) begin
 end
 
 // SPI link from MMC
+wire [3:0] spi_pins_debug;
 spi_gate spi (
     .SCLK(SCLK),
     .CSB(CSB),
@@ -82,5 +83,45 @@ spi_gate spi (
     .config_r(mmcReadStrobe),
     .config_a(mmcRxAddr),
     .config_d(mmcRxData),
-    .tx_data(mmcTxData));
+    .tx_data(mmcTxData),
+    .spi_pins_debug(spi_pins_debug));
+
+generate
+if (DEBUG != "TRUE" && DEBUG != "true" && DEBUG != "FALSE" && DEBUG != "false") begin
+    mmcMailbox_DEBUG_only_TRUE_or_FALSE_SUPPORTED();
+end
+endgenerate
+
+generate
+if (DEBUG == "TRUE" || DEBUG == "true") begin
+
+`ifndef SIMULATE
+wire [255:0] probe;
+ila_td256_s4096_cap mmcm_ila_td256_s4096_cap_inst (
+    .clk(clk),
+    .probe0(probe)
+);
+
+assign probe[0]       = mmcWriteStrobe;
+assign probe[1]       = mmcReadStrobe;
+assign probe[2]       = sysWriteEnable;
+assign probe[3]       = mmcWriteEnable;
+
+assign probe[23:16]   = mmcRxAddr;
+assign probe[31:24]   = mmcRxData;
+assign probe[39:32]   = mmcTxData;
+
+assign probe[43:40]   = spi_pins_debug;
+
+assign probe[138:128] = sysAddress;
+assign probe[170:160] = mmcAddress;
+
+assign probe[199:192] = dpramSys;
+assign probe[231:224] = dpramMMC;
+
+`endif
+
+end // end if
+endgenerate
+
 endmodule
