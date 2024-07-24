@@ -196,7 +196,7 @@ mmcMailboxIsValid()
     check = then = MICROSECONDS_SINCE_BOOT();
     while (getMMCPG3Count() < counter+1) {
         if ((check = (MICROSECONDS_SINCE_BOOT() - then)) > MMC_UPDATE_TIMEOUT) {
-            warn("mmcMailboxWriteAndWait(0x%02x) timed out reading PG3 count");
+            warn("mmcMailboxIsValid() timed out reading PG3 count");
             return 0;
         }
     }
