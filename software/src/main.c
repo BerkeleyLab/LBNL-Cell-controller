@@ -45,6 +45,13 @@ int main()
     iicProcInit();
 
     /*
+     * Initialize mailbox
+     */
+    if(!mmcMailboxInit()) {
+        fatal("MMC mailbox not working");
+    }
+
+    /*
      * Boot, default configuration
      */
     bootFlashInit();
@@ -54,7 +61,6 @@ int main()
      * Continue with initialization
      */
     tftpInit();
-    mmcMailboxInit();
     mgtClkSwitchInit();
     eyescanInit();
     mgtInit();
