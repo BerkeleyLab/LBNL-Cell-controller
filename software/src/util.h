@@ -8,6 +8,9 @@
 #define MiB(x) ((x)*1024*1024)
 #define KiB(x) ((x)*1024)
 
+#define FLASH_BITSTREAM_A_OFFSET       0 // in MiB
+#define FLASH_BITSTREAM_B_OFFSET       8 // in MiB
+
 /*
  * Allow code to refer  to printf without actually pulling it in
  */
