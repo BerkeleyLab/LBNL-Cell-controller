@@ -1139,19 +1139,50 @@ ila_td256_s4096_cap bpm_test_aurora_ila_td256_s4096_cap_inst (
 );
 
 assign probe_test_aurora_ila[0]       = auroraFAstrobe;
+
 assign probe_test_aurora_ila[1]       = BPM_TEST_AXI_STREAM_TX_tvalid;
 assign probe_test_aurora_ila[2]       = BPM_TEST_AXI_STREAM_TX_tlast;
 assign probe_test_aurora_ila[3]       = BPM_TEST_AXI_STREAM_TX_tready;
+assign probe_test_aurora_ila[4]       = BPM_TEST_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[5]       = BPM_TEST_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[6]       = BPM_TEST_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[7]       = BPM_TEST_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[8]       = BPM_TEST_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[9]       = BPM_TEST_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[10]      = BPM_TEST_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[11]      = BPM_TEST_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[12]      = BPM_TEST_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[13]      = BPM_TEST_AuroraCoreStatus_tx_resetdone_out;
 
-assign probe_test_aurora_ila[4]       = BPM_CCW_AXI_STREAM_RX_tvalid;
-assign probe_test_aurora_ila[5]       = BPM_CCW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[14]      = BPM_CCW_AXI_STREAM_RX_tvalid;
+assign probe_test_aurora_ila[15]      = BPM_CCW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[16]      = BPM_CCW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[17]      = BPM_CCW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[18]      = BPM_CCW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[19]      = BPM_CCW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[20]      = BPM_CCW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[21]      = BPM_CCW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[22]      = BPM_CCW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[23]      = BPM_CCW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[24]      = BPM_CCW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[25]      = BPM_CCW_AuroraCoreStatus_tx_resetdone_out;
 
-assign probe_test_aurora_ila[6]       = BPM_CW_AXI_STREAM_RX_tvalid;
-assign probe_test_aurora_ila[7]       = BPM_CW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[26]      = BPM_CW_AXI_STREAM_RX_tvalid;
+assign probe_test_aurora_ila[27]      = BPM_CW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[28]      = BPM_CW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[29]      = BPM_CW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[30]      = BPM_CW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[31]      = BPM_CW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[32]      = BPM_CW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[33]      = BPM_CW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[34]      = BPM_CW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[35]      = BPM_CW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[36]      = BPM_CW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[37]      = BPM_CW_AuroraCoreStatus_tx_resetdone_out;
 
-assign probe_test_aurora_ila[63:32]   = BPM_TEST_AXI_STREAM_TX_tdata;
-assign probe_test_aurora_ila[95:64]   = BPM_CCW_AXI_STREAM_RX_tdata;
-assign probe_test_aurora_ila[127:96]  = BPM_CW_AXI_STREAM_RX_tdata;
+assign probe_test_aurora_ila[95:64]   = BPM_TEST_AXI_STREAM_TX_tdata;
+assign probe_test_aurora_ila[127:96]  = BPM_CCW_AXI_STREAM_RX_tdata;
+assign probe_test_aurora_ila[159:128] = BPM_CW_AXI_STREAM_RX_tdata;
 
 `endif
 
