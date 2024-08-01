@@ -123,10 +123,10 @@ set_property -dict {PACKAGE_PIN F1} [get_ports {QSFP1_TX_N[2]}]
 set_property -dict {PACKAGE_PIN G4} [get_ports {QSFP1_RX_P[2]}]
 set_property -dict {PACKAGE_PIN G3} [get_ports {QSFP1_RX_N[2]}]
 # QSFP1-4/9, Bank 116  MGT 3, X0Y7
-# set_property -dict {PACKAGE_PIN A4} [get_ports {QSFP1_TX_P[3]}]
-# set_property -dict {PACKAGE_PIN A3} [get_ports {QSFP1_TX_N[3]}]
-# set_property -dict {PACKAGE_PIN B6} [get_ports {QSFP1_RX_P[3]}]
-# set_property -dict {PACKAGE_PIN B5} [get_ports {QSFP1_RX_N[3]}]
+set_property -dict {PACKAGE_PIN A4} [get_ports {QSFP1_TX_P[3]}]
+set_property -dict {PACKAGE_PIN A3} [get_ports {QSFP1_TX_N[3]}]
+set_property -dict {PACKAGE_PIN B6} [get_ports {QSFP1_RX_P[3]}]
+set_property -dict {PACKAGE_PIN B5} [get_ports {QSFP1_RX_N[3]}]
 
 # QSFP2-1/12, Bank 115 MGT 1, X0Y1
 set_property -dict {PACKAGE_PIN M2} [get_ports {QSFP2_TX_P[0]}]
