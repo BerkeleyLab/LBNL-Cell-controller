@@ -113,6 +113,12 @@ static struct laneMap laneMapTable[] = {
         .writeCSR = drp_evr_write,
         .readCSR = drp_evr_read,
     },
+    {
+        .name = "BPM Test",
+        .csrIdx = EYSCAN_BASEADDR+(4<<DRP_LANE_SELECT_SHIFT),
+        .writeCSR = drp_gen_write,
+        .readCSR = drp_gen_read,
+    },
 };
 
 #define EYESCAN_LANECOUNT   (ARRAY_SIZE(laneMapTable))
