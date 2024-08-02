@@ -321,9 +321,6 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
                 psRecorderSoftTrigger();
                 break;
 
-            case CC_PROTOCOL_CMD_LONGOUT_IDX_CLEAR_EEBI_TRIP:
-                break;
-
             default: return;
             }
             break;
@@ -361,12 +358,6 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         break;
 
     case CC_PROTOCOL_CMD_HI_PLL_REG_IO:
-        break;
-
-    case CC_PROTOCOL_CMD_HI_SET_EEBI_CONFIG:
-        break;
-
-    case CC_PROTOCOL_CMD_HI_GET_EEBI:
         break;
 
     case CC_PROTOCOL_CMD_HI_SET_DAC:
