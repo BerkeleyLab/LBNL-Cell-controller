@@ -298,7 +298,10 @@ always @(posedge auroraUserClk) begin
     auroraReset   <= auroraReset_m;
 end
 
-assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 8'b0,
+assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 5'b0,
+     BPM_TEST_AuroraCoreStatus_hard_err,
+     BPM_TEST_AuroraCoreStatus_soft_err,
+     BPM_TEST_AuroraCoreStatus_channel_up,
      CELL_CW_AuroraCoreStatus_hard_err, CELL_CCW_AuroraCoreStatus_hard_err,
      BPM_CW_AuroraCoreStatus_hard_err, BPM_CCW_AuroraCoreStatus_hard_err,
      CELL_CW_AuroraCoreStatus_soft_err, CELL_CCW_AuroraCoreStatus_soft_err,
