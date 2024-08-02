@@ -1,6 +1,6 @@
 module cctrl_marble_top #(
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "TRUE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
@@ -300,12 +300,12 @@ end
 
 assign GPIO_IN[GPIO_IDX_AURORA_CSR] = { 5'b0,
      BPM_TEST_AuroraCoreStatus_hard_err,
-     BPM_TEST_AuroraCoreStatus_soft_err,
-     BPM_TEST_AuroraCoreStatus_channel_up,
      CELL_CW_AuroraCoreStatus_hard_err, CELL_CCW_AuroraCoreStatus_hard_err,
      BPM_CW_AuroraCoreStatus_hard_err, BPM_CCW_AuroraCoreStatus_hard_err,
+     BPM_TEST_AuroraCoreStatus_soft_err,
      CELL_CW_AuroraCoreStatus_soft_err, CELL_CCW_AuroraCoreStatus_soft_err,
      BPM_CW_AuroraCoreStatus_soft_err, BPM_CCW_AuroraCoreStatus_soft_err,
+     BPM_TEST_AuroraCoreStatus_channel_up,
      CELL_CW_AuroraCoreStatus_channel_up, CELL_CCW_AuroraCoreStatus_channel_up,
      BPM_CW_AuroraCoreStatus_channel_up, BPM_CCW_AuroraCoreStatus_channel_up,
      pll_not_locked_out, gt0_qplllock_out, gt0_qpllrefclklost_out, gtxResetOut,
