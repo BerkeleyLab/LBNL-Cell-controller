@@ -1,6 +1,6 @@
 module cctrl_marble_top #(
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "TRUE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
