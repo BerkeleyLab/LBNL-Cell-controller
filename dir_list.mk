@@ -12,9 +12,9 @@ GW_SCRIPTS_DIR     = $(GATEWARE_DIR)/scripts
 BEDROCK_DIR        = $(SUBMODULES_DIR)/bedrock
 ETHERNET_CORE_DIR  = $(SUBMODULES_DIR)/ethernet-core
 BWUDP_DIR          = $(SUBMODULES_DIR)/bwudp
-PLATFORM_7SERIES_DIR  = $(PLATFORM_DIR)/xilinx/7series
-PLATFORM_7SERIES_CCTRL_DIR  = $(PLATFORM_7SERIES_DIR)/cctrl
 
+GW_TOP_DIR         = $(GATEWARE_DIR)/top
+GW_TOP_COMMON_DIR  = $(GW_TOP_DIR)/common_cctrl
 GW_SYN_DIR         = $(GATEWARE_DIR)/syn
 
 # Software

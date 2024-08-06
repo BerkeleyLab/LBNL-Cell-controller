@@ -171,9 +171,9 @@ bwUDP
 *aggregate.v
 *gitHash.vh
 gateware/modules/badgerMerged.v
-gateware/syn/cctrl_marble/construct_tx_table.v
-gateware/syn/cctrl_marble/rtefi_blob.v
-gateware/syn/cctrl_marble/rtefi_preblob.vh
+gateware/syn/*/construct_tx_table.v
+gateware/syn/*/rtefi_blob.v
+gateware/syn/*/rtefi_preblob.vh
 
 # Verilator testbench files
 gateware/tb/obj_dir
@@ -198,7 +198,7 @@ software/tests/bin
 .Xil/
 
 # Vivado/Vitis-generated
-*system.xsa
+*system*.xsa
 *psu_init*
 *.bif
 *init.tcl

@@ -2,7 +2,7 @@ include dir_list.mk
 
 CROSS_COMPILE    ?=
 PLATFORM         ?= marble
-APP              ?= cctrl
+APP              ?= cctrl_aurora_8b10b
 
 TARGET       = $(APP)_$(PLATFORM)
 GW_TGT_DIR   = $(GW_SYN_DIR)/$(TARGET)
