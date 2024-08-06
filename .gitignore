@@ -106,8 +106,10 @@ work/
 !/gateware/platform/xilinx/*/*/readOldBPMs_Multiply/*.xci
 /gateware/platform/xilinx/*/*/udpFIFO/*
 !/gateware/platform/xilinx/*/*/udpFIFO/udpFIFO.xci
-/gateware/platform/xilinx/*/*/system/*
-!/gateware/platform/xilinx/*/*/system/*.bd
+/gateware/platform/xilinx/*/*/system_aurora_8b10b/*
+!/gateware/platform/xilinx/*/*/system_aurora_8b10b/*.bd
+/gateware/platform/xilinx/*/*/system_aurora_64b66b/*
+!/gateware/platform/xilinx/*/*/system_aurora_64b66b/*.bd
 /gateware/platform/xilinx/*/*/ila_td256_s4096_cap/*
 !/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/ila_td256_s4096_cap.xci
 
