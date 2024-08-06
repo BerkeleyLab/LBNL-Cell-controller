@@ -89,7 +89,7 @@ work/
 /gateware/platform/xilinx/*/*/forwardCellLinkMux/*
 !/gateware/platform/xilinx/*/*/forwardCellLinkMux/*.xci
 /gateware/platform/xilinx/*/*/linkStatisticsMux/*
-!/gateware/platform/xilinx/*/*/linkStatisticsMux*.xci/*
+!/gateware/platform/xilinx/*/*/linkStatisticsMux/*.xci
 /gateware/platform/xilinx/*/*/psSetpointCalcConvertToAmps/*
 !/gateware/platform/xilinx/*/*/psSetpointCalcConvertToAmps/*.xci
 /gateware/platform/xilinx/*/*/psSetpointCalcFixToFloat/*
