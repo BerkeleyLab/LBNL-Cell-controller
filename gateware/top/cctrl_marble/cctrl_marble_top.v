@@ -945,7 +945,7 @@ badger badger_i (
 
 wire DUMMY_UART_LOOPBACK;
 
-system system_i (
+system_aurora_8b10b system_i (
     .clkIn125(clkIn125), // input
     .badgerClk125(badgerRefClk125), // output
     .badgerClk125d90(badgerRefClk125d90), // output
