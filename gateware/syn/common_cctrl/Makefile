@@ -57,7 +57,7 @@ UNISIM_CRAP += -e 'FDP|OBUFT|GTXE2_CHANNEL|GTXE2_COMMON|MMCME2_ADV'
 
 # Top level files for depedency tracking
 SYSTEM_TOP_PINS_XDC = $(TARGET)_top_pins.xdc
-SYSTEM_TOP_TIM_XDC = $(TARGET)_top_tim.xdc
+SYSTEM_TOP_TIM_XDC = $(TARGET)_top_aurora_tim.xdc $(TARGET)_top_tim.xdc
 
 # ip_cores generation scripts/names
 
