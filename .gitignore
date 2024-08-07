@@ -28,7 +28,7 @@ _xilinx/
 *BOOT.bin
 
 # BSP-generated directories
-software/app/cctrl/cctrl_*/
+software/app/cctrl_*/cctrl_*/
 
 ######################
 # Modelsim
