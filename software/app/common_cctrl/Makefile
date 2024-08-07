@@ -163,7 +163,7 @@ $(TARGET).elf.size: $(TARGET).elf
 $(DEPLOY_BIT): $(MMI) $(BIT) $(ELF)
 	rm -f updatemem.jou updatemem.log
 	updatemem -force -meminfo $< -bit $(BIT) \
-		-data $(ELF) -proc system_i/$(CPU_NAME) \
+		-data $(ELF) -proc common_cctrl_top_inst/system_i/$(CPU_NAME) \
 		-out $@
 
 # Pull in dependency info for *existing* .o files and don't complain if the
