@@ -3,6 +3,8 @@ THIS_DIR := $(__THIS_DIR:/=)
 
 include ../../../dir_list.mk
 
+GIT_COMMIT	   := $(shell git rev-parse --short=8 --verify HEAD || echo "NOCOMMIT")
+
 PLATFORM       := marble
 APP            := cctrl_aurora_8b10b
 SYSTEM_BD_NAME := system_aurora_8b10b
