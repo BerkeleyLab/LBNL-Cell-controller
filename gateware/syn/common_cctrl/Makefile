@@ -149,9 +149,7 @@ BD_TOP_LVL_SRCS += $(system_aurora_64b66b_TOP)
 BD_DIRS += $(system_aurora_64b66b_DIR)
 
 else
-
 $(error FPGA_APPLICATION = $(FPGA_APPLICATION) not supported)
-exit 1
 
 endif
 
