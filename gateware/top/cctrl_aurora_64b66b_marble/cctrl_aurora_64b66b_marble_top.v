@@ -1,7 +1,7 @@
 module cctrl_aurora_64b66b_marble_top #(
   parameter          AURORA_TYPE               = "64b66b",
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "TRUE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
