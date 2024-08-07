@@ -31,7 +31,7 @@ gw_cctrl_aurora_8b10b_marble:
       - gateware/syn/cctrl_aurora_8b10b_marble/cctrl_aurora_8b10b_marble_top.bit
       - gateware/syn/cctrl_aurora_8b10b_marble/cctrl_aurora_8b10b_marble_top.mmi
       - gateware/syn/cctrl_aurora_8b10b_marble/_xilinx/cctrl_aurora_8b10b_marble_top/*.runs/impl_1/*.rpt
-      - gateware/syn/cctrl_aurora_8b10b_marble/system.xsa
+      - gateware/syn/cctrl_aurora_8b10b_marble/system_aurora_8b10b.xsa
 
 gw_cctrl_aurora_64b66b_marble:
   before_script:
@@ -46,7 +46,7 @@ gw_cctrl_aurora_64b66b_marble:
       - gateware/syn/cctrl_aurora_64b66b_marble/cctrl_aurora_64b66b_marble_top.bit
       - gateware/syn/cctrl_aurora_64b66b_marble/cctrl_aurora_64b66b_marble_top.mmi
       - gateware/syn/cctrl_aurora_64b66b_marble/_xilinx/cctrl_aurora_64b66b_marble_top/*.runs/impl_1/*.rpt
-      - gateware/syn/cctrl_aurora_64b66b_marble/system.xsa
+      - gateware/syn/cctrl_aurora_64b66b_marble/system_aurora_64b66b.xsa
 
 # Software jobs
 # Gitlab doesn't seem to suport the usage of variables in
