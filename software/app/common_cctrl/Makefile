@@ -127,7 +127,7 @@ INCLUDE_DIRS = \
 	$(TARGET_DIR) \
 	$(BSP_DIR)/include
 
-ifeq ($(TARGET),cctrl_marble)
+ifneq (,$(findstring marble,$(TARGET)))
 USER_FLAGS += -D__TARGET_CCTRL_MARBLE__
 USER_FLAGS += -DMARBLE
 USER_FLAGS += -DBWUDP_USE_REAL_GPIO_H
@@ -135,6 +135,7 @@ INCLUDE_DIRS += $(BWUDP_DIR)
 INCLUDE_DIRS += $(SW_SPIFLASHDRIVER_DIR)
 else
 USER_FLAGS += -D__TARGET_NOT_RECOGNIZED__
+$(error TARGET = $(TARGET) not supported)
 endif
 
 INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
