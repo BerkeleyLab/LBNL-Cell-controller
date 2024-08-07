@@ -1,4 +1,3 @@
-# Aurora user clock
-create_clock -name clkAuroraUser -period 12.800	[get_pins -filter {REF_PIN_NAME=~*TXOUTCLK} -of_objects [get_cells -hierarchical -filter {NAME =~ *gt_wrapper_i*system_aurora_8b10b_aurora_8b10b_0_0_multi_gt_i*gt0_system_aurora_8b10b_aurora_8b10b_0_0_i*gtxe2_i*}]]
-set clkAuroraUser_clk                   [get_clocks clkAuroraUser]
+# Aurora user clock. Comes from the first Aurora instantiation
+set clkAuroraUser_clk                   [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *system_i/Aurora/aurora_8b10b_0/user_clk_out}]]
 set clkAuroraUser_period                [get_property PERIOD $clkAuroraUser_clk]
