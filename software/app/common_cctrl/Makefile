@@ -18,6 +18,7 @@ BIT         ?= $(GW_TGT_DIR)/$(TARGET)_top.bit
 DEPLOY_BIT  ?= $(THIS_DIR)/$(TARGET).$(GIT_COMMIT).bit
 MMI         ?= $(GW_TGT_DIR)/$(TARGET)_top.mmi
 ELF         ?= $(THIS_DIR)/$(TARGET).elf
+SYSTEM_BD_NAME ?= system_aurora_8b10b
 
 SW_APP_TGT_DIR = $(SW_APP_DIR)/$(APP)
 SW_TGT_SCRIPTS_DIR = $(SW_APP_DIR)/$(APP)/scripts
@@ -147,7 +148,7 @@ vpath *.mmi $(GW_TGT_DIR)
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
-XSA_FILE=$(GW_TGT_DIR)/system.xsa
+XSA_FILE=$(GW_TGT_DIR)/$(SYSTEM_BD_NAME).xsa
 
 $(TARGET):
 	$(XSCT) $(SW_SCRIPTS_DIR)/gen_vitis_platform.tcl $@ $(XSA_FILE) $(CPU_NAME)
