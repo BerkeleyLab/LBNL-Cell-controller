@@ -25,7 +25,7 @@ SW_TGT_SCRIPTS_DIR = $(SW_APP_DIR)/$(APP)/scripts
 
 CPU_NAME   = microblaze_0
 TARGET_DIR = $(SW_TGT_DIR)/$(TARGET)
-BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/platform/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
+BSP_DIR   = $(SW_APP_TGT_DIR)/$(TARGET)/$(SYSTEM_BD_NAME)/$(CPU_NAME)/standalone_domain/bsp/$(CPU_NAME)
 
 all: $(TARGET) $(TARGET).elf $(TARGET).elf.size $(DEPLOY_BIT)
 
