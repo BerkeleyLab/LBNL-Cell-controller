@@ -8,3 +8,7 @@ set clkAuroraUserDiv2_period            [get_property PERIOD $clkAuroraUserDiv2_
 # Aurora 64b clock to 32b clock. Used for Core Status. FIXME
 set_max_delay -datapath_only -from $clkAuroraUserDiv2_clk -to $clkAuroraUser_clk $clkAuroraUser_period
 set_max_delay -datapath_only -from $clkAuroraUser_clk -to $clkAuroraUserDiv2_clk $clkAuroraUserDiv2_period
+
+# Aurora 64b clock to System clock. FIXME
+set_max_delay -datapath_only -from $clkAuroraUserDiv2_clk -to $CLKOUT0_clk $CLKOUT0_period
+set_max_delay -datapath_only -from $CLKOUT0_clk -to $clkAuroraUserDiv2_clk $clkAuroraUserDiv2_period
