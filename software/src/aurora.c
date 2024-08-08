@@ -69,6 +69,8 @@ void
 auroraInit(void)
 {
     auroraResetGTX();
+    // Aurora takes a bit to assert channel up
+    microsecondSpin(100000);
     auroraReadoutShowStats(0);
 }
 
