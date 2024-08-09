@@ -384,6 +384,7 @@ wire [31:0] BPM_CCW_AXI_STREAM_RX_tdata;
 wire        BPM_CCW_AuroraCoreStatus_channel_up;
 wire        BPM_CCW_AuroraCoreStatus_crc_pass_fail;
 wire        BPM_CCW_AuroraCoreStatus_crc_valid;
+wire        BPM_CCW_AuroraCoreStatus_gt_pll_lock;
 wire        BPM_CCW_AuroraCoreStatus_frame_err;
 wire        BPM_CCW_AuroraCoreStatus_hard_err;
 wire        BPM_CCW_AuroraCoreStatus_lane_up;
@@ -398,6 +399,7 @@ wire [31:0] BPM_CW_AXI_STREAM_RX_tdata;
 wire        BPM_CW_AuroraCoreStatus_channel_up;
 wire        BPM_CW_AuroraCoreStatus_crc_pass_fail;
 wire        BPM_CW_AuroraCoreStatus_crc_valid;
+wire        BPM_CW_AuroraCoreStatus_gt_pll_lock;
 wire        BPM_CW_AuroraCoreStatus_frame_err;
 wire        BPM_CW_AuroraCoreStatus_hard_err;
 wire        BPM_CW_AuroraCoreStatus_lane_up;
@@ -413,6 +415,7 @@ wire [31:0] BPM_TEST_AXI_STREAM_TX_tdata;
 wire        BPM_TEST_AuroraCoreStatus_channel_up;
 wire        BPM_TEST_AuroraCoreStatus_crc_pass_fail;
 wire        BPM_TEST_AuroraCoreStatus_crc_valid;
+wire        BPM_TEST_AuroraCoreStatus_gt_pll_lock;
 wire        BPM_TEST_AuroraCoreStatus_frame_err;
 wire        BPM_TEST_AuroraCoreStatus_hard_err;
 wire        BPM_TEST_AuroraCoreStatus_lane_up;
@@ -433,6 +436,7 @@ localparam CELL_AXI_DEBUG = "false";
 wire        CELL_CCW_AuroraCoreStatus_channel_up;
 wire        CELL_CCW_AuroraCoreStatus_crc_pass_fail;
 wire        CELL_CCW_AuroraCoreStatus_crc_valid;
+wire        CELL_CCW_AuroraCoreStatus_gt_pll_lock;
 wire        CELL_CCW_AuroraCoreStatus_frame_err;
 wire        CELL_CCW_AuroraCoreStatus_hard_err;
 wire        CELL_CCW_AuroraCoreStatus_lane_up;
@@ -452,6 +456,7 @@ wire        CELL_CCW_AuroraCoreStatus_tx_resetdone_out;
 wire        CELL_CW_AuroraCoreStatus_channel_up;
 wire        CELL_CW_AuroraCoreStatus_crc_pass_fail;
 wire        CELL_CW_AuroraCoreStatus_crc_valid;
+wire        CELL_CW_AuroraCoreStatus_gt_pll_lock;
 wire        CELL_CW_AuroraCoreStatus_frame_err;
 wire        CELL_CW_AuroraCoreStatus_hard_err;
 wire        CELL_CW_AuroraCoreStatus_lane_up;
@@ -1133,13 +1138,15 @@ system_aurora_64b66b system_i (
     .BPM_CCW_AXI_STREAM_RX_tdata(BPM_CCW_AXI_STREAM_RX_tdata),
     .BPM_CCW_AXI_STREAM_RX_tlast(BPM_CCW_AXI_STREAM_RX_tlast),
     .BPM_CCW_AXI_STREAM_RX_tvalid(BPM_CCW_AXI_STREAM_RX_tvalid),
-    .BPM_CCW_AuroraCoreStatus_channel_up(BPM_CCW_AuroraCoreStatus_channel_up),
-    .BPM_CCW_AuroraCoreStatus_crc_pass_fail(BPM_CCW_AuroraCoreStatus_crc_pass_fail),
-    .BPM_CCW_AuroraCoreStatus_crc_valid(BPM_CCW_AuroraCoreStatus_crc_valid),
-    .BPM_CCW_AuroraCoreStatus_hard_err(BPM_CCW_AuroraCoreStatus_hard_err),
-    .BPM_CCW_AuroraCoreStatus_lane_up(BPM_CCW_AuroraCoreStatus_lane_up),
-    .BPM_CCW_AuroraCoreStatus_soft_err(BPM_CCW_AuroraCoreStatus_soft_err),
-
+    .BPM_CCW_AuroraCoreStatus({
+        BPM_CCW_AuroraCoreStatus_unused,
+        BPM_CCW_AuroraCoreStatus_soft_err,
+        BPM_CCW_AuroraCoreStatus_lane_up,
+        BPM_CCW_AuroraCoreStatus_hard_err,
+        BPM_CCW_AuroraCoreStatus_gt_pll_lock,
+        BPM_CCW_AuroraCoreStatus_crc_valid,
+        BPM_CCW_AuroraCoreStatus_crc_pass_fail,
+        BPM_CCW_AuroraCoreStatus_channel_up}),
     .BPM_CCW_GT_RX_rxn(QSFP1_RX_N[1]),
     .BPM_CCW_GT_RX_rxp(QSFP1_RX_P[1]),
     .BPM_CCW_GT_TX_txn(QSFP1_TX_N[1]),
@@ -1148,12 +1155,15 @@ system_aurora_64b66b system_i (
     .BPM_CW_AXI_STREAM_RX_tdata(BPM_CW_AXI_STREAM_RX_tdata),
     .BPM_CW_AXI_STREAM_RX_tlast(BPM_CW_AXI_STREAM_RX_tlast),
     .BPM_CW_AXI_STREAM_RX_tvalid(BPM_CW_AXI_STREAM_RX_tvalid),
-    .BPM_CW_AuroraCoreStatus_channel_up(BPM_CW_AuroraCoreStatus_channel_up),
-    .BPM_CW_AuroraCoreStatus_crc_pass_fail(BPM_CW_AuroraCoreStatus_crc_pass_fail),
-    .BPM_CW_AuroraCoreStatus_crc_valid(BPM_CW_AuroraCoreStatus_crc_valid),
-    .BPM_CW_AuroraCoreStatus_hard_err(BPM_CW_AuroraCoreStatus_hard_err),
-    .BPM_CW_AuroraCoreStatus_lane_up(BPM_CW_AuroraCoreStatus_lane_up),
-    .BPM_CW_AuroraCoreStatus_soft_err(BPM_CW_AuroraCoreStatus_soft_err),
+    .BPM_CW_AuroraCoreStatus({
+        BPM_CW_AuroraCoreStatus_unused,
+        BPM_CW_AuroraCoreStatus_soft_err,
+        BPM_CW_AuroraCoreStatus_lane_up,
+        BPM_CW_AuroraCoreStatus_hard_err,
+        BPM_CW_AuroraCoreStatus_gt_pll_lock,
+        BPM_CW_AuroraCoreStatus_crc_valid,
+        BPM_CW_AuroraCoreStatus_crc_pass_fail,
+        BPM_CW_AuroraCoreStatus_channel_up}),
     .BPM_CW_GT_RX_rxn(QSFP1_RX_N[2]),
     .BPM_CW_GT_RX_rxp(QSFP1_RX_P[2]),
     .BPM_CW_GT_TX_txn(QSFP1_TX_N[2]),
@@ -1163,12 +1173,15 @@ system_aurora_64b66b system_i (
     .BPM_TEST_AXI_STREAM_TX_tlast(BPM_TEST_AXI_STREAM_TX_tlast),
     .BPM_TEST_AXI_STREAM_TX_tvalid(BPM_TEST_AXI_STREAM_TX_tvalid),
     .BPM_TEST_AXI_STREAM_TX_tready(BPM_TEST_AXI_STREAM_TX_tready),
-    .BPM_TEST_AuroraCoreStatus_channel_up(BPM_TEST_AuroraCoreStatus_channel_up),
-    .BPM_TEST_AuroraCoreStatus_crc_pass_fail(BPM_TEST_AuroraCoreStatus_crc_pass_fail),
-    .BPM_TEST_AuroraCoreStatus_crc_valid(BPM_TEST_AuroraCoreStatus_crc_valid),
-    .BPM_TEST_AuroraCoreStatus_hard_err(BPM_TEST_AuroraCoreStatus_hard_err),
-    .BPM_TEST_AuroraCoreStatus_lane_up(BPM_TEST_AuroraCoreStatus_lane_up),
-    .BPM_TEST_AuroraCoreStatus_soft_err(BPM_TEST_AuroraCoreStatus_soft_err),
+    .BPM_TEST_AuroraCoreStatus({
+        BPM_TEST_AuroraCoreStatus_unused,
+        BPM_TEST_AuroraCoreStatus_soft_err,
+        BPM_TEST_AuroraCoreStatus_lane_up,
+        BPM_TEST_AuroraCoreStatus_hard_err,
+        BPM_TEST_AuroraCoreStatus_gt_pll_lock,
+        BPM_TEST_AuroraCoreStatus_crc_valid,
+        BPM_TEST_AuroraCoreStatus_crc_pass_fail,
+        BPM_TEST_AuroraCoreStatus_channel_up}),
     .BPM_TEST_GT_RX_rxn(QSFP1_RX_N[3]),
     .BPM_TEST_GT_RX_rxp(QSFP1_RX_P[3]),
     .BPM_TEST_GT_TX_txn(QSFP1_TX_N[3]),
@@ -1181,12 +1194,15 @@ system_aurora_64b66b system_i (
     .CELL_CCW_AXI_STREAM_RX_tdata(CELL_CCW_AXI_STREAM_RX_tdata),
     .CELL_CCW_AXI_STREAM_RX_tlast(CELL_CCW_AXI_STREAM_RX_tlast),
     .CELL_CCW_AXI_STREAM_RX_tvalid(CELL_CCW_AXI_STREAM_RX_tvalid),
-    .CELL_CCW_AuroraCoreStatus_channel_up(CELL_CCW_AuroraCoreStatus_channel_up),
-    .CELL_CCW_AuroraCoreStatus_crc_pass_fail(CELL_CCW_AuroraCoreStatus_crc_pass_fail),
-    .CELL_CCW_AuroraCoreStatus_crc_valid(CELL_CCW_AuroraCoreStatus_crc_valid),
-    .CELL_CCW_AuroraCoreStatus_hard_err(CELL_CCW_AuroraCoreStatus_hard_err),
-    .CELL_CCW_AuroraCoreStatus_lane_up(CELL_CCW_AuroraCoreStatus_lane_up),
-    .CELL_CCW_AuroraCoreStatus_soft_err(CELL_CCW_AuroraCoreStatus_soft_err),
+    .CELL_CCW_AuroraCoreStatus({
+        CELL_CCW_AuroraCoreStatus_unused,
+        CELL_CCW_AuroraCoreStatus_soft_err,
+        CELL_CCW_AuroraCoreStatus_lane_up,
+        CELL_CCW_AuroraCoreStatus_hard_err,
+        CELL_CCW_AuroraCoreStatus_gt_pll_lock,
+        CELL_CCW_AuroraCoreStatus_crc_valid,
+        CELL_CCW_AuroraCoreStatus_crc_pass_fail,
+        CELL_CCW_AuroraCoreStatus_channel_up}),
     .CELL_CCW_GT_RX_rxn(QSFP2_RX_N[0]),
     .CELL_CCW_GT_RX_rxp(QSFP2_RX_P[0]),
     .CELL_CCW_GT_TX_txn(QSFP2_TX_N[0]),
@@ -1199,12 +1215,15 @@ system_aurora_64b66b system_i (
     .CELL_CW_AXI_STREAM_RX_tdata(CELL_CW_AXI_STREAM_RX_tdata),
     .CELL_CW_AXI_STREAM_RX_tlast(CELL_CW_AXI_STREAM_RX_tlast),
     .CELL_CW_AXI_STREAM_RX_tvalid(CELL_CW_AXI_STREAM_RX_tvalid),
-    .CELL_CW_AuroraCoreStatus_channel_up(CELL_CW_AuroraCoreStatus_channel_up),
-    .CELL_CW_AuroraCoreStatus_crc_pass_fail(CELL_CW_AuroraCoreStatus_crc_pass_fail),
-    .CELL_CW_AuroraCoreStatus_crc_valid(CELL_CW_AuroraCoreStatus_crc_valid),
-    .CELL_CW_AuroraCoreStatus_hard_err(CELL_CW_AuroraCoreStatus_hard_err),
-    .CELL_CW_AuroraCoreStatus_lane_up(CELL_CW_AuroraCoreStatus_lane_up),
-    .CELL_CW_AuroraCoreStatus_soft_err(CELL_CW_AuroraCoreStatus_soft_err),
+    .CELL_CW_AuroraCoreStatus({
+        CELL_CW_AuroraCoreStatus_unused,
+        CELL_CW_AuroraCoreStatus_soft_err,
+        CELL_CW_AuroraCoreStatus_lane_up,
+        CELL_CW_AuroraCoreStatus_hard_err,
+        CELL_CW_AuroraCoreStatus_gt_pll_lock,
+        CELL_CW_AuroraCoreStatus_crc_valid,
+        CELL_CW_AuroraCoreStatus_crc_pass_fail,
+        CELL_CW_AuroraCoreStatus_channel_up}),
     .CELL_CW_GT_RX_rxn(QSFP2_RX_N[1]),
     .CELL_CW_GT_RX_rxp(QSFP2_RX_P[1]),
     .CELL_CW_GT_TX_txn(QSFP2_TX_N[1]),
