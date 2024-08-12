@@ -12,3 +12,6 @@ set_max_delay -datapath_only -from $clkAuroraUser_clk -to $clkAuroraUserDiv2_clk
 # Aurora 64b clock to System clock. FIXME
 set_max_delay -datapath_only -from $clkAuroraUserDiv2_clk -to $CLKOUT0_clk $CLKOUT0_period
 set_max_delay -datapath_only -from $CLKOUT0_clk -to $clkAuroraUserDiv2_clk $clkAuroraUserDiv2_period
+
+# Init clock to Aurora user clock. Aurora core status signals
+set_max_delay -datapath_only -from $CLKOUT1_clk -to $clkAuroraUserDiv2_clk $clkAuroraUserDiv2_period
