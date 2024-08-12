@@ -541,6 +541,7 @@ writeBPMTestLink #(
   writeBPMTestLink (
          .auroraUserClk(auroraUserClk),
          .auroraFAstrobe(auroraFAstrobe),
+         .auroraChannelUp(BPM_TEST_AuroraCoreStatus_channel_up),
          .BPM_TEST_AXI_STREAM_TX_tdata(BPM_TEST_AXI_STREAM_TX_tdata),
          .BPM_TEST_AXI_STREAM_TX_tvalid(BPM_TEST_AXI_STREAM_TX_tvalid),
          .BPM_TEST_AXI_STREAM_TX_tlast(BPM_TEST_AXI_STREAM_TX_tlast),
