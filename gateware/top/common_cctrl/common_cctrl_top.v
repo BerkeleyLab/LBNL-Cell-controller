@@ -533,6 +533,7 @@ readBPMlinks #(.faStrobeDebug("false"),
 
 ////////////////////////////////////////////////////////////////////////////////
 // Test BPM data
+wire [2:0] bpmTESTdbgState;
 writeBPMTestLink #(
     .faStrobeDebug("false"),
     .stateDebug("false"),
@@ -545,7 +546,8 @@ writeBPMTestLink #(
          .BPM_TEST_AXI_STREAM_TX_tlast(BPM_TEST_AXI_STREAM_TX_tlast),
          .BPM_TEST_AXI_STREAM_TX_tready(BPM_TEST_AXI_STREAM_TX_tready),
          .TESTstatusStrobe(bpmTESTstatusStrobe),
-         .TESTstatusCode(bpmTESTstatusCode));
+         .TESTstatusCode(bpmTESTstatusCode),
+         .dbgFwState(bpmTESTdbgState));
 
 //////////////////////////////////////////////////////////////////////////////
 // Forward incoming and local streams to next cell
@@ -1364,6 +1366,8 @@ assign probe_test_aurora_ila[48]      = CELL_CW_AXI_STREAM_TX_tlast;
 
 assign probe_test_aurora_ila[49]      = CELL_CCW_AXI_STREAM_TX_tvalid;
 assign probe_test_aurora_ila[50]      = CELL_CCW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[53:51]   = bpmTESTdbgState;
 
 assign probe_test_aurora_ila[95:64]   = BPM_TEST_AXI_STREAM_TX_tdata;
 assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
