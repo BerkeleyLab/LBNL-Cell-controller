@@ -178,11 +178,10 @@ always @(posedge auroraUserClk) begin
             if (!fifoAlmostFull) begin
                 fifoWe <= 1;
                 fifoDataIn <= sum;
-                fifoUserIn <= 0;
+                fifoUserIn <= 1;
 
                 if (BPMIndex == BPMcount) begin
                     fwState <= FWST_IDLE;
-                    fifoUserIn <= 1;
                 end
                 else begin
                     fwState <= FWST_PUSH_HEADER;
