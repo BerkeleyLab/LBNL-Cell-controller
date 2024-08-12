@@ -24,7 +24,9 @@ module writeBPMTestLink #(
     (* mark_debug = testInDebug *)
     input  wire         BPM_TEST_AXI_STREAM_TX_tready,
     output wire         TESTstatusStrobe,
-    output wire  [1:0]  TESTstatusCode);
+    output wire  [1:0]  TESTstatusCode,
+    output wire  [2:0]  dbgFwState
+);
 
 localparam MAX_CELLS          = 32;
 parameter CELL_COUNT_WIDTH    = $clog2(MAX_CELLS + 1);
@@ -118,6 +120,7 @@ localparam FWST_IDLE          = 0,
            FWST_PUSH_Y        = 4,
            FWST_PUSH_S        = 5;
 (* mark_debug = stateDebug *) reg  [2:0] fwState = FWST_IDLE;
+assign dbgFwState = fwState;
 reg [15:0] FAcycleCounter = 0;
 always @(posedge auroraUserClk) begin
     if (auroraFAstrobe) begin
@@ -136,6 +139,7 @@ always @(posedge auroraUserClk) begin
         FWST_EMPTY_FIFO: begin
             if (fifoEmpty) begin
                 fwState <= FWST_PUSH_HEADER;
+                fifoForceRe <= 0;
             end
             else begin
                 fifoForceRe <= 1;
