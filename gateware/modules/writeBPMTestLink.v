@@ -13,6 +13,7 @@ module writeBPMTestLink #(
     // Marker for beginning of data transfer session
     (* mark_debug = faStrobeDebug *)
     input  wire         auroraFAstrobe,
+    input  wire         auroraChannelUp,
 
     // BPM links
     (* mark_debug = testInDebug *)
@@ -104,7 +105,7 @@ fifo (
 
 assign {fifoUserOut, fifoDataOut} = fifoOut;
 
-wire fifoValid = !fifoEmpty;
+wire fifoValid = !(fifoEmpty || fifoForceRe);
 wire fifoAlmostFull = (fifoCount >= FIFO_MAX-2);
 
 assign fifoRe = (fifoValid && BPM_TEST_AXI_STREAM_TX_tready) || fifoForceRe;
@@ -137,12 +138,14 @@ always @(posedge auroraUserClk) begin
         end
 
         FWST_EMPTY_FIFO: begin
-            if (fifoEmpty) begin
-                fwState <= FWST_PUSH_HEADER;
-                fifoForceRe <= 0;
+            if (!fifoEmpty) begin
+                fifoForceRe <= 1;
             end
             else begin
-                fifoForceRe <= 1;
+                fifoForceRe <= 0;
+                if (auroraChannelUp) begin
+                    fwState <= FWST_PUSH_HEADER;
+                end
             end
         end
 
