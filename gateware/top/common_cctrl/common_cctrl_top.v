@@ -1324,18 +1324,18 @@ assign probe_test_aurora_ila[11]      = BPM_TEST_AuroraCoreStatus_soft_err;
 assign probe_test_aurora_ila[12]      = BPM_TEST_AuroraCoreStatus_tx_lock;
 assign probe_test_aurora_ila[13]      = BPM_TEST_AuroraCoreStatus_tx_resetdone_out;
 
-assign probe_test_aurora_ila[14]      = BPM_CCW_AXI_STREAM_RX_tvalid;
-assign probe_test_aurora_ila[15]      = BPM_CCW_AXI_STREAM_RX_tlast;
-assign probe_test_aurora_ila[16]      = BPM_CCW_AuroraCoreStatus_channel_up;
-assign probe_test_aurora_ila[17]      = BPM_CCW_AuroraCoreStatus_crc_pass_fail;
-assign probe_test_aurora_ila[18]      = BPM_CCW_AuroraCoreStatus_crc_valid;
-assign probe_test_aurora_ila[19]      = BPM_CCW_AuroraCoreStatus_frame_err;
-assign probe_test_aurora_ila[20]      = BPM_CCW_AuroraCoreStatus_hard_err;
-assign probe_test_aurora_ila[21]      = BPM_CCW_AuroraCoreStatus_lane_up;
-assign probe_test_aurora_ila[22]      = BPM_CCW_AuroraCoreStatus_rx_resetdone_out;
-assign probe_test_aurora_ila[23]      = BPM_CCW_AuroraCoreStatus_soft_err;
-assign probe_test_aurora_ila[24]      = BPM_CCW_AuroraCoreStatus_tx_lock;
-assign probe_test_aurora_ila[25]      = BPM_CCW_AuroraCoreStatus_tx_resetdone_out;
+assign probe_test_aurora_ila[14]      = auCWcellStreamValid;
+assign probe_test_aurora_ila[15]      = CELL_CW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[16]      = CELL_CW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[17]      = CELL_CW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[18]      = CELL_CW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[19]      = CELL_CW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[20]      = CELL_CW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[21]      = CELL_CW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[22]      = CELL_CW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[23]      = CELL_CW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[24]      = CELL_CW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[25]      = CELL_CW_AuroraCoreStatus_tx_resetdone_out;
 
 assign probe_test_aurora_ila[26]      = BPM_CW_AXI_STREAM_RX_tvalid;
 assign probe_test_aurora_ila[27]      = BPM_CW_AXI_STREAM_RX_tlast;
@@ -1350,9 +1350,28 @@ assign probe_test_aurora_ila[35]      = BPM_CW_AuroraCoreStatus_soft_err;
 assign probe_test_aurora_ila[36]      = BPM_CW_AuroraCoreStatus_tx_lock;
 assign probe_test_aurora_ila[37]      = BPM_CW_AuroraCoreStatus_tx_resetdone_out;
 
+assign probe_test_aurora_ila[38]      = localBPMs_tvalid;
+assign probe_test_aurora_ila[39]      = localBPMs_tlast;
+
+assign probe_test_aurora_ila[40]      = bpmCWstatusStrobe;
+assign probe_test_aurora_ila[42:41]   = bpmCWstatusCode;
+
+assign probe_test_aurora_ila[43]      = sysCellStatusStrobe;
+assign probe_test_aurora_ila[46:44]   = sysCellStatusCode;
+
+assign probe_test_aurora_ila[47]      = CELL_CW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[48]      = CELL_CW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[49]      = CELL_CCW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[50]      = CELL_CCW_AXI_STREAM_TX_tlast;
+
 assign probe_test_aurora_ila[95:64]   = BPM_TEST_AXI_STREAM_TX_tdata;
-assign probe_test_aurora_ila[127:96]  = BPM_CCW_AXI_STREAM_RX_tdata;
+assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
 assign probe_test_aurora_ila[159:128] = BPM_CW_AXI_STREAM_RX_tdata;
+
+assign probe_test_aurora_ila[191:160] = localBPMs_tdata;
+assign probe_test_aurora_ila[223:192] = CELL_CW_AXI_STREAM_TX_tdata;
+assign probe_test_aurora_ila[255:224] = CELL_CCW_AXI_STREAM_TX_tdata;
 
 `endif
 
