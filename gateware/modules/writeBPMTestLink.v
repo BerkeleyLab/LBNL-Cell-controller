@@ -122,7 +122,7 @@ localparam FWST_IDLE          = 0,
            FWST_PUSH_S        = 5;
 (* mark_debug = stateDebug *) reg  [2:0] fwState = FWST_IDLE;
 assign dbgFwState = fwState;
-reg [15:0] FAcycleCounter = 0;
+reg [14:0] FAcycleCounter = 0;
 always @(posedge auroraUserClk) begin
     if (auroraFAstrobe) begin
         // Start a new readout session
@@ -158,7 +158,8 @@ always @(posedge auroraUserClk) begin
                 BPMIndex <= BPMIndex + 1;
                 txXerror <= {16'hCAFE, {16-BPM_INDEX_WIDTH{1'b0}}, BPMIndex};
                 txYerror <= {16'hBEEF, {16-BPM_INDEX_WIDTH{1'b0}}, BPMIndex};
-                sum      <= {FAcycleCounter, {16-BPM_INDEX_WIDTH{1'b0}}, BPMIndex};
+                // bit 31 has special meaning
+                sum      <= {1'b0, FAcycleCounter, {16-BPM_INDEX_WIDTH{1'b0}}, BPMIndex};
                 fwState <= FWST_PUSH_X;
             end
         end
