@@ -54,6 +54,7 @@ initial begin
 end
 
 reg module_ready = 0;
+reg auChannelUp = 0;
 
 wire  [31:0] BPM_TEST_AXI_STREAM_TX_tdata;
 wire         BPM_TEST_AXI_STREAM_TX_tvalid;
@@ -101,6 +102,7 @@ writeBPMTestLink #()
   DUT(
     .auroraUserClk(auClk),
     .auroraFAstrobe(auFAStrobe),
+    .auroraChannelUp(auChannelUp),
 
     // BPM links
     .BPM_TEST_AXI_STREAM_TX_tdata(BPM_TEST_AXI_STREAM_TX_tdata),
@@ -113,6 +115,12 @@ writeBPMTestLink #()
 initial begin
     @(posedge auClk);
     module_ready = 1;
+
+    repeat (200)
+        @(posedge auClk);
+
+    auChannelUp = 1;
+    @(posedge auClk);
 end
 
 endmodule
