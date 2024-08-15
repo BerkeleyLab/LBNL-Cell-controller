@@ -4,6 +4,7 @@
 // All other nets are in the Aurora user clock domain.
 //
 module writeBPMTestLink #(
+    parameter BPM_GLOBAL_INDEX = 2,
     parameter faStrobeDebug    = "false",
     parameter stateDebug       = "false",
     parameter testInDebug      = "false") (
@@ -40,7 +41,6 @@ parameter FOFB_INDEX_WIDTH    = 9;
 // Could be made register in the future if needed
 localparam BPM_COUNT_PER_SECTOR = 16;
 localparam CELL_INDEX = 12;
-localparam BPM_GLOBAL_INDEX = 2;
 
 assign TESTstatusStrobe = 0;
 assign TESTstatusCode = 0;
