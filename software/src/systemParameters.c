@@ -102,7 +102,6 @@ systemParametersInit(void)
     if (userMGTrefClkAdjust(systemParameters.userMGTrefClkOffsetPPM)) {
         showUserMGTrefClkOffsetPPM();
     }
-    showNetworkConfig(&systemParameters.netConfig.np);
 }
 
 /*
