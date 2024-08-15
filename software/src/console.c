@@ -27,30 +27,136 @@
 #define UART_CSR_TX_FULL    0x80000000
 #define UART_CSR_RX_READY   0x100
 
+#define CONSOLE_UDP_PORT 50004
+#define UDP_BUFSIZE      1460
+
+/*
+ * UDP console support
+ */
+static struct udpConsole {
+    int         active;
+    bwudpHandle handle;
+    int         txIndex;
+    char        txBuf[UDP_BUFSIZE];
+    uint32_t    usAtFirstOutputCharacter;
+    char        rxBuf[UDP_BUFSIZE];
+    int         rxIndex;
+    int         rxCount;
+} udpConsole;
+
 /*
  * Special modes
  */
 static int (*modalHandler)(int argc, char **argv);
 
 /*
- * Hang on to start messages
+ * Mark UDP console inactive while draining in case
+ * network code diagnostic messages are enabled.
  */
-#define STARTBUF_SIZE   4000
+static void
+udpConsoleDrain(void)
+{
+    udpConsole.active = 0;
+    bwudpSend(udpConsole.handle, udpConsole.txBuf, udpConsole.txIndex);
+    udpConsole.txIndex = 0;
+    udpConsole.active = 1;
+}
+
+/*
+ * Handle an incoming packet on the console port
+ */
+void
+callbackConsole(bwudpHandle replyHandle, char *payload, int length)
+{
+    int nCopy, nFree;
+    udpConsole.handle = replyHandle;
+    nCopy = udpConsole.rxCount - udpConsole.rxIndex;
+    if (nCopy > 0) {
+        memmove(udpConsole.rxBuf, udpConsole.rxBuf + udpConsole.rxIndex, nCopy);
+        udpConsole.rxCount = nCopy;
+        nFree = UDP_BUFSIZE - nCopy;
+    }
+    else {
+        udpConsole.rxCount = 0;
+        nFree = UDP_BUFSIZE;
+    }
+    udpConsole.rxIndex = 0;
+    if (nFree) {
+        if (length > nFree) {
+            length = nFree;
+        }
+        memcpy(udpConsole.rxBuf + udpConsole.rxCount, payload, length);
+        udpConsole.rxCount += length;
+    }
+}
+
+/*
+ * Pulling in real sprintf bloats executable by more than 60 kB so provide this
+ * fake version that accepts only a limited number of integer arguments.
+ */
+static char *outbyteStash;
+int
+sprintf(char *buf, const char *fmt, ...)
+{
+    va_list args;
+    unsigned int a[6];
+    va_start(args, fmt);
+    a[0] = va_arg(args, unsigned int);
+    a[1] = va_arg(args, unsigned int);
+    a[2] = va_arg(args, unsigned int);
+    a[3] = va_arg(args, unsigned int);
+    a[4] = va_arg(args, unsigned int);
+    a[5] = va_arg(args, unsigned int);
+    *buf = '\0';
+    outbyteStash = buf;
+    printf(fmt, a[0], a[1], a[2], a[3], a[4], a[5]);
+    outbyteStash = NULL;
+    va_end(args);
+    return outbyteStash - buf;
+}
+
+/*
+ * Stash character and return if in 'sprintf'.
+ * Convert <newline> to <carriage return><newline> so
+ * we can use normal looking printf format strings.
+ * Hang on to startup messages.
+ * Buffer to limit the number of transmitted packets.
+ */
+#define STARTBUF_SIZE   5000
 static char startBuf[STARTBUF_SIZE];
 static int startIdx = 0;
 static int isStartup = 1;
+static int showingStartup = 0;
 
 /*
  * Console output uses our own UART transmitter
  */
 void
-outbyte(char c)
+outbyte(char8 c)
 {
-    if (c == '\n') outbyte('\r');
+    static int wasReturn;
+
+    if (outbyteStash != NULL) {
+        *outbyteStash++ = c;
+        *outbyteStash = '\0';
+        return;
+    }
+    if ((c == '\n') && !wasReturn) outbyte('\r');
+    wasReturn = (c == '\r');
+
     while (GPIO_READ(GPIO_IDX_UART_CSR) & UART_CSR_TX_FULL) continue;
     GPIO_WRITE(GPIO_IDX_UART_CSR, c & 0xFF);
+
     if (isStartup && (startIdx < STARTBUF_SIZE))
         startBuf[startIdx++] = c;
+    if (udpConsole.active) {
+        if (udpConsole.txIndex == 0)
+            udpConsole.usAtFirstOutputCharacter = MICROSECONDS_SINCE_BOOT();
+        udpConsole.txBuf[udpConsole.txIndex++] = c;
+        if (udpConsole.txIndex >= UDP_BUFSIZE) {
+            udpConsoleDrain();
+        }
+    }
 }
 
 static int
@@ -387,13 +493,7 @@ cmdREG(int argc, char **argv)
 static int
 cmdREPLAY(int argc, char **argv)
 {
-    int i;
-
-    for (i = 0 ; i < startIdx ; i++) {
-        unsigned char c = startBuf[i];
-        while (GPIO_READ(GPIO_IDX_UART_CSR) & UART_CSR_TX_FULL) continue;
-        GPIO_WRITE(GPIO_IDX_UART_CSR, c);
-    }
+    showingStartup = 1;
     return 0;
 }
 
@@ -681,25 +781,67 @@ consoleCheck(void)
     int c;
     static char line[200];
     static int idx = 0;
+
 #ifdef SIMULATION
     simService();
 #endif
 
+    if (udpConsole.txIndex != 0) {
+        if ((MICROSECONDS_SINCE_BOOT() - udpConsole.usAtFirstOutputCharacter) >
+                                                                       100000) {
+            udpConsoleDrain();
+        }
+    }
+
+    /*
+     * Startup log display in progress?
+     */
+    if (showingStartup) {
+        static int i;
+        if (i < startIdx) {
+            outbyte(startBuf[i++]);
+        }
+        else {
+            i = 0;
+            showingStartup = 0;
+        }
+    }
+
+    /*
+     * Eye scan in progress?
+     */
     if (eyescanCrank()) return;
+
+    /*
+     * See if UART or network has input pending
+     */
     c = GPIO_READ(GPIO_IDX_UART_CSR);
-    if ((c & UART_CSR_RX_READY) == 0) {
+    if (c & UART_CSR_RX_READY) {
+        GPIO_WRITE(GPIO_IDX_UART_CSR, UART_CSR_RX_READY);
+        c &= 0xFF;
+        udpConsole.active = 0;
+        udpConsole.txIndex = 0;
+        udpConsole.rxCount = 0;
+    }
+    else if (udpConsole.rxIndex < udpConsole.rxCount) {
+        udpConsole.active = 1;
+        c = udpConsole.rxBuf[udpConsole.rxIndex++] & 0xFF;
+    }
+    else {
         cmdTLOG(0, NULL);
         return;
     }
-    GPIO_WRITE(GPIO_IDX_UART_CSR, UART_CSR_RX_READY);
-    c &= 0xFF;
-    if (c > '\177') return;
+
+    /*
+     * Process character
+     */
+    isStartup = 0;
+    if ((c == '\001') || (c > '\177')) return;
     if (c == '\t') c = ' ';
     else if (c == '\177') c = '\b';
     else if (c == '\r') c = '\n';
     if (c == '\n') {
         outbyte('\n');
-        isStartup = 0;
         line[idx] = '\0';
         idx = 0;
         handleLine(line);
@@ -720,5 +862,13 @@ consoleCheck(void)
     if (idx < ((sizeof line) - 1)) {
         outbyte(c);
         line[idx++] = c;
+    }
+}
+
+void
+consoleInit(void)
+{
+    if (bwudpRegisterServer(htons(CONSOLE_UDP_PORT), callbackConsole) < 0) {
+        warn("Can't register console server");
     }
 }

@@ -58,6 +58,7 @@ int main()
     systemParametersInit();
     showNetworkConfig(&systemParameters.netConfig.np);
     epicsInit();
+    consoleInit();
 
     /*
      * Continue with initialization
