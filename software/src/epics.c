@@ -277,10 +277,11 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
 
     case CC_PROTOCOL_CMD_HI_LONGIN:
         switch (idx) {
-        case CC_PROTOCOL_CMD_LONGIN_IDX_FIRMWARE_BUILD_DATE:
+        case CC_PROTOCOL_CMD_LONGIN_IDX_GIT_HASH_ID:
+            reply.args[0] = GPIO_READ(GPIO_IDX_GITHASH);
+            replyArgCount = 1;
             break;
-        case CC_PROTOCOL_CMD_LONGIN_IDX_SOFTWARE_BUILD_DATE:
-            break;
+
         default: return;
         }
         break;
