@@ -49,4 +49,7 @@ unsigned int evrNoutOfSequenceSeconds(void);
 unsigned int evrNtooFewSecondEvents(void);
 unsigned int evrNtooManySecondEvents(void);
 
+void drp_evr_write(uint32_t csrIdx, int regOffset, int value);
+int drp_evr_read(uint32_t csrIdx, int regOffset);
+
 #endif

@@ -9,14 +9,9 @@
 #include <math.h>
 #include "cellControllerProtocol.h"
 #include "fastFeedback.h"
-#include "frontPanel.h"
 #include "gpio.h"
 #ifdef SIMULATION
 #include "simplatform.h"
-#else
-#ifndef MARBLE
-#include "bmb7_udp.h"
-#endif // ndef MARBLE
 #endif // ndef SIMULATION
 #include "util.h"
 
@@ -217,7 +212,7 @@ void cellInhibit(int inhibitFlags)
 {
     uint32_t csr = GPIO_READ(GPIO_IDX_CELL_COMM_CSR);
 
-    csr &= ~(CELL_COMM_CSR_RW_USE_FAKE_DATA | 
+    csr &= ~(CELL_COMM_CSR_RW_USE_FAKE_DATA |
              CELL_COMM_CSR_RW_CCW_INHIBIT |
              CELL_COMM_CSR_RW_CW_INHIBIT);
     if (inhibitFlags & 0x1) csr |= CELL_COMM_CSR_RW_CCW_INHIBIT;

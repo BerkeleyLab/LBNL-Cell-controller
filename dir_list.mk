@@ -11,11 +11,10 @@ GW_SCRIPTS_DIR     = $(GATEWARE_DIR)/scripts
 
 BEDROCK_DIR        = $(SUBMODULES_DIR)/bedrock
 ETHERNET_CORE_DIR  = $(SUBMODULES_DIR)/ethernet-core
-BMB7UDP_DIR        = $(SUBMODULES_DIR)/BMB7UDP
 BWUDP_DIR          = $(SUBMODULES_DIR)/bwudp
-PLATFORM_7SERIES_DIR  = $(PLATFORM_DIR)/xilinx/7series
-PLATFORM_7SERIES_CCTRL_DIR  = $(PLATFORM_7SERIES_DIR)/cctrl
 
+GW_TOP_DIR         = $(GATEWARE_DIR)/top
+GW_TOP_COMMON_DIR  = $(GW_TOP_DIR)/common_cctrl
 GW_SYN_DIR         = $(GATEWARE_DIR)/syn
 
 # Software
@@ -24,10 +23,9 @@ SW_TGT_DIR         = $(SOFTWARE_DIR)/target
 SW_SCRIPTS_DIR     = $(SOFTWARE_DIR)/scripts
 SW_SRC_DIR     	   = $(SOFTWARE_DIR)/src
 SW_APP_DIR         = $(SOFTWARE_DIR)/app
+SW_SUBMODULES_DIR  = $(SOFTWARE_DIR)/submodules
 
-# Cell Controller Software
-SW_CCTRL_APP_DIR     = $(SW_APP_DIR)/cctrl
-SW_CCTRL_SCRIPTS_DIR = $(SW_CCTRL_APP_DIR)/scripts
+SW_SPIFLASHDRIVER_DIR = $(SW_SUBMODULES_DIR)/spiflash_driver/src
 
 include $(BEDROCK_DIR)/dir_list.mk
 # Don't include this as it will overwrite some previously defined variables

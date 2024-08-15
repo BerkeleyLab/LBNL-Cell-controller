@@ -43,7 +43,8 @@ MB_TOOLCHAIN_LOCATION=/media/Xilinx/Vivado/2020.2.2/Vitis/2020.2/gnu/microblaze/
 
 For now the following APPs are supported:
 
-* cctrl
+* cctrl_aurora_8b10b
+* cctrl_aurora_64b66b
 
 ### Deploying
 

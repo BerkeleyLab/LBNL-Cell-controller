@@ -10,7 +10,7 @@ input  clk_in;
 input  irq_in;
 input  clk_out;
 output irq_out;
- 
+
 // clk_in domain
 reg irq_d_in = 0;
 reg irq_req_in = 0;
@@ -30,7 +30,7 @@ begin
         irq_req_in <= 1;
     ack_in <= irq_req_d_out;
 end
-        
+
 always @(posedge clk_out)
 begin
     irq_req_out <= irq_req_in;

@@ -18,72 +18,72 @@ variables:
 # Gitlab doesn't seem to suport the usage of variables in
 # a "dependencies" or "needs" statement. So, unroll the job
 # description, as to simplify job descriptions
-gw_cctrl_bmb7:
+gw_cctrl_aurora_8b10b_marble:
   before_script:
-    - cd gateware/syn/cctrl_bmb7 && ls /non-free
+    - cd gateware/syn/cctrl_aurora_8b10b_marble && ls /non-free
   stage: gateware
   script:
-    - make clean && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_bmb7_top.bit && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_bmb7_top.mmi
+    - make clean && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_aurora_8b10b_marble_top.bit && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_aurora_8b10b_marble_top.mmi
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     expire_in: 7 days
     paths:
-      - gateware/syn/cctrl_bmb7/cctrl_bmb7_top.bit
-      - gateware/syn/cctrl_bmb7/cctrl_bmb7_top.mmi
-      - gateware/syn/cctrl_bmb7/_xilinx/cctrl_bmb7_top/*.runs/impl_1/*.rpt
-      - gateware/syn/cctrl_bmb7/system.xsa
+      - gateware/syn/cctrl_aurora_8b10b_marble/cctrl_aurora_8b10b_marble_top.bit
+      - gateware/syn/cctrl_aurora_8b10b_marble/cctrl_aurora_8b10b_marble_top.mmi
+      - gateware/syn/cctrl_aurora_8b10b_marble/_xilinx/cctrl_aurora_8b10b_marble_top/*.runs/impl_1/*.rpt
+      - gateware/syn/cctrl_aurora_8b10b_marble/system_aurora_8b10b.xsa
 
-gw_cctrl_marble:
+gw_cctrl_aurora_64b66b_marble:
   before_script:
-    - cd gateware/syn/cctrl_marble && ls /non-free
+    - cd gateware/syn/cctrl_aurora_64b66b_marble && ls /non-free
   stage: gateware
   script:
-    - make clean && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_marble_top.bit && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_marble_top.mmi
+    - make clean && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_aurora_64b66b_marble_top.bit && PATH=$XILINX_VIVADO/bin:$PATH make cctrl_aurora_64b66b_marble_top.mmi
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     expire_in: 7 days
     paths:
-      - gateware/syn/cctrl_marble/cctrl_marble_top.bit
-      - gateware/syn/cctrl_marble/cctrl_marble_top.mmi
-      - gateware/syn/cctrl_marble/_xilinx/cctrl_marble_top/*.runs/impl_1/*.rpt
-      - gateware/syn/cctrl_marble/system_marble.xsa
+      - gateware/syn/cctrl_aurora_64b66b_marble/cctrl_aurora_64b66b_marble_top.bit
+      - gateware/syn/cctrl_aurora_64b66b_marble/cctrl_aurora_64b66b_marble_top.mmi
+      - gateware/syn/cctrl_aurora_64b66b_marble/_xilinx/cctrl_aurora_64b66b_marble_top/*.runs/impl_1/*.rpt
+      - gateware/syn/cctrl_aurora_64b66b_marble/system_aurora_64b66b.xsa
 
 # Software jobs
 # Gitlab doesn't seem to suport the usage of variables in
 # a "dependencies" or "needs" statement. So, unroll the job
 # description...
-sw_cctrl_bmb7:
+sw_cctrl_aurora_8b10b_marble:
   before_script:
-    - cd software/app/cctrl
+    - cd software/app/cctrl_aurora_8b10b
   stage: software
   script:
-    - make TARGET=cctrl_bmb7 clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make TARGET=cctrl_bmb7 all bundle
+    - make TARGET=cctrl_aurora_8b10b_marble clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make APP=cctrl_aurora_8b10b PLATFORM=marble all
   # Get artifacts from this job, needed to compile the sofware
   needs:
-    - job: gw_cctrl_bmb7
+    - job: gw_cctrl_aurora_8b10b_marble
       artifacts: true
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     expire_in: 7 days
     paths:
-      - software/app/cctrl/cctrl_bmb7.elf
-      - software/app/cctrl/cctrl_bmb7.elf.size
-      - software/app/cctrl/download_cctrl_bmb7.bit
+      - software/app/cctrl_aurora_8b10b/cctrl_aurora_8b10b_marble.elf
+      - software/app/cctrl_aurora_8b10b/cctrl_aurora_8b10b_marble.elf.size
+      - software/app/cctrl_aurora_8b10b/cctrl_aurora_8b10b_marble*.bit
 
-sw_cctrl_marble:
+sw_cctrl_aurora_64b66b_marble:
   before_script:
-    - cd software/app/cctrl
+    - cd software/app/cctrl_aurora_64b66b
   stage: software
   script:
-    - make TARGET=cctrl_marble clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make TARGET=cctrl_marble all bundle
+    - make TARGET=cctrl_aurora_64b66b_marble clean && PATH=$XILINX_VITIS/bin:$XILINX_VITIS/gnu/microblaze/lin/bin:$PATH make APP=cctrl_aurora_64b66b PLATFORM=marble all
   # Get artifacts from this job, needed to compile the sofware
   needs:
-    - job: gw_cctrl_marble
+    - job: gw_cctrl_aurora_64b66b_marble
       artifacts: true
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     expire_in: 7 days
     paths:
-      - software/app/cctrl/cctrl_marble.elf
-      - software/app/cctrl/cctrl_marble.elf.size
-      - software/app/cctrl/download_cctrl_marble.bit
+      - software/app/cctrl_aurora_64b66b/cctrl_aurora_64b66b_marble.elf
+      - software/app/cctrl_aurora_64b66b/cctrl_aurora_64b66b_marble.elf.size
+      - software/app/cctrl_aurora_64b66b/cctrl_aurora_64b66b_marble*.bit

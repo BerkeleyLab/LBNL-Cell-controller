@@ -15,18 +15,28 @@
 #define CSR_GT0_QPLL_REFCLKLOST   0x200
 #define CSR_GT0_QPLL_LOCK         0x400
 #define CSR_PLL_NOT_LOCKED        0x800
+
+#define LINK_UP_SHIFT             12
 #define CSR_BPM_CCW_LINK_UP       0x1000
 #define CSR_BPM_CW_LINK_UP        0x2000
 #define CSR_CELL_CCW_LINK_UP      0x4000
 #define CSR_CELL_CW_LINK_UP       0x8000
-#define CSR_BPM_CCW_SOFT_ERR      0x10000
-#define CSR_BPM_CW_SOFT_ERR       0x20000
-#define CSR_CELL_CCW_SOFT_ERR     0x40000
-#define CSR_CELL_CW_SOFT_ERR      0x80000
-#define CSR_BPM_CCW_HARD_ERR      0x100000
-#define CSR_BPM_CW_HARD_ERR       0x200000
-#define CSR_CELL_CCW_HARD_ERR     0x400000
-#define CSR_CELL_CW_HARD_ERR      0x800000
+#define CSR_BPM_TEST_LINK_UP      0x10000
+
+#define SOFT_ERR_SHIFT            17
+#define CSR_BPM_CCW_SOFT_ERR      0x20000
+#define CSR_BPM_CW_SOFT_ERR       0x40000
+#define CSR_CELL_CCW_SOFT_ERR     0x80000
+#define CSR_CELL_CW_SOFT_ERR      0x100000
+#define CSR_BPM_TEST_SOFT_ERR     0x200000
+
+#define HARD_ERR_SHIFT            22
+#define CSR_BPM_CCW_HARD_ERR      0x400000
+#define CSR_BPM_CW_HARD_ERR       0x800000
+#define CSR_CELL_CCW_HARD_ERR     0x1000000
+#define CSR_CELL_CW_HARD_ERR      0x2000000
+#define CSR_BPM_TEST_HARD_ERR     0x4000000
+
 
 #define RD_CSR()     GPIO_READ(GPIO_IDX_AURORA_CSR)
 #define WR_CSR(v)    GPIO_WRITE(GPIO_IDX_AURORA_CSR,(v))
@@ -59,15 +69,19 @@ void
 auroraInit(void)
 {
     auroraResetGTX();
+    // Aurora takes a bit to assert channel up
+    microsecondSpin(100000);
     auroraReadoutShowStats(0);
 }
 
 int
-auroraReadoutIsUp(int link)
+auroraReadoutIsUp(unsigned int link)
 {
-    uint32_t csr = RD_CSR();
+    if(link > AURORA_LINK_COUNT-1)
+        return 0;
 
-    return (csr & (1 << (12 + link))) != 0;
+    uint32_t csr = RD_CSR();
+    return (csr & (1 << (LINK_UP_SHIFT + link))) != 0;
 }
 
 /*
@@ -77,23 +91,28 @@ auroraReadoutIsUp(int link)
  * times that the cell controller failed to get a full set of values.
  */
 static void
-auroraFetchStats(int addrLo,  unsigned int *hi, unsigned int *lo)
+auroraFetchStats(int addrLo, unsigned int *hi, unsigned int *lo)
 {
     GPIO_WRITE(GPIO_IDX_LINK_STATISTICS_CSR, addrLo + 1);
     *hi = GPIO_READ(GPIO_IDX_LINK_STATISTICS_CSR);
     GPIO_WRITE(GPIO_IDX_LINK_STATISTICS_CSR, addrLo);
     *lo = GPIO_READ(GPIO_IDX_LINK_STATISTICS_CSR);
 }
-void
-auroraReadoutStats(int link, int idx, unsigned int *hi, unsigned int *lo)
+
+int
+auroraReadoutStats(unsigned int link, int idx, unsigned int *hi, unsigned int *lo)
 {
+    // BPM Test link doesn't have stats
+    if(link > AURORA_LINK_READOUT_COUNT-1)
+        return 0;
+
     unsigned int h, l;
     int addrLo = (((link & 0x7) << 2) | (idx & 0x3)) << 1;
 
     auroraFetchStats(addrLo, &h, &l);
     for (;;) {
         auroraFetchStats(addrLo, hi, lo);
-        if ((h == *hi) && (l == *lo)) return;
+        if ((h == *hi) && (l == *lo)) return 1;
         h = *hi;
         l = *lo;
     }
@@ -102,7 +121,7 @@ auroraReadoutStats(int link, int idx, unsigned int *hi, unsigned int *lo)
 void
 auroraReadoutShowStats(int showTimeout)
 {
-    int link, i;
+    unsigned int link, i;
     unsigned int hi, lo;
     uint32_t csr = RD_CSR();
 
@@ -111,11 +130,11 @@ auroraReadoutShowStats(int showTimeout)
     if (csr & CSR_AURORA_RESET) printf("   Aurora Reset");
     if (csr & CSR_GTX_RESET) printf("   GTX Reset");
     printf("\n");
-    for (link = 0 ; link < 4 ; link++) {
+    for (link = 0 ; link < AURORA_LINK_COUNT ; link++) {
         printf("Link %d %s%s%s   RxCount:%d\n", link,
-                                csr & (1 << (12 + link)) ? "UP" : "DOWN",
-                                csr & (1 << (16 + link)) ? ", SOFT ERROR" : "",
-                                csr & (1 << (20 + link)) ? ", HARD ERROR" : "",
+                                csr & (1 << (LINK_UP_SHIFT + link)) ? "UP" : "DOWN",
+                                csr & (1 << (SOFT_ERR_SHIFT + link)) ? ", SOFT ERROR" : "",
+                                csr & (1 << (HARD_ERR_SHIFT + link)) ? ", HARD ERROR" : "",
                                 auroraReadoutCount(link));
         if (showTimeout) {
             for (i = 0 ; i < AURORA_LINK_READOUT_COUNT ; i++) {

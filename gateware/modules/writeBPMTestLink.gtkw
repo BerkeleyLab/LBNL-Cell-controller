@@ -1,0 +1,90 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Thu Aug  1 20:57:13 2024
+[*]
+[dumpfile] "/home/lrusso/repos/cell-controller/gateware/modules/writeBPMTestLink.vcd"
+[dumpfile_mtime] "Thu Aug  1 20:55:11 2024"
+[dumpfile_size] 693121
+[savefile] "/home/lrusso/repos/cell-controller/gateware/modules/writeBPMTestLink.gtkw"
+[timestart] 1778300
+[size] 3436 1344
+[pos] -1 -1
+*-17.000000 2530000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] writeBPMTestLink_tb.
+[sst_width] 214
+[signals_width] 412
+[sst_expanded] 1
+[sst_vpaned_height] 415
+@200
+-writeBPMTestLink_tb
+@28
+writeBPMTestLink_tb.auClk
+writeBPMTestLink_tb.auFAStrobe
+@22
+writeBPMTestLink_tb.BPM_TEST_AXI_STREAM_TX_tdata[31:0]
+@28
+writeBPMTestLink_tb.BPM_TEST_AXI_STREAM_TX_tlast
+writeBPMTestLink_tb.BPM_TEST_AXI_STREAM_TX_tready
+writeBPMTestLink_tb.BPM_TEST_AXI_STREAM_TX_tvalid
+@420
+writeBPMTestLink_tb.cc
+writeBPMTestLink_tb.errors
+writeBPMTestLink_tb.idx
+@28
+writeBPMTestLink_tb.module_done
+writeBPMTestLink_tb.module_ready
+@22
+writeBPMTestLink_tb.strobeCnt[7:0]
+@200
+-
+-DUT
+@28
+writeBPMTestLink_tb.DUT.auroraUserClk
+writeBPMTestLink_tb.DUT.auroraFAstrobe
+@22
+writeBPMTestLink_tb.DUT.BPMGlobalPrefix[3:0]
+writeBPMTestLink_tb.DUT.BPMIndex[4:0]
+@23
+writeBPMTestLink_tb.DUT.BPM_TEST_AXI_STREAM_TX_tdata[31:0]
+@28
+writeBPMTestLink_tb.DUT.BPM_TEST_AXI_STREAM_TX_tlast
+writeBPMTestLink_tb.DUT.BPM_TEST_AXI_STREAM_TX_tready
+writeBPMTestLink_tb.DUT.BPM_TEST_AXI_STREAM_TX_tvalid
+@22
+writeBPMTestLink_tb.DUT.BPMcount[5:0]
+writeBPMTestLink_tb.DUT.FOFBIndex[8:0]
+@28
+writeBPMTestLink_tb.DUT.FOFBenabled
+writeBPMTestLink_tb.DUT.fifoAlmostFull
+@22
+writeBPMTestLink_tb.DUT.fifoCount[3:0]
+@28
+writeBPMTestLink_tb.DUT.fifoEmpty
+writeBPMTestLink_tb.DUT.fifoForceRe
+writeBPMTestLink_tb.DUT.fifoFull
+@22
+writeBPMTestLink_tb.DUT.fifoDataIn[31:0]
+@28
+writeBPMTestLink_tb.DUT.fifoUserIn
+@22
+writeBPMTestLink_tb.DUT.fifoIn[32:0]
+writeBPMTestLink_tb.DUT.fifoOut[32:0]
+writeBPMTestLink_tb.DUT.fifoDataOut[31:0]
+@28
+writeBPMTestLink_tb.DUT.fifoUserOut
+writeBPMTestLink_tb.DUT.fifoRe
+writeBPMTestLink_tb.DUT.fifoValid
+writeBPMTestLink_tb.DUT.fifoWe
+writeBPMTestLink_tb.DUT.TESTstatusCode[1:0]
+writeBPMTestLink_tb.DUT.TESTstatusStrobe
+@22
+writeBPMTestLink_tb.DUT.cellIndex[4:0]
+@24
+writeBPMTestLink_tb.DUT.fwState[2:0]
+@22
+writeBPMTestLink_tb.DUT.sum[31:0]
+writeBPMTestLink_tb.DUT.txHeader[31:0]
+writeBPMTestLink_tb.DUT.txXerror[31:0]
+writeBPMTestLink_tb.DUT.txYerror[31:0]
+[pattern_trace] 1
+[pattern_trace] 0

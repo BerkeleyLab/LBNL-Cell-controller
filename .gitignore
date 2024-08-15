@@ -28,8 +28,7 @@ _xilinx/
 *BOOT.bin
 
 # BSP-generated directories
-software/app/cctrl/cctrl_*/
-*ad9520Tables.h
+software/app/cctrl_*/cctrl_*/
 
 ######################
 # Modelsim
@@ -49,72 +48,70 @@ work/
 ######################
 
 # Keep only source file, not generated products
-/gateware/platform/xilinx/*/*/coeffs/
+/gateware/platform/xilinx/*/*/coeffs/*
 !/gateware/platform/xilinx/*/*/coeffs/*.coe
-/gateware/platform/xilinx/*/*/evr_mgt_gtx/
-!/gateware/platform/xilinx/*/*/evr_mgt_gtx/*.xci
-/gateware/platform/xilinx/*/*/PacketMem/
+/gateware/platform/xilinx/*/*/evrmgt/*
+!/gateware/platform/xilinx/*/*/evrmgt/*.xci
+/gateware/platform/xilinx/*/*/PacketMem/*
 !/gateware/platform/xilinx/*/*/PacketMem/PacketMem.xci
-/gateware/platform/xilinx/*/*/MappingRam/
+/gateware/platform/xilinx/*/*/MappingRam/*
 !/gateware/platform/xilinx/*/*/MappingRam/MappingRam.xci
-/gateware/platform/xilinx/*/*/timeStampFIFO/
+/gateware/platform/xilinx/*/*/timeStampFIFO/*
 !/gateware/platform/xilinx/*/*/timeStampFIFO/timeStampFIFO.xci
-/gateware/platform/xilinx/*/*/fixToFloat/
+/gateware/platform/xilinx/*/*/fixToFloat/*
 !/gateware/platform/xilinx/*/*/fixToFloat/*.xci
-/gateware/platform/xilinx/*/*/floatMultiply/
+/gateware/platform/xilinx/*/*/floatMultiply/*
 !/gateware/platform/xilinx/*/*/floatMultiply/*.xci
-/gateware/platform/xilinx/*/*/floatResultFIFO/
+/gateware/platform/xilinx/*/*/floatResultFIFO/*
 !/gateware/platform/xilinx/*/*/floatResultFIFO/*.xci
-/gateware/platform/xilinx/*/*/floatToDouble/
+/gateware/platform/xilinx/*/*/floatToDouble/*
 !/gateware/platform/xilinx/*/*/floatToDouble/*.xci
-/gateware/platform/xilinx/*/*/fofbCoefficientMul/
+/gateware/platform/xilinx/*/*/fofbCoefficientMul/*
 !/gateware/platform/xilinx/*/*/fofbCoefficientMul/*.xci
-/gateware/platform/xilinx/*/*/fofbFIRplusIntegral/
+/gateware/platform/xilinx/*/*/fofbFIRplusIntegral/*
 !/gateware/platform/xilinx/*/*/fofbFIRplusIntegral/*.xci
-/gateware/platform/xilinx/*/*/fofbFixToFloat/
+/gateware/platform/xilinx/*/*/fofbFixToFloat/*
 !/gateware/platform/xilinx/*/*/fofbFixToFloat/*.xci
-/gateware/platform/xilinx/*/*/fofbGainMultiplier/
+/gateware/platform/xilinx/*/*/fofbGainMultiplier/*
 !/gateware/platform/xilinx/*/*/fofbGainMultiplier/*.xci
-/gateware/platform/xilinx/*/*/fofbIntegralFixToFloat/
+/gateware/platform/xilinx/*/*/fofbIntegralFixToFloat/*
 !/gateware/platform/xilinx/*/*/fofbIntegralFixToFloat/*.xci
-/gateware/platform/xilinx/*/*/fofbIntegralMultiplier/
+/gateware/platform/xilinx/*/*/fofbIntegralMultiplier/*
 !/gateware/platform/xilinx/*/*/fofbIntegralMultiplier/*.xci
-/gateware/platform/xilinx/*/*/fofbPCS_PMA_without_shared_logic/
+/gateware/platform/xilinx/*/*/fofbPCS_PMA_without_shared_logic/*
 !/gateware/platform/xilinx/*/*/fofbPCS_PMA_without_shared_logic/*.xci
-/gateware/platform/xilinx/*/*/fofbPCS_PMA_with_shared_logic/
+/gateware/platform/xilinx/*/*/fofbPCS_PMA_with_shared_logic/*
 !/gateware/platform/xilinx/*/*/fofbPCS_PMA_with_shared_logic/*.xci
-/gateware/platform/xilinx/*/*/fofbReadLinksMux/
+/gateware/platform/xilinx/*/*/fofbReadLinksMux/*
 !/gateware/platform/xilinx/*/*/fofbReadLinksMux/*.xci
-/gateware/platform/xilinx/*/*/fofbSupplyFilter/
+/gateware/platform/xilinx/*/*/fofbSupplyFilter/*
 !/gateware/platform/xilinx/*/*/fofbSupplyFilter/*.xci
-/gateware/platform/xilinx/*/*/forwardCellLinkMux/
+/gateware/platform/xilinx/*/*/forwardCellLinkMux/*
 !/gateware/platform/xilinx/*/*/forwardCellLinkMux/*.xci
-/gateware/platform/xilinx/*/*/linkStatisticsMux/
-!/gateware/platform/xilinx/*/*/linkStatisticsMux*.xci/
-/gateware/platform/xilinx/*/*/psSetpointCalcConvertToAmps/
+/gateware/platform/xilinx/*/*/linkStatisticsMux/*
+!/gateware/platform/xilinx/*/*/linkStatisticsMux/*.xci
+/gateware/platform/xilinx/*/*/psSetpointCalcConvertToAmps/*
 !/gateware/platform/xilinx/*/*/psSetpointCalcConvertToAmps/*.xci
-/gateware/platform/xilinx/*/*/psSetpointCalcFixToFloat/
+/gateware/platform/xilinx/*/*/psSetpointCalcFixToFloat/*
 !/gateware/platform/xilinx/*/*/psSetpointCalcFixToFloat/*.xci
-/gateware/platform/xilinx/*/*/readBPMlinksMux/
+/gateware/platform/xilinx/*/*/readBPMlinksMux/*
 !/gateware/platform/xilinx/*/*/readBPMlinksMux/*.xci
-/gateware/platform/xilinx/*/*/readOldBPMs_DoubleToFloat/
+/gateware/platform/xilinx/*/*/readOldBPMs_DoubleToFloat/*
 !/gateware/platform/xilinx/*/*/readOldBPMs_DoubleToFloat/*.xci
-/gateware/platform/xilinx/*/*/readOldBPMs_FIFO/
+/gateware/platform/xilinx/*/*/readOldBPMs_FIFO/*
 !/gateware/platform/xilinx/*/*/readOldBPMs_FIFO/*.xci
-/gateware/platform/xilinx/*/*/readOldBPMs_Fix/
+/gateware/platform/xilinx/*/*/readOldBPMs_Fix/*
 !/gateware/platform/xilinx/*/*/readOldBPMs_Fix/*.xci
-/gateware/platform/xilinx/*/*/readOldBPMs_Multiply/
+/gateware/platform/xilinx/*/*/readOldBPMs_Multiply/*
 !/gateware/platform/xilinx/*/*/readOldBPMs_Multiply/*.xci
-/gateware/platform/xilinx/*/*/udpFIFO/
+/gateware/platform/xilinx/*/*/udpFIFO/*
 !/gateware/platform/xilinx/*/*/udpFIFO/udpFIFO.xci
-/gateware/platform/xilinx/*/*/system/
-!/gateware/platform/xilinx/*/*/system/*.bd
-#/gateware/platform/xilinx/*/*/system_marble/
-/gateware/platform/xilinx/*/*/system_marble/*
-!/gateware/platform/xilinx/*/*/system_marble/*.bd
-/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/
+/gateware/platform/xilinx/*/*/system_aurora_8b10b/*
+!/gateware/platform/xilinx/*/*/system_aurora_8b10b/*.bd
+/gateware/platform/xilinx/*/*/system_aurora_64b66b/*
+!/gateware/platform/xilinx/*/*/system_aurora_64b66b/*.bd
+/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/*
 !/gateware/platform/xilinx/*/*/ila_td256_s4096_cap/ila_td256_s4096_cap.xci
-/gateware/platform/xilinx/*/*/system_marble_old/
 
 gateware/top/*/gpioIDX.vh
 gateware/modules/marble_i2c.vh
@@ -125,7 +122,7 @@ gateware/modules/marble_i2c.vh
 # iverilog dependency files. Generated by Makefile
 *udpFIFO_iverilog_cfile.txt
 *ila_td256_s4096_cap_iverilog_cfile.txt
-*evr_mgt_gtx_iverilog_cfile.txt
+*evrmgt_iverilog_cfile.txt
 *MappingRam_iverilog_cfile.txt
 *PacketMem_iverilog_cfile.txt
 *timeStampFIFO_iverilog_cfile.txt
@@ -156,7 +153,6 @@ gateware/modules/marble_i2c.vh
 # generated by makefile for dependency tracking
 axi_lite_generic_reg
 evr_axi
-bmb7_udp
 drp_bridge
 bwUDP
 
@@ -167,7 +163,6 @@ bwUDP
 *.mmi
 *download.bit
 *download_marble.bit
-*download_bmb7.bit
 
 # Script-generated
 *softwareBuildDate.h
@@ -176,9 +171,9 @@ bwUDP
 *aggregate.v
 *gitHash.vh
 gateware/modules/badgerMerged.v
-gateware/syn/cctrl_marble/construct_tx_table.v
-gateware/syn/cctrl_marble/rtefi_blob.v
-gateware/syn/cctrl_marble/rtefi_preblob.vh
+gateware/syn/*/construct_tx_table.v
+gateware/syn/*/rtefi_blob.v
+gateware/syn/*/rtefi_preblob.vh
 
 # Verilator testbench files
 gateware/tb/obj_dir
@@ -203,8 +198,7 @@ software/tests/bin
 .Xil/
 
 # Vivado/Vitis-generated
-*system.xsa
-*system_marble.xsa
+*system*.xsa
 *psu_init*
 *.bif
 *init.tcl
