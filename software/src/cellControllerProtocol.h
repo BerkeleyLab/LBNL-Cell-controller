@@ -81,6 +81,4 @@ struct ccProtocolPacket {
 #define CC_PROTOCOL_CMD_HI_WAVEFORM         0x2000
 #define CC_PROTOCOL_PS_WAVEFORM_CAPACITY    32768
 
-#define CC_PROTOCOL_CMD_HI_BMB7_MONITOR     0xF000
-
 #endif /* _CELL_CONTROLLER_PROTOCOL_ */
