@@ -348,15 +348,6 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         replyArgCount = auroraStats(argc);
         break;
 
-    case CC_PROTOCOL_CMD_HI_SET_ATTENUATOR:
-        break;
-
-    case CC_PROTOCOL_CMD_HI_SET_PLL_OUTPUT:
-        break;
-
-    case CC_PROTOCOL_CMD_HI_SET_PLL_TABLE:
-        break;
-
     case CC_PROTOCOL_CMD_HI_PLL_REG_IO:
         break;
 
