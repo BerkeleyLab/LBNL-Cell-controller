@@ -57,7 +57,11 @@ int main()
     bootFlashInit();
     systemParametersInit();
     showNetworkConfig(&systemParameters.netConfig.np);
-    epicsInit();
+    bwudpRegisterInterface(
+                         (ethernetMAC *)&systemParameters.netConfig.ethernetMAC,
+                         (ipv4Address *)&systemParameters.netConfig.np.address,
+                         (ipv4Address *)&systemParameters.netConfig.np.netmask,
+                         (ipv4Address *)&systemParameters.netConfig.np.gateway);
     consoleInit();
 
     /*
@@ -67,6 +71,7 @@ int main()
     mgtClkSwitchInit();
     eyescanInit();
     mgtInit();
+    epicsInit();
     auroraInit();
     evrInit();
     evrShow();
@@ -84,7 +89,7 @@ int main()
             xadcUpdate();
         }
         mgtCrankRxAligner();
-        epicsService();
+        bwudpCrank();
         consoleCheck();
     }
     cleanup_platform();

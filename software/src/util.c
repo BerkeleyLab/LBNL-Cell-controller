@@ -12,6 +12,19 @@
 int debugFlags;
 
 /*
+ * 32-bit endian swap
+ * Assume that we're using GCC
+ */
+void
+bswap32(uint32_t *b, int n)
+{
+    while (n--) {
+        *b = __builtin_bswap32(*b);
+        b++;
+    }
+}
+
+/*
  * Employ some gross hacks to avoid using vprintf (and thereby
  * bloating the text size by about 60 kB).
  */

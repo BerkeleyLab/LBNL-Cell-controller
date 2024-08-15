@@ -80,17 +80,9 @@
 #define GPIO_DSP_CMD_FIR_CONFIG           8
 #define GPIO_DSP_CMD_SHIFT                28
 
-/*
- * GPIO_AWG_CAPACITY           8192
- * GPIO_RECORDER_CAPACITY      32768
- * GPIO_CHANNEL_COUNT          24
- * GPIO_FOFB_MATRIX_ADDR_WIDTH 9
-*/
-
-/* FIXME Change this to sensible values at some point */
 #define GPIO_AWG_CAPACITY           8192
-#define GPIO_RECORDER_CAPACITY      8192
-#define GPIO_CHANNEL_COUNT          4
+#define GPIO_RECORDER_CAPACITY      32768
+#define GPIO_CHANNEL_COUNT          24
 #define GPIO_FOFB_MATRIX_ADDR_WIDTH 9
 
 #include <xil_io.h>
