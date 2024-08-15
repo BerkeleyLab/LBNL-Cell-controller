@@ -56,6 +56,8 @@ int main()
      */
     bootFlashInit();
     systemParametersInit();
+    showNetworkConfig(&systemParameters.netConfig.np);
+    epicsInit();
 
     /*
      * Continue with initialization
