@@ -36,6 +36,8 @@
 #define DEBUGFLAG_DUMP_MGT_SWITCH           0x2000000
 extern int debugFlags;
 
+void bswap32(uint32_t *b, int n);
+
 void fatal(const char *fmt, ...);
 void warn(const char *fmt, ...);
 void microsecondSpin(unsigned int us);

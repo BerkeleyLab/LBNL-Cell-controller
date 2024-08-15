@@ -23,116 +23,80 @@
 
 #define BPM_COUNT_MASK 0x3F
 
-static struct ccProtocolPacket reply;
-static int replyCount;
-
-static void parseCmd(struct ccProtocolPacket *cmd, int length);
-static void rxPacketCallback(bwudpHandle handle, char *payload, int length);
-
-static bwudpHandle handleNonce;
-
-int epicsInit(void) {
-    int rval = bwudpRegisterInterface(
-                         (ethernetMAC *)&systemParameters.netConfig.ethernetMAC,
-                         (ipv4Address *)&systemParameters.netConfig.np.address,
-                         (ipv4Address *)&systemParameters.netConfig.np.netmask,
-                         (ipv4Address *)&systemParameters.netConfig.np.gateway);
-    rval |= bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), (bwudpCallback)rxPacketCallback);
-    return rval;
-}
-
-static void rxPacketCallback(bwudpHandle handle, char *payload, int length) {
-    // Handle the packet
-    handleNonce = handle;
-    parseCmd((struct ccProtocolPacket *)payload, length);
-    return;
-}
-
-static void sendReply(void) {
-    if (debugFlags & DEBUGFLAG_EPICS)
-        printf("%d REPLY %X %X %X\n", replyCount, reply.magic,
-                                            reply.identifier, reply.command);
-    bwudpSend(handleNonce, (const char *)&reply, replyCount);
-}
-
-void epicsService(void) {
-    bwudpCrank();
-}
-
 /*
  * Return system monitors
  */
 static int
-sysmon(void)
+sysmonFetch(uint32_t *args)
 {
+    uint32_t *ap = args;
     int i;
-    int rIndex = 0;
 
     xadcUpdate();
     for (i = 0 ; i < XADC_CHANNEL_COUNT ; ) {
         uint32_t v = xadcVal[i++];
         if (i < XADC_CHANNEL_COUNT) v |= xadcVal[i++] << 16;
-        reply.args[rIndex++] = v;
+        *ap++ = v;
     }
     for (i = 0 ; i < QSFP_COUNT ; i++) {
         int r;
-        reply.args[rIndex++] = (qsfpTemperature(i)<<16) | qsfpVoltage(i);
+        *ap++ = (qsfpTemperature(i)<<16) | qsfpVoltage(i);
         for (r = 0 ; r < QSFP_RX_COUNT ; ) {
             uint32_t v = qsfpRxPower(i, r++);
             v |= qsfpRxPower(i, r++) << 16;
-            reply.args[rIndex++] = v;
+            *ap++ = v;
         }
     }
-    reply.args[rIndex++] = (GPIO_READ(GPIO_IDX_EVENT_STATUS) << 16);
-    reply.args[rIndex++] = (evrNtooManySecondEvents() << 16) |
+    *ap++ = (GPIO_READ(GPIO_IDX_EVENT_STATUS) << 16);
+    *ap++ = (evrNtooManySecondEvents() << 16) |
                             evrNtooFewSecondEvents();
-    reply.args[rIndex++] = evrNoutOfSequenceSeconds();
-    reply.args[rIndex++] = GPIO_READ(GPIO_IDX_AWG_CSR);
-    reply.args[rIndex++] = GPIO_READ(GPIO_IDX_WFR_CSR);
-    reply.args[rIndex++] = fofbEthernetGetPCSPMAstatus();
-    return rIndex;
+    *ap++ = evrNoutOfSequenceSeconds();
+    *ap++ = GPIO_READ(GPIO_IDX_AWG_CSR);
+    *ap++ = GPIO_READ(GPIO_IDX_WFR_CSR);
+    *ap++ = fofbEthernetGetPCSPMAstatus();
+    return ap - args;
 }
 
 /*
  * Return or clear Aurora link statistics
  */
 static int
-auroraStats(int argc)
+auroraStats(uint32_t *args, int clearStats)
 {
+    uint32_t *ap = args;
     int link;
-    int rIndex = 0;
     int i;
 
-    if (argc) {
+    if (clearStats) {
         auroraReadoutClearStats();
     }
     else {
         unsigned int hi, lo;
         for (link = 0 ; link < AURORA_LINK_COUNT ; link++) {
-            reply.args[rIndex++] = auroraReadoutIsUp(link);
-            reply.args[rIndex++] = auroraReadoutCount(link);
+            *ap++ = auroraReadoutIsUp(link);
+            *ap++ = auroraReadoutCount(link);
             for (i = 0 ; i < AURORA_LINK_READOUT_COUNT ; i++) {
                 auroraReadoutStats(link, i, &hi, &lo);
-                reply.args[rIndex++] = lo;
-                reply.args[rIndex++] = hi;
+                *ap++ = lo;
+                *ap++ = hi;
             }
         }
         auroraReadoutStats(AUSTATS_TIMEOUT_COUNTER_LINK,
                            AUSTATS_TIMEOUT_COUNTER_IDX, &hi, &lo);
-        reply.args[rIndex++] = lo;
-        reply.args[rIndex++] = hi;
-        reply.args[rIndex++] = GPIO_READ(GPIO_IDX_BPMLINKS_EXTRA_STATUS) & BPM_COUNT_MASK;
-        reply.args[rIndex++] = GPIO_READ(GPIO_IDX_BPM_RX_BITMAP);
-        reply.args[rIndex++] = GPIO_READ(GPIO_IDX_CELL_RX_BITMAP);
-        reply.args[rIndex++] = ffbReadoutTime();
-        reply.args[rIndex++] = ffbCellIndex();
-        reply.args[rIndex++] = ffbCellCount();
-        reply.args[rIndex++] = ffbCellBPMcount();
-        reply.args[rIndex++] = ffbReadoutIsValid();
-        reply.args[rIndex++] = GPIO_READ(GPIO_IDX_FOFB_CSR);
-        reply.args[rIndex++] = GPIO_READ(GPIO_IDX_FOFB_ENABLE_BITMAP);
+        *ap++ = lo;
+        *ap++ = hi;
+        *ap++ = GPIO_READ(GPIO_IDX_BPMLINKS_EXTRA_STATUS) & BPM_COUNT_MASK;
+        *ap++ = GPIO_READ(GPIO_IDX_BPM_RX_BITMAP);
+        *ap++ = GPIO_READ(GPIO_IDX_CELL_RX_BITMAP);
+        *ap++ = ffbReadoutTime();
+        *ap++ = ffbCellIndex();
+        *ap++ = ffbCellCount();
+        *ap++ = ffbCellBPMcount();
+        *ap++ = ffbReadoutIsValid();
+        *ap++ = GPIO_READ(GPIO_IDX_FOFB_CSR);
+        *ap++ = GPIO_READ(GPIO_IDX_FOFB_ENABLE_BITMAP);
     }
-    return rIndex;
+    return ap - args;
 }
 
 static void
@@ -160,8 +124,12 @@ dspUpdateAll(int cmdCode, int argc, uint32_t *args)
     }
 }
 
-static void
-handleCommand(int argc, struct ccProtocolPacket *cmdp)
+/*
+ * Process command
+ */
+static int
+handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
+                                   struct ccProtocolPacket *replyp)
 {
     int replyArgCount = 0;
     int hi  = cmdp->command & CC_PROTOCOL_CMD_MASK_HI;
@@ -170,25 +138,25 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
 
     switch (hi) {
     case CC_PROTOCOL_CMD_HI_FOFB_GAIN:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_FOFB_GAIN, argc, cmdp->args);
+            dspUpdateAll(GPIO_DSP_CMD_WRITE_FOFB_GAIN, commandArgCount, cmdp->args);
             break;
 
     case CC_PROTOCOL_CMD_HI_CLIP_LIMIT:
         switch(lo) {
         case CC_PROTOCOL_CMD_LO_CLIP_LIMIT_PS:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT, argc, cmdp->args);
+            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT, commandArgCount, cmdp->args);
             break;
 
         case CC_PROTOCOL_CMD_LO_CLIP_LIMIT_FFB:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT, argc, cmdp->args);
+            dspUpdateAll(GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT, commandArgCount, cmdp->args);
             break;
 
-        default: return;
+        default: return -1;
         }
         break;
 
     case CC_PROTOCOL_CMD_HI_PS_OFFSET:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_OFFSET, argc, cmdp->args);
+            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_OFFSET, commandArgCount, cmdp->args);
             break;
 
     case CC_PROTOCOL_CMD_HI_FOFB_FIR: {
@@ -212,7 +180,7 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         GPIO_WRITE(GPIO_IDX_DSP_CSR,
                             (GPIO_DSP_CMD_LATCH_ADDRESS<<GPIO_DSP_CMD_SHIFT) |
                             (row << (GPIO_FOFB_MATRIX_ADDR_WIDTH+1)) | 0);
-        for (i = 1 ; i < argc ; i++, col++) {
+        for (i = 1 ; i < commandArgCount ; i++, col++) {
             uint32_t value = cmdp->args[i];
             if (col == CC_PROTOCOL_FOFB_CORRECTOR_FIR_SIZE) {
                 printf("Too many FIR coefficients\n");
@@ -260,7 +228,7 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         int row = cmdp->command & ~CC_PROTOCOL_CMD_MASK_HI;
         int col = cmdp->args[0] & 0x3FF;
 
-        for (i = 1 ; i < argc ; i++, col++) {
+        for (i = 1 ; i < commandArgCount ; i++, col++) {
             uint32_t value = cmdp->args[i];
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
                         (GPIO_DSP_CMD_LATCH_ADDRESS<<GPIO_DSP_CMD_SHIFT) |
@@ -278,11 +246,11 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
     case CC_PROTOCOL_CMD_HI_LONGIN:
         switch (idx) {
         case CC_PROTOCOL_CMD_LONGIN_IDX_GIT_HASH_ID:
-            reply.args[0] = GPIO_READ(GPIO_IDX_GITHASH);
+            replyp->args[0] = GPIO_READ(GPIO_IDX_GITHASH);
             replyArgCount = 1;
             break;
 
-        default: return;
+        default: return -1;
         }
         break;
 
@@ -322,7 +290,7 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
                 psRecorderSoftTrigger();
                 break;
 
-            default: return;
+            default: return -1;
             }
             break;
 
@@ -342,11 +310,11 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
         break;
 
     case CC_PROTOCOL_CMD_HI_SYSMON:
-        replyArgCount = sysmon();
+        replyArgCount = sysmonFetch(replyp->args);
         break;
 
     case CC_PROTOCOL_CMD_HI_LINKSTATS:
-        replyArgCount = auroraStats(argc);
+        replyArgCount = auroraStats(replyp->args, commandArgCount);
         break;
 
     case CC_PROTOCOL_CMD_HI_PLL_REG_IO:
@@ -358,62 +326,81 @@ handleCommand(int argc, struct ccProtocolPacket *cmdp)
     case CC_PROTOCOL_CMD_HI_I32ARRAY_OUT:
         switch (lo) {
         case CC_PROTOCOL_CMD_LO_I32A_BPM_SETPOINTS:
-            ffbStashSetpoints(argc, cmdp->args, cmdp->cellInfo);
+            ffbStashSetpoints(commandArgCount, cmdp->args, cmdp->cellInfo);
             break;
-        default: return;
+        default: return -1;
         }
         break;
 
     case CC_PROTOCOL_CMD_HI_F32ARRAY_OUT:
         switch (lo) {
         case CC_PROTOCOL_CMD_LO_F32A_AWG_PATTERN:
-            psAWGstashSamples(&cmdp->args[1], cmdp->args[0], argc - 1);
+            psAWGstashSamples(&cmdp->args[1], cmdp->args[0], commandArgCount - 1);
             break;
 
-        default: return;
+        default: return -1;
         }
         break;
 
     case CC_PROTOCOL_CMD_HI_WAVEFORM:
-        replyArgCount = psRecorderFetch(reply.args, CC_PROTOCOL_ARG_CAPACITY,
+        replyArgCount = psRecorderFetch(replyp->args, CC_PROTOCOL_ARG_CAPACITY,
                                                             idx, cmdp->args[0]);
         break;
 
-    default: return;
+    default: return -1;
     }
-    if (reply.magic == CC_PROTOCOL_MAGIC_SWAPPED) {
-        int i;
-        for (i = 0 ; i < replyArgCount ; i++)
-            reply.args[i] = __builtin_bswap32(reply.args[i]);
-    }
-    replyCount = CC_PROTOCOL_ARG_COUNT_TO_SIZE(replyArgCount);
-    sendReply();
+
+    return replyArgCount;
 }
 
-static void parseCmd(struct ccProtocolPacket *cmd, int length) {
-    if (length >= (int)CC_PROTOCOL_ARG_COUNT_TO_U32_COUNT(0)) {
-        if (debugFlags & DEBUGFLAG_EPICS)
-            printf("%d CMD %X %X %X\n", length, cmd->magic, cmd->identifier,
-                    cmd->command);
-        if ((cmd->magic == reply.magic)
-                && (cmd->identifier == reply.identifier)) {
-            sendReply();
-        }
-        else {
-            int argc = CC_PROTOCOL_U32_COUNT_TO_ARG_COUNT(length);
-            reply.magic = cmd->magic;
-            reply.identifier = cmd->identifier;
-            reply.command = cmd->command;
-            if (cmd->magic == CC_PROTOCOL_MAGIC_SWAPPED) {
-                int i;
-                cmd->magic = __builtin_bswap32(cmd->magic);
-                cmd->identifier = __builtin_bswap32(cmd->identifier);
-                cmd->command = __builtin_bswap32(cmd->command);
-                for (i = 0 ; i < argc ; i++)
-                    cmd->args[i] = __builtin_bswap32(cmd->args[i]);
-            }
-            if (cmd->magic == CC_PROTOCOL_MAGIC) handleCommand(argc, cmd);
-        }
+/*
+ * Handle commands from IOC
+ */
+static void
+epicsHandler(bwudpHandle replyHandle, char *payload, int length)
+{
+    struct ccProtocolPacket *cmdp = (struct ccProtocolPacket *)payload;
+    int mustSwap = 0;
+    int commandArgCount;
+    static struct ccProtocolPacket reply;
+    static int replySize;
+    static uint32_t lastIdentifier;
+
+    /*
+     * Ignore weird-sized packets
+     */
+    if ((length < CC_PROTOCOL_ARG_COUNT_TO_SIZE(0))
+     || (length > sizeof(struct ccProtocolPacket))
+     || ((length % sizeof(uint32_t)) != 0)) {
+        return;
     }
-    return;
+    commandArgCount = CC_PROTOCOL_SIZE_TO_ARG_COUNT(length);
+    if (cmdp->magic == CC_PROTOCOL_MAGIC_SWAPPED) {
+        mustSwap = 1;
+        bswap32(&cmdp->magic, length / sizeof(int32_t));
+    }
+    if (cmdp->magic == CC_PROTOCOL_MAGIC) {
+        if (debugFlags & DEBUGFLAG_EPICS) {
+            printf("Command:%X identifier:%X args:%d 0x%x\n",
+                         (unsigned int)cmdp->command, (unsigned int)cmdp->identifier,
+                         commandArgCount, (unsigned int)cmdp->args[0]);
+        }
+        if (cmdp->identifier != lastIdentifier) {
+            int n;
+            memcpy(&reply, cmdp, CC_PROTOCOL_ARG_COUNT_TO_SIZE(0));
+            if ((n = handleCommand(commandArgCount, cmdp, &reply)) < 0) {
+                return;
+            }
+            lastIdentifier = cmdp->identifier;
+            replySize = CC_PROTOCOL_ARG_COUNT_TO_SIZE(n);
+            if (mustSwap) {
+                bswap32(&reply.magic, replySize / sizeof(int32_t));
+            }
+        }
+        bwudpSend(replyHandle, (const char *)&reply, replySize);
+    }
+}
+
+void epicsInit(void) {
+    bwudpRegisterServer(htons(CC_PROTOCOL_UDP_PORT), epicsHandler);
 }
