@@ -484,6 +484,7 @@ wire [31:0] BRAM_BPM_SETPOINTS_RDATA;
 
 reg localFOFBcontrol = 0;
 wire fofbEnabled;
+wire [31:0] bpmReadLinksCSR;
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_FOFB_CSR]) localFOFBcontrol <= GPIO_OUT[0];
 end
@@ -501,7 +502,7 @@ readBPMlinks #(.faStrobeDebug("false"),
          .sysClk(sysClk),
          .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_BPMLINKS_CSR]),
          .GPIO_OUT(GPIO_OUT),
-         .sysCsr(GPIO_IN[GPIO_IDX_BPMLINKS_CSR]),
+         .sysCsr(bpmReadLinksCSR),
          .sysAdditionalStatus(GPIO_IN[GPIO_IDX_BPMLINKS_EXTRA_STATUS]),
          .sysRxBitmap(GPIO_IN[GPIO_IDX_BPM_RX_BITMAP]),
          .sysLocalFOFBenabled(localFOFBcontrol),
@@ -531,6 +532,8 @@ readBPMlinks #(.faStrobeDebug("false"),
          .localBPMs_tvalid(localBPMs_tvalid),
          .localBPMs_tlast(localBPMs_tlast));
 
+assign GPIO_IN[GPIO_IDX_BPMLINKS_CSR] = bpmReadLinksCSR;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Test BPM data
 wire [2:0] bpmTESTdbgState;
@@ -539,6 +542,8 @@ writeBPMTestLink #(
     .stateDebug("false"),
     .testInDebug("false"))
   writeBPMTestLink (
+         .sysClk(sysClk),
+         .sysBPMCSR(bpmReadLinksCSR),
          .auroraUserClk(auroraUserClk),
          .auroraFAstrobe(auroraFAstrobe),
          .auroraChannelUp(BPM_TEST_AuroraCoreStatus_channel_up),
