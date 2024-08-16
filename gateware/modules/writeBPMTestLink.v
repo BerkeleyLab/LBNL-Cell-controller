@@ -4,10 +4,13 @@
 // All other nets are in the Aurora user clock domain.
 //
 module writeBPMTestLink #(
-    parameter BPM_GLOBAL_INDEX = 2,
     parameter faStrobeDebug    = "false",
     parameter stateDebug       = "false",
     parameter testInDebug      = "false") (
+
+    input wire         sysClk,
+    input wire [31:0]  sysBPMCSR,
+
     // Start of Aurora user clock domain nets
     input  wire         auroraUserClk,
 
@@ -46,13 +49,30 @@ assign TESTstatusStrobe = 0;
 assign TESTstatusCode = 0;
 
 wire  [BPM_COUNT_WIDTH-1:0] BPMcount = BPM_COUNT_PER_SECTOR;
-wire [CELL_INDEX_WIDTH-1:0] cellIndex = CELL_INDEX;
+wire [CELL_INDEX_WIDTH-1:0] cellIndex = 0;
+
+// Get CSR from BPM
+wire [31:0] auBPMCSR;
+forwardData #(
+    .DATA_WIDTH(32)
+  )
+  forwardCmd(
+    .inClk(sysClk),
+    .inData(sysBPMCSR),
+    .outClk(auroraUserClk),
+    .outData(auBPMCSR));
+
+wire [BPM_COUNT_WIDTH-1:0]  auBPMcount = auBPMCSR[0+:BPM_COUNT_WIDTH];
+wire [BPM_COUNT_WIDTH-1:0]  auBPMCWpacketCount = auBPMCSR[8+:BPM_COUNT_WIDTH];
+wire [BPM_COUNT_WIDTH-1:0]  auBPMCCWpacketCount = auBPMCSR[16+:BPM_COUNT_WIDTH];
+wire [CELL_INDEX_WIDTH-1:0] auCsrCellIndex = auBPMCSR[24+:CELL_INDEX_WIDTH];
 
 // Dissect merged data word
 reg [BPM_INDEX_WIDTH-1:0]                   BPMIndex = 0;
-wire [FOFB_INDEX_WIDTH-BPM_INDEX_WIDTH-1:0] BPMGlobalPrefix = BPM_GLOBAL_INDEX;
+// Use cell index to differentiate between fake "BPMs" connected
+// to different Cell Controllers
 wire [FOFB_INDEX_WIDTH-1:0] FOFBIndex = {
-    BPMGlobalPrefix,
+    auCsrCellIndex[BPM_INDEX_WIDTH-1:0],
     BPMIndex
 };
 
