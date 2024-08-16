@@ -72,7 +72,7 @@ reg [BPM_INDEX_WIDTH-1:0]                   BPMIndex = 0;
 // Use cell index to differentiate between fake "BPMs" connected
 // to different Cell Controllers
 wire [FOFB_INDEX_WIDTH-1:0] FOFBIndex = {
-    auCsrCellIndex[BPM_INDEX_WIDTH-1:0],
+    auCsrCellIndex[FOFB_INDEX_WIDTH-BPM_INDEX_WIDTH-1:0],
     BPMIndex
 };
 
