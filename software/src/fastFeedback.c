@@ -117,16 +117,24 @@ void
 showFOFB(int first, int n)
 {
     int i;
+    const char *fmt;
+
+    if (DEBUGFLAG_SHOW_FOFB_HEX) {
+        fmt = " %4d  0x%08X 0x%08X  0x%08X  %s\n";
+    }
+    else {
+        fmt = " %4d%11d%11d%11d%s\n";
+    }
 
     printf ("Readout usec: %d\n", (GPIO_READ(GPIO_IDX_CELL_COMM_CSR) &
          CELL_COMM_CSR_R_READOUT_USEC_MASK) >> CELL_COMM_CSR_READOUT_USEC_SHIFT);
     for (i = first ; i < first + n ; i++) {
         GPIO_WRITE(GPIO_IDX_BPM_READOUT_X, i);
         uint32_t s = GPIO_READ(GPIO_IDX_BPM_READOUT_S);
-        printf(" %4d%11d%11d%11d%s\n", i, GPIO_READ(GPIO_IDX_BPM_READOUT_X),
+        printf(fmt, i, GPIO_READ(GPIO_IDX_BPM_READOUT_X),
                                           GPIO_READ(GPIO_IDX_BPM_READOUT_Y),
                                           s & 0x3FFFFFFF,
-                                          s & 0x40000000 ? "  Clip" : "");
+                                          s & 0x40000000 ? "Clip" : "");
     }
 }
 

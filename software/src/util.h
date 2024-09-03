@@ -32,6 +32,7 @@
 #define DEBUGFLAG_SHOW_MGT_RESETS           0x20000
 #define DEBUGFLAG_SHOW_RX_ALIGNER           0x40000
 #define DEBUGFLAG_SI570_SETTING             0x80000
+#define DEBUGFLAG_SHOW_FOFB_HEX             0x100000
 #define DEBUGFLAG_SHOW_MGT_SWITCH           0x1000000
 #define DEBUGFLAG_DUMP_MGT_SWITCH           0x2000000
 extern int debugFlags;
