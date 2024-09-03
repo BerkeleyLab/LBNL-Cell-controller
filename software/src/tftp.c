@@ -83,7 +83,7 @@ struct tftpPacket {
     char     payload[TFTP_PAYLOAD_CAPACITY];
 };
 static int lastSendSize;
-static char txBuf[TFTP_PAYLOAD_CAPACITY];
+static char txBuf[2*sizeof(uint16_t)+TFTP_PAYLOAD_CAPACITY];
 
 /*
  * Send a packet
