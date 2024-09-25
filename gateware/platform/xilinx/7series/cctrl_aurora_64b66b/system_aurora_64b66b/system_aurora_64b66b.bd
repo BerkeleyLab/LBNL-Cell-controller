@@ -27,15 +27,13 @@
         "aurora_64b66b_4": "",
         "aurora_64b66b_2": "",
         "aurora_64b66b_1": "",
-        "xlconstant_1": "",
-        "xlconstant_0": "",
-        "xlconstant_2": "",
-        "xlconstant_3": "",
-        "xlconstant_4": "",
+        "xlconstant_one": "",
+        "xlconstant_zero": "",
         "data_upconverter1": {
           "axis_data_fifo_3": "",
           "axi_stream_dwc": "",
-          "axi_stream_cc": ""
+          "axi_stream_cc": "",
+          "axi_stream_sc_in": ""
         },
         "data_downconverter4": {
           "axi_stream_sc_in": "",
@@ -52,21 +50,20 @@
         "data_upconverter2": {
           "axis_data_fifo_3": "",
           "axi_stream_dwc": "",
-          "axi_stream_cc": ""
+          "axi_stream_cc": "",
+          "axi_stream_sc_in": ""
         },
         "data_upconverter3": {
           "axis_data_fifo_3": "",
           "axi_stream_dwc": "",
-          "axi_stream_cc": ""
+          "axi_stream_cc": "",
+          "axi_stream_sc_in": ""
         },
         "core_status": "",
-        "xlconstant_5": "",
+        "xlconstant_zero_0": "",
         "core_status1": "",
-        "xlconstant_6": "",
-        "xlconstant_7": "",
         "core_status3": "",
         "core_status4": "",
-        "xlconstant_8": "",
         "core_status2": "",
         "data_downconverter5": {
           "axi_stream_sc_in": "",
@@ -278,11 +275,11 @@
           },
           "HAS_TKEEP": {
             "value": "1",
-            "value_src": "ip_prop"
+            "value_src": "default"
           },
           "HAS_TLAST": {
             "value": "1",
-            "value_src": "ip_prop"
+            "value_src": "default"
           },
           "HAS_TREADY": {
             "value": "0",
@@ -318,7 +315,7 @@
           },
           "TUSER_WIDTH": {
             "value": "8",
-            "value_src": "ip_prop"
+            "value_src": "default"
           }
         }
       },
@@ -1072,28 +1069,22 @@
           }
         },
         "interface_nets": {
+          "microblaze_0_ilmb": {
+            "interface_ports": [
+              "ILMB",
+              "ilmb_v10/LMB_M"
+            ]
+          },
           "ilmb_bram_if_cntlr_BRAM_PORT": {
             "interface_ports": [
               "dlmb_bram_if_cntlr_bram/BRAM_PORTB",
               "ilmb_bram_if_cntlr/BRAM_PORT"
             ]
           },
-          "microblaze_0_dlmb_bus": {
-            "interface_ports": [
-              "dlmb_v10/LMB_Sl_0",
-              "dlmb_bram_if_cntlr/SLMB"
-            ]
-          },
           "microblaze_0_ilmb_bus": {
             "interface_ports": [
               "ilmb_v10/LMB_Sl_0",
               "ilmb_bram_if_cntlr/SLMB"
-            ]
-          },
-          "microblaze_0_ilmb": {
-            "interface_ports": [
-              "ILMB",
-              "ilmb_v10/LMB_M"
             ]
           },
           "microblaze_0_dlmb": {
@@ -1106,6 +1097,12 @@
             "interface_ports": [
               "dlmb_bram_if_cntlr_bram/BRAM_PORTA",
               "dlmb_bram_if_cntlr/BRAM_PORT"
+            ]
+          },
+          "microblaze_0_dlmb_bus": {
+            "interface_ports": [
+              "dlmb_v10/LMB_Sl_0",
+              "dlmb_bram_if_cntlr/SLMB"
             ]
           }
         },
@@ -1562,50 +1559,17 @@
               }
             }
           },
-          "xlconstant_1": {
+          "xlconstant_one": {
             "vlnv": "xilinx.com:ip:xlconstant:1.1",
             "xci_name": "system_aurora_64b66b_xlconstant_1_0",
             "xci_path": "ip/system_aurora_64b66b_xlconstant_1_0/system_aurora_64b66b_xlconstant_1_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_1"
+            "inst_hier_path": "Aurora/xlconstant_one"
           },
-          "xlconstant_0": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_0_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_0_0/system_aurora_64b66b_xlconstant_0_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_0",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
-              }
-            }
-          },
-          "xlconstant_2": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_2_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_2_0/system_aurora_64b66b_xlconstant_2_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_2",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
-              }
-            }
-          },
-          "xlconstant_3": {
+          "xlconstant_zero": {
             "vlnv": "xilinx.com:ip:xlconstant:1.1",
             "xci_name": "system_aurora_64b66b_xlconstant_3_0",
             "xci_path": "ip/system_aurora_64b66b_xlconstant_3_0/system_aurora_64b66b_xlconstant_3_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_3",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
-              }
-            }
-          },
-          "xlconstant_4": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_4_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_4_0/system_aurora_64b66b_xlconstant_4_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_4",
+            "inst_hier_path": "Aurora/xlconstant_zero",
             "parameters": {
               "CONST_VAL": {
                 "value": "0"
@@ -1677,13 +1641,48 @@
                 "xci_name": "system_aurora_64b66b_axi_stream_cc_0",
                 "xci_path": "ip/system_aurora_64b66b_axi_stream_cc_0/system_aurora_64b66b_axi_stream_cc_0.xci",
                 "inst_hier_path": "Aurora/data_upconverter1/axi_stream_cc"
+              },
+              "axi_stream_sc_in": {
+                "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_1",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_1_1/system_aurora_64b66b_axi_stream_sc_in_1.xci",
+                "inst_hier_path": "Aurora/data_upconverter1/axi_stream_sc_in",
+                "parameters": {
+                  "M_HAS_TREADY": {
+                    "value": "1"
+                  },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TID_REMAP": {
+                    "value": "1'b0"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
+                  "TUSER_REMAP": {
+                    "value": "1'b0"
+                  }
+                }
               }
             },
             "interface_nets": {
-              "auto_us_M_AXIS": {
+              "axi_stream_sc_in_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_sc_in/M_AXIS",
+                  "axi_stream_cc/S_AXIS"
+                ]
+              },
+              "axi_stream_dwc_M_AXIS": {
                 "interface_ports": [
                   "axi_stream_dwc/M_AXIS",
-                  "axi_stream_cc/S_AXIS"
+                  "axi_stream_sc_in/S_AXIS"
                 ]
               },
               "S_AXI_STREAM_1": {
@@ -1718,7 +1717,8 @@
                   "axis_data_fifo_3/s_axis_aresetn",
                   "axi_stream_dwc/aresetn",
                   "axi_stream_cc/s_axis_aresetn",
-                  "axi_stream_cc/m_axis_aresetn"
+                  "axi_stream_cc/m_axis_aresetn",
+                  "axi_stream_sc_in/aresetn"
                 ]
               },
               "S_CLK_1": {
@@ -1726,7 +1726,8 @@
                   "S_CLK",
                   "axis_data_fifo_3/s_axis_aclk",
                   "axi_stream_dwc/aclk",
-                  "axi_stream_cc/s_axis_aclk"
+                  "axi_stream_cc/s_axis_aclk",
+                  "axi_stream_sc_in/aclk"
                 ]
               }
             }
@@ -1776,14 +1777,26 @@
                   "M_HAS_TREADY": {
                     "value": "1"
                   },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
                   "M_TUSER_WIDTH": {
                     "value": "16"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
                   },
                   "S_TUSER_WIDTH": {
                     "value": "16"
                   },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
                   "TUSER_REMAP": {
-                    "value": "tuser[15:0]"
+                    "value": "tuser[7:0],tuser[15:8]"
                   }
                 }
               },
@@ -1846,8 +1859,8 @@
               },
               "bit0": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_xlslice_0_0",
-                "xci_path": "ip/system_aurora_64b66b_xlslice_0_0/system_aurora_64b66b_xlslice_0_0.xci",
+                "xci_name": "system_aurora_64b66b_bit0_3",
+                "xci_path": "ip/system_aurora_64b66b_bit0_3_1/system_aurora_64b66b_bit0_3.xci",
                 "inst_hier_path": "Aurora/data_downconverter4/bit0",
                 "parameters": {
                   "DIN_WIDTH": {
@@ -1857,8 +1870,8 @@
               },
               "bit_6_to_3": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_xlslice_0_1",
-                "xci_path": "ip/system_aurora_64b66b_xlslice_0_1/system_aurora_64b66b_xlslice_0_1.xci",
+                "xci_name": "system_aurora_64b66b_bit_6_to_3_3",
+                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_3_1/system_aurora_64b66b_bit_6_to_3_3.xci",
                 "inst_hier_path": "Aurora/data_downconverter4/bit_6_to_3",
                 "parameters": {
                   "DIN_FROM": {
@@ -1877,8 +1890,8 @@
               },
               "bit_2_to_1": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_xlslice_0_2",
-                "xci_path": "ip/system_aurora_64b66b_xlslice_0_2/system_aurora_64b66b_xlslice_0_2.xci",
+                "xci_name": "system_aurora_64b66b_bit_2_to_1_3",
+                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_3_1/system_aurora_64b66b_bit_2_to_1_3.xci",
                 "inst_hier_path": "Aurora/data_downconverter4/bit_2_to_1",
                 "parameters": {
                   "DIN_FROM": {
@@ -2083,21 +2096,38 @@
                 "xci_name": "system_aurora_64b66b_axi_stream_cc_2",
                 "xci_path": "ip/system_aurora_64b66b_axi_stream_cc_2/system_aurora_64b66b_axi_stream_cc_2.xci",
                 "inst_hier_path": "Aurora/data_upconverter2/axi_stream_cc"
+              },
+              "axi_stream_sc_in": {
+                "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_2",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_2_1/system_aurora_64b66b_axi_stream_sc_in_2.xci",
+                "inst_hier_path": "Aurora/data_upconverter2/axi_stream_sc_in",
+                "parameters": {
+                  "M_HAS_TREADY": {
+                    "value": "1"
+                  },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TID_REMAP": {
+                    "value": "1'b0"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
+                  "TUSER_REMAP": {
+                    "value": "1'b0"
+                  }
+                }
               }
             },
             "interface_nets": {
-              "S_AXI_STREAM_1": {
-                "interface_ports": [
-                  "S_AXI_STREAM",
-                  "axis_data_fifo_3/S_AXIS"
-                ]
-              },
-              "auto_us_M_AXIS": {
-                "interface_ports": [
-                  "axi_stream_dwc/M_AXIS",
-                  "axi_stream_cc/S_AXIS"
-                ]
-              },
               "axis_data_fifo_3_M_AXIS": {
                 "interface_ports": [
                   "axis_data_fifo_3/M_AXIS",
@@ -2108,6 +2138,24 @@
                 "interface_ports": [
                   "M_AXI_STREAM",
                   "axi_stream_cc/M_AXIS"
+                ]
+              },
+              "axi_stream_dwc_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_dwc/M_AXIS",
+                  "axi_stream_sc_in/S_AXIS"
+                ]
+              },
+              "axi_stream_sc_in_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_sc_in/M_AXIS",
+                  "axi_stream_cc/S_AXIS"
+                ]
+              },
+              "S_AXI_STREAM_1": {
+                "interface_ports": [
+                  "S_AXI_STREAM",
+                  "axis_data_fifo_3/S_AXIS"
                 ]
               }
             },
@@ -2124,7 +2172,8 @@
                   "axis_data_fifo_3/s_axis_aresetn",
                   "axi_stream_dwc/aresetn",
                   "axi_stream_cc/s_axis_aresetn",
-                  "axi_stream_cc/m_axis_aresetn"
+                  "axi_stream_cc/m_axis_aresetn",
+                  "axi_stream_sc_in/aresetn"
                 ]
               },
               "S_CLK_1": {
@@ -2132,7 +2181,8 @@
                   "S_CLK",
                   "axis_data_fifo_3/s_axis_aclk",
                   "axi_stream_dwc/aclk",
-                  "axi_stream_cc/s_axis_aclk"
+                  "axi_stream_cc/s_axis_aclk",
+                  "axi_stream_sc_in/aclk"
                 ]
               }
             }
@@ -2202,6 +2252,35 @@
                 "xci_name": "system_aurora_64b66b_axi_stream_cc_3",
                 "xci_path": "ip/system_aurora_64b66b_axi_stream_cc_3/system_aurora_64b66b_axi_stream_cc_3.xci",
                 "inst_hier_path": "Aurora/data_upconverter3/axi_stream_cc"
+              },
+              "axi_stream_sc_in": {
+                "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_3",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_3_1/system_aurora_64b66b_axi_stream_sc_in_3.xci",
+                "inst_hier_path": "Aurora/data_upconverter3/axi_stream_sc_in",
+                "parameters": {
+                  "M_HAS_TREADY": {
+                    "value": "1"
+                  },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TID_REMAP": {
+                    "value": "1'b0"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
+                  "TUSER_REMAP": {
+                    "value": "1'b0"
+                  }
+                }
               }
             },
             "interface_nets": {
@@ -2223,10 +2302,16 @@
                   "axi_stream_cc/M_AXIS"
                 ]
               },
-              "auto_us_M_AXIS": {
+              "axi_stream_sc_in_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_sc_in/M_AXIS",
+                  "axi_stream_cc/S_AXIS"
+                ]
+              },
+              "axi_stream_dwc_M_AXIS": {
                 "interface_ports": [
                   "axi_stream_dwc/M_AXIS",
-                  "axi_stream_cc/S_AXIS"
+                  "axi_stream_sc_in/S_AXIS"
                 ]
               }
             },
@@ -2243,7 +2328,8 @@
                   "axis_data_fifo_3/s_axis_aresetn",
                   "axi_stream_dwc/aresetn",
                   "axi_stream_cc/s_axis_aresetn",
-                  "axi_stream_cc/m_axis_aresetn"
+                  "axi_stream_cc/m_axis_aresetn",
+                  "axi_stream_sc_in/aresetn"
                 ]
               },
               "S_CLK_1": {
@@ -2251,7 +2337,8 @@
                   "S_CLK",
                   "axis_data_fifo_3/s_axis_aclk",
                   "axi_stream_dwc/aclk",
-                  "axi_stream_cc/s_axis_aclk"
+                  "axi_stream_cc/s_axis_aclk",
+                  "axi_stream_sc_in/aclk"
                 ]
               }
             }
@@ -2267,11 +2354,11 @@
               }
             }
           },
-          "xlconstant_5": {
+          "xlconstant_zero_0": {
             "vlnv": "xilinx.com:ip:xlconstant:1.1",
             "xci_name": "system_aurora_64b66b_xlconstant_5_0",
             "xci_path": "ip/system_aurora_64b66b_xlconstant_5_0/system_aurora_64b66b_xlconstant_5_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_5",
+            "inst_hier_path": "Aurora/xlconstant_zero_0",
             "parameters": {
               "CONST_VAL": {
                 "value": "0"
@@ -2286,28 +2373,6 @@
             "parameters": {
               "NUM_PORTS": {
                 "value": "8"
-              }
-            }
-          },
-          "xlconstant_6": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_6_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_6_0/system_aurora_64b66b_xlconstant_6_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_6",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
-              }
-            }
-          },
-          "xlconstant_7": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_7_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_7_0/system_aurora_64b66b_xlconstant_7_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_7",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
               }
             }
           },
@@ -2330,17 +2395,6 @@
             "parameters": {
               "NUM_PORTS": {
                 "value": "8"
-              }
-            }
-          },
-          "xlconstant_8": {
-            "vlnv": "xilinx.com:ip:xlconstant:1.1",
-            "xci_name": "system_aurora_64b66b_xlconstant_8_0",
-            "xci_path": "ip/system_aurora_64b66b_xlconstant_8_0/system_aurora_64b66b_xlconstant_8_0.xci",
-            "inst_hier_path": "Aurora/xlconstant_8",
-            "parameters": {
-              "CONST_VAL": {
-                "value": "0"
               }
             }
           },
@@ -2393,21 +2447,33 @@
             "components": {
               "axi_stream_sc_in": {
                 "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
-                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_4",
-                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_4/system_aurora_64b66b_axi_stream_sc_in_4.xci",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_7",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_7/system_aurora_64b66b_axi_stream_sc_in_7.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/axi_stream_sc_in",
                 "parameters": {
                   "M_HAS_TREADY": {
                     "value": "1"
                   },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
                   "M_TUSER_WIDTH": {
                     "value": "16"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
                   },
                   "S_TUSER_WIDTH": {
                     "value": "16"
                   },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
                   "TUSER_REMAP": {
-                    "value": "tuser[15:0]"
+                    "value": "tuser[7:0],tuser[15:8]"
                   }
                 }
               },
@@ -2459,8 +2525,8 @@
               },
               "xlconcat_1": {
                 "vlnv": "xilinx.com:ip:xlconcat:2.1",
-                "xci_name": "system_aurora_64b66b_xlconcat_1_1",
-                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_1/system_aurora_64b66b_xlconcat_1_1.xci",
+                "xci_name": "system_aurora_64b66b_xlconcat_1_4",
+                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_4/system_aurora_64b66b_xlconcat_1_4.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/xlconcat_1",
                 "parameters": {
                   "NUM_PORTS": {
@@ -2470,8 +2536,8 @@
               },
               "bit0": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit0_0",
-                "xci_path": "ip/system_aurora_64b66b_bit0_0/system_aurora_64b66b_bit0_0.xci",
+                "xci_name": "system_aurora_64b66b_bit0_4",
+                "xci_path": "ip/system_aurora_64b66b_bit0_4/system_aurora_64b66b_bit0_4.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/bit0",
                 "parameters": {
                   "DIN_WIDTH": {
@@ -2481,8 +2547,8 @@
               },
               "bit_6_to_3": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_6_to_3_0",
-                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_0/system_aurora_64b66b_bit_6_to_3_0.xci",
+                "xci_name": "system_aurora_64b66b_bit_6_to_3_4",
+                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_4/system_aurora_64b66b_bit_6_to_3_4.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/bit_6_to_3",
                 "parameters": {
                   "DIN_FROM": {
@@ -2501,8 +2567,8 @@
               },
               "bit_2_to_1": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_2_to_1_0",
-                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_0/system_aurora_64b66b_bit_2_to_1_0.xci",
+                "xci_name": "system_aurora_64b66b_bit_2_to_1_4",
+                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_4/system_aurora_64b66b_bit_2_to_1_4.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/bit_2_to_1",
                 "parameters": {
                   "DIN_FROM": {
@@ -2521,8 +2587,8 @@
               },
               "xlconstant_0": {
                 "vlnv": "xilinx.com:ip:xlconstant:1.1",
-                "xci_name": "system_aurora_64b66b_xlconstant_0_2",
-                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_2/system_aurora_64b66b_xlconstant_0_2.xci",
+                "xci_name": "system_aurora_64b66b_xlconstant_0_5",
+                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_5/system_aurora_64b66b_xlconstant_0_5.xci",
                 "inst_hier_path": "Aurora/data_downconverter5/xlconstant_0",
                 "parameters": {
                   "CONST_VAL": {
@@ -2538,10 +2604,10 @@
                   "axi_stream_cc_sc_out/S_AXIS"
                 ]
               },
-              "S_AXI_STREAM_1": {
+              "auto_cc_M_AXIS": {
                 "interface_ports": [
-                  "S_AXI_STREAM",
-                  "axi_stream_sc_in/S_AXIS"
+                  "axi_stream_cc/M_AXIS",
+                  "axi_stream_dwc/S_AXIS"
                 ]
               },
               "axis_subset_converter_1_M_AXIS": {
@@ -2550,10 +2616,10 @@
                   "axi_stream_cc_sc_out/M_AXIS"
                 ]
               },
-              "auto_cc_M_AXIS": {
+              "S_AXI_STREAM_1": {
                 "interface_ports": [
-                  "axi_stream_cc/M_AXIS",
-                  "axi_stream_dwc/S_AXIS"
+                  "S_AXI_STREAM",
+                  "axi_stream_sc_in/S_AXIS"
                 ]
               },
               "auto_ss_si_r_M_AXIS": {
@@ -2680,21 +2746,33 @@
             "components": {
               "axi_stream_sc_in": {
                 "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
-                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_5",
-                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_5/system_aurora_64b66b_axi_stream_sc_in_5.xci",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_8",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_8/system_aurora_64b66b_axi_stream_sc_in_8.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/axi_stream_sc_in",
                 "parameters": {
                   "M_HAS_TREADY": {
                     "value": "1"
                   },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
                   "M_TUSER_WIDTH": {
                     "value": "16"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
                   },
                   "S_TUSER_WIDTH": {
                     "value": "16"
                   },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
                   "TUSER_REMAP": {
-                    "value": "tuser[15:0]"
+                    "value": "tuser[7:0],tuser[15:8]"
                   }
                 }
               },
@@ -2746,8 +2824,8 @@
               },
               "xlconcat_1": {
                 "vlnv": "xilinx.com:ip:xlconcat:2.1",
-                "xci_name": "system_aurora_64b66b_xlconcat_1_2",
-                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_2/system_aurora_64b66b_xlconcat_1_2.xci",
+                "xci_name": "system_aurora_64b66b_xlconcat_1_5",
+                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_5/system_aurora_64b66b_xlconcat_1_5.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/xlconcat_1",
                 "parameters": {
                   "NUM_PORTS": {
@@ -2757,8 +2835,8 @@
               },
               "bit0": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit0_1",
-                "xci_path": "ip/system_aurora_64b66b_bit0_1/system_aurora_64b66b_bit0_1.xci",
+                "xci_name": "system_aurora_64b66b_bit0_5",
+                "xci_path": "ip/system_aurora_64b66b_bit0_5/system_aurora_64b66b_bit0_5.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/bit0",
                 "parameters": {
                   "DIN_WIDTH": {
@@ -2768,8 +2846,8 @@
               },
               "bit_6_to_3": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_6_to_3_1",
-                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_1/system_aurora_64b66b_bit_6_to_3_1.xci",
+                "xci_name": "system_aurora_64b66b_bit_6_to_3_5",
+                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_5/system_aurora_64b66b_bit_6_to_3_5.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/bit_6_to_3",
                 "parameters": {
                   "DIN_FROM": {
@@ -2788,8 +2866,8 @@
               },
               "bit_2_to_1": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_2_to_1_1",
-                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_1/system_aurora_64b66b_bit_2_to_1_1.xci",
+                "xci_name": "system_aurora_64b66b_bit_2_to_1_5",
+                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_5/system_aurora_64b66b_bit_2_to_1_5.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/bit_2_to_1",
                 "parameters": {
                   "DIN_FROM": {
@@ -2808,8 +2886,8 @@
               },
               "xlconstant_0": {
                 "vlnv": "xilinx.com:ip:xlconstant:1.1",
-                "xci_name": "system_aurora_64b66b_xlconstant_0_3",
-                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_3/system_aurora_64b66b_xlconstant_0_3.xci",
+                "xci_name": "system_aurora_64b66b_xlconstant_0_6",
+                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_6/system_aurora_64b66b_xlconstant_0_6.xci",
                 "inst_hier_path": "Aurora/data_downconverter6/xlconstant_0",
                 "parameters": {
                   "CONST_VAL": {
@@ -2819,16 +2897,10 @@
               }
             },
             "interface_nets": {
-              "auto_ss_si_r_M_AXIS": {
+              "auto_ds_M_AXIS": {
                 "interface_ports": [
-                  "axi_stream_sc_in/M_AXIS",
-                  "axi_stream_cc/S_AXIS"
-                ]
-              },
-              "S_AXI_STREAM_1": {
-                "interface_ports": [
-                  "S_AXI_STREAM",
-                  "axi_stream_sc_in/S_AXIS"
+                  "axi_stream_dwc/M_AXIS",
+                  "axi_stream_cc_sc_out/S_AXIS"
                 ]
               },
               "auto_cc_M_AXIS": {
@@ -2837,16 +2909,22 @@
                   "axi_stream_dwc/S_AXIS"
                 ]
               },
-              "auto_ds_M_AXIS": {
-                "interface_ports": [
-                  "axi_stream_dwc/M_AXIS",
-                  "axi_stream_cc_sc_out/S_AXIS"
-                ]
-              },
               "axis_subset_converter_1_M_AXIS": {
                 "interface_ports": [
                   "M_AXI_STREAM",
                   "axi_stream_cc_sc_out/M_AXIS"
+                ]
+              },
+              "S_AXI_STREAM_1": {
+                "interface_ports": [
+                  "S_AXI_STREAM",
+                  "axi_stream_sc_in/S_AXIS"
+                ]
+              },
+              "auto_ss_si_r_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_sc_in/M_AXIS",
+                  "axi_stream_cc/S_AXIS"
                 ]
               }
             },
@@ -2967,21 +3045,33 @@
             "components": {
               "axi_stream_sc_in": {
                 "vlnv": "xilinx.com:ip:axis_subset_converter:1.1",
-                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_6",
-                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_6/system_aurora_64b66b_axi_stream_sc_in_6.xci",
+                "xci_name": "system_aurora_64b66b_axi_stream_sc_in_9",
+                "xci_path": "ip/system_aurora_64b66b_axi_stream_sc_in_9/system_aurora_64b66b_axi_stream_sc_in_9.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/axi_stream_sc_in",
                 "parameters": {
                   "M_HAS_TREADY": {
                     "value": "1"
                   },
+                  "M_TDATA_NUM_BYTES": {
+                    "value": "8"
+                  },
                   "M_TUSER_WIDTH": {
                     "value": "16"
+                  },
+                  "S_TDATA_NUM_BYTES": {
+                    "value": "8"
                   },
                   "S_TUSER_WIDTH": {
                     "value": "16"
                   },
+                  "TDATA_REMAP": {
+                    "value": "tdata[31:0],tdata[63:32]"
+                  },
+                  "TKEEP_REMAP": {
+                    "value": "tkeep[3:0],tkeep[7:4]"
+                  },
                   "TUSER_REMAP": {
-                    "value": "tuser[15:0]"
+                    "value": "tuser[7:0],tuser[15:8]"
                   }
                 }
               },
@@ -3033,8 +3123,8 @@
               },
               "xlconcat_1": {
                 "vlnv": "xilinx.com:ip:xlconcat:2.1",
-                "xci_name": "system_aurora_64b66b_xlconcat_1_3",
-                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_3/system_aurora_64b66b_xlconcat_1_3.xci",
+                "xci_name": "system_aurora_64b66b_xlconcat_1_6",
+                "xci_path": "ip/system_aurora_64b66b_xlconcat_1_6/system_aurora_64b66b_xlconcat_1_6.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/xlconcat_1",
                 "parameters": {
                   "NUM_PORTS": {
@@ -3044,8 +3134,8 @@
               },
               "bit0": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit0_2",
-                "xci_path": "ip/system_aurora_64b66b_bit0_2/system_aurora_64b66b_bit0_2.xci",
+                "xci_name": "system_aurora_64b66b_bit0_6",
+                "xci_path": "ip/system_aurora_64b66b_bit0_6/system_aurora_64b66b_bit0_6.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/bit0",
                 "parameters": {
                   "DIN_WIDTH": {
@@ -3055,8 +3145,8 @@
               },
               "bit_6_to_3": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_6_to_3_2",
-                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_2/system_aurora_64b66b_bit_6_to_3_2.xci",
+                "xci_name": "system_aurora_64b66b_bit_6_to_3_6",
+                "xci_path": "ip/system_aurora_64b66b_bit_6_to_3_6/system_aurora_64b66b_bit_6_to_3_6.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/bit_6_to_3",
                 "parameters": {
                   "DIN_FROM": {
@@ -3075,8 +3165,8 @@
               },
               "bit_2_to_1": {
                 "vlnv": "xilinx.com:ip:xlslice:1.0",
-                "xci_name": "system_aurora_64b66b_bit_2_to_1_2",
-                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_2/system_aurora_64b66b_bit_2_to_1_2.xci",
+                "xci_name": "system_aurora_64b66b_bit_2_to_1_6",
+                "xci_path": "ip/system_aurora_64b66b_bit_2_to_1_6/system_aurora_64b66b_bit_2_to_1_6.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/bit_2_to_1",
                 "parameters": {
                   "DIN_FROM": {
@@ -3095,8 +3185,8 @@
               },
               "xlconstant_0": {
                 "vlnv": "xilinx.com:ip:xlconstant:1.1",
-                "xci_name": "system_aurora_64b66b_xlconstant_0_4",
-                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_4/system_aurora_64b66b_xlconstant_0_4.xci",
+                "xci_name": "system_aurora_64b66b_xlconstant_0_7",
+                "xci_path": "ip/system_aurora_64b66b_xlconstant_0_7/system_aurora_64b66b_xlconstant_0_7.xci",
                 "inst_hier_path": "Aurora/data_downconverter7/xlconstant_0",
                 "parameters": {
                   "CONST_VAL": {
@@ -3112,16 +3202,10 @@
                   "axi_stream_cc_sc_out/S_AXIS"
                 ]
               },
-              "auto_ss_si_r_M_AXIS": {
+              "auto_cc_M_AXIS": {
                 "interface_ports": [
-                  "axi_stream_sc_in/M_AXIS",
-                  "axi_stream_cc/S_AXIS"
-                ]
-              },
-              "S_AXI_STREAM_1": {
-                "interface_ports": [
-                  "S_AXI_STREAM",
-                  "axi_stream_sc_in/S_AXIS"
+                  "axi_stream_cc/M_AXIS",
+                  "axi_stream_dwc/S_AXIS"
                 ]
               },
               "axis_subset_converter_1_M_AXIS": {
@@ -3130,10 +3214,16 @@
                   "axi_stream_cc_sc_out/M_AXIS"
                 ]
               },
-              "auto_cc_M_AXIS": {
+              "S_AXI_STREAM_1": {
                 "interface_ports": [
-                  "axi_stream_cc/M_AXIS",
-                  "axi_stream_dwc/S_AXIS"
+                  "S_AXI_STREAM",
+                  "axi_stream_sc_in/S_AXIS"
+                ]
+              },
+              "auto_ss_si_r_M_AXIS": {
+                "interface_ports": [
+                  "axi_stream_sc_in/M_AXIS",
+                  "axi_stream_cc/S_AXIS"
                 ]
               }
             },
@@ -3218,118 +3308,16 @@
           }
         },
         "interface_nets": {
-          "data_downconverter5_M_AXI_STREAM": {
-            "interface_ports": [
-              "USER_DATA_M_AXI_RX2",
-              "data_downconverter5/M_AXI_STREAM"
-            ]
-          },
-          "data_upconverter1_M_AXI_STREAM": {
-            "interface_ports": [
-              "aurora_64b66b_2/USER_DATA_S_AXIS_TX",
-              "data_upconverter1/M_AXI_STREAM"
-            ]
-          },
-          "GT_SERIAL_RX_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX",
-              "aurora_64b66b_0/GT_SERIAL_RX"
-            ]
-          },
-          "GT_SERIAL_RX1_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX1",
-              "aurora_64b66b_1/GT_SERIAL_RX"
-            ]
-          },
-          "data_upconverter2_M_AXI_STREAM": {
-            "interface_ports": [
-              "data_upconverter2/M_AXI_STREAM",
-              "aurora_64b66b_3/USER_DATA_S_AXIS_TX"
-            ]
-          },
-          "drp_bridge_0_DRP4": {
-            "interface_ports": [
-              "drp_bridge_0/DRP4",
-              "aurora_64b66b_4/CHANNEL_DRP_IF0"
-            ]
-          },
-          "aurora_64b66b_1_GT_SERIAL_TX1": {
-            "interface_ports": [
-              "GT_SERIAL_TX1",
-              "aurora_64b66b_1/GT_SERIAL_TX"
-            ]
-          },
           "aurora_64b66b_4_GT_SERIAL_TX": {
             "interface_ports": [
               "GT_TEST_SERIAL_TX",
               "aurora_64b66b_4/GT_SERIAL_TX"
             ]
           },
-          "drp_bridge_0_DRP3": {
-            "interface_ports": [
-              "aurora_64b66b_3/CHANNEL_DRP_IF0",
-              "drp_bridge_0/DRP3"
-            ]
-          },
-          "GT_DIFF_REFCLK_125_1": {
-            "interface_ports": [
-              "GT_DIFF_REFCLK_125",
-              "aurora_64b66b_0/GT_DIFF_REFCLK1"
-            ]
-          },
-          "drp_bridge_0_DRP0": {
-            "interface_ports": [
-              "aurora_64b66b_0/CHANNEL_DRP_IF0",
-              "drp_bridge_0/DRP0"
-            ]
-          },
-          "drp_bridge_0_DRP1": {
-            "interface_ports": [
-              "drp_bridge_0/DRP1",
-              "aurora_64b66b_1/CHANNEL_DRP_IF0"
-            ]
-          },
-          "GT_TEST_SERIAL_RX_1": {
-            "interface_ports": [
-              "GT_TEST_SERIAL_RX",
-              "aurora_64b66b_4/GT_SERIAL_RX"
-            ]
-          },
           "aurora_64b66b_2_GT_SERIAL_TX": {
             "interface_ports": [
               "GT_SERIAL_TX2",
               "aurora_64b66b_2/GT_SERIAL_TX"
-            ]
-          },
-          "data_downconverter4_M_AXI_STREAM": {
-            "interface_ports": [
-              "USER_DATA_M_AXI_RX1",
-              "data_downconverter4/M_AXI_STREAM"
-            ]
-          },
-          "GT_SERIAL_RX2_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX2",
-              "aurora_64b66b_2/GT_SERIAL_RX"
-            ]
-          },
-          "drp_bridge_0_DRP2": {
-            "interface_ports": [
-              "drp_bridge_0/DRP2",
-              "aurora_64b66b_2/CHANNEL_DRP_IF0"
-            ]
-          },
-          "data_upconverter3_M_AXI_STREAM": {
-            "interface_ports": [
-              "data_upconverter3/M_AXI_STREAM",
-              "aurora_64b66b_4/USER_DATA_S_AXIS_TX"
-            ]
-          },
-          "aurora_64b66b_1_USER_DATA_M_AXIS_RX": {
-            "interface_ports": [
-              "aurora_64b66b_1/USER_DATA_M_AXIS_RX",
-              "data_downconverter4/S_AXI_STREAM"
             ]
           },
           "TEST_DATA_S_AXI_TX_1": {
@@ -3344,10 +3332,16 @@
               "data_upconverter1/S_AXI_STREAM"
             ]
           },
-          "aurora_64b66b_1_GT_SERIAL_TX": {
+          "aurora_64b66b_1_USER_DATA_M_AXIS_RX": {
             "interface_ports": [
-              "GT_SERIAL_TX3",
-              "aurora_64b66b_3/GT_SERIAL_TX"
+              "aurora_64b66b_1/USER_DATA_M_AXIS_RX",
+              "data_downconverter4/S_AXI_STREAM"
+            ]
+          },
+          "data_upconverter3_M_AXI_STREAM": {
+            "interface_ports": [
+              "data_upconverter3/M_AXI_STREAM",
+              "aurora_64b66b_4/USER_DATA_S_AXIS_TX"
             ]
           },
           "aurora_64b66b_0_GT_SERIAL_TX": {
@@ -3356,16 +3350,10 @@
               "aurora_64b66b_0/GT_SERIAL_TX"
             ]
           },
-          "USER_DATA_S_AXI_TX3_1": {
+          "aurora_64b66b_1_GT_SERIAL_TX": {
             "interface_ports": [
-              "USER_DATA_S_AXI_TX3",
-              "data_upconverter2/S_AXI_STREAM"
-            ]
-          },
-          "GT_SERIAL_RX3_1": {
-            "interface_ports": [
-              "GT_SERIAL_RX3",
-              "aurora_64b66b_3/GT_SERIAL_RX"
+              "GT_SERIAL_TX3",
+              "aurora_64b66b_3/GT_SERIAL_TX"
             ]
           },
           "Conn9": {
@@ -3374,16 +3362,112 @@
               "drp_bridge_0/S_AXI"
             ]
           },
-          "S_AXI_STREAM_1": {
+          "GT_SERIAL_RX3_1": {
             "interface_ports": [
-              "data_downconverter6/S_AXI_STREAM",
-              "aurora_64b66b_3/USER_DATA_M_AXIS_RX"
+              "GT_SERIAL_RX3",
+              "aurora_64b66b_3/GT_SERIAL_RX"
             ]
           },
-          "aurora_64b66b_2_USER_DATA_M_AXIS_RX": {
+          "GT_TEST_SERIAL_RX_1": {
             "interface_ports": [
-              "aurora_64b66b_2/USER_DATA_M_AXIS_RX",
-              "data_downconverter5/S_AXI_STREAM"
+              "GT_TEST_SERIAL_RX",
+              "aurora_64b66b_4/GT_SERIAL_RX"
+            ]
+          },
+          "drp_bridge_0_DRP1": {
+            "interface_ports": [
+              "drp_bridge_0/DRP1",
+              "aurora_64b66b_1/CHANNEL_DRP_IF0"
+            ]
+          },
+          "drp_bridge_0_DRP0": {
+            "interface_ports": [
+              "aurora_64b66b_0/CHANNEL_DRP_IF0",
+              "drp_bridge_0/DRP0"
+            ]
+          },
+          "GT_DIFF_REFCLK_125_1": {
+            "interface_ports": [
+              "GT_DIFF_REFCLK_125",
+              "aurora_64b66b_0/GT_DIFF_REFCLK1"
+            ]
+          },
+          "drp_bridge_0_DRP3": {
+            "interface_ports": [
+              "aurora_64b66b_3/CHANNEL_DRP_IF0",
+              "drp_bridge_0/DRP3"
+            ]
+          },
+          "aurora_64b66b_1_GT_SERIAL_TX1": {
+            "interface_ports": [
+              "GT_SERIAL_TX1",
+              "aurora_64b66b_1/GT_SERIAL_TX"
+            ]
+          },
+          "drp_bridge_0_DRP4": {
+            "interface_ports": [
+              "drp_bridge_0/DRP4",
+              "aurora_64b66b_4/CHANNEL_DRP_IF0"
+            ]
+          },
+          "data_upconverter2_M_AXI_STREAM": {
+            "interface_ports": [
+              "data_upconverter2/M_AXI_STREAM",
+              "aurora_64b66b_3/USER_DATA_S_AXIS_TX"
+            ]
+          },
+          "GT_SERIAL_RX1_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX1",
+              "aurora_64b66b_1/GT_SERIAL_RX"
+            ]
+          },
+          "GT_SERIAL_RX_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX",
+              "aurora_64b66b_0/GT_SERIAL_RX"
+            ]
+          },
+          "data_upconverter1_M_AXI_STREAM": {
+            "interface_ports": [
+              "aurora_64b66b_2/USER_DATA_S_AXIS_TX",
+              "data_upconverter1/M_AXI_STREAM"
+            ]
+          },
+          "drp_bridge_0_DRP2": {
+            "interface_ports": [
+              "drp_bridge_0/DRP2",
+              "aurora_64b66b_2/CHANNEL_DRP_IF0"
+            ]
+          },
+          "GT_SERIAL_RX2_1": {
+            "interface_ports": [
+              "GT_SERIAL_RX2",
+              "aurora_64b66b_2/GT_SERIAL_RX"
+            ]
+          },
+          "data_downconverter4_M_AXI_STREAM": {
+            "interface_ports": [
+              "USER_DATA_M_AXI_RX1",
+              "data_downconverter4/M_AXI_STREAM"
+            ]
+          },
+          "USER_DATA_S_AXI_TX3_1": {
+            "interface_ports": [
+              "USER_DATA_S_AXI_TX3",
+              "data_upconverter2/S_AXI_STREAM"
+            ]
+          },
+          "data_downconverter5_M_AXI_STREAM": {
+            "interface_ports": [
+              "USER_DATA_M_AXI_RX2",
+              "data_downconverter5/M_AXI_STREAM"
+            ]
+          },
+          "S_AXI_STREAM_3": {
+            "interface_ports": [
+              "data_downconverter5/S_AXI_STREAM",
+              "aurora_64b66b_2/USER_DATA_M_AXIS_RX"
             ]
           },
           "data_downconverter6_M_AXI_STREAM": {
@@ -3392,10 +3476,16 @@
               "data_downconverter6/M_AXI_STREAM"
             ]
           },
-          "S_AXI_STREAM_2": {
+          "S_AXI_STREAM_1": {
             "interface_ports": [
-              "data_downconverter7/S_AXI_STREAM",
-              "aurora_64b66b_0/USER_DATA_M_AXIS_RX"
+              "data_downconverter6/S_AXI_STREAM",
+              "aurora_64b66b_3/USER_DATA_M_AXIS_RX"
+            ]
+          },
+          "aurora_64b66b_0_USER_DATA_M_AXIS_RX": {
+            "interface_ports": [
+              "aurora_64b66b_0/USER_DATA_M_AXIS_RX",
+              "data_downconverter7/S_AXI_STREAM"
             ]
           },
           "data_downconverter7_M_AXI_STREAM": {
@@ -3529,35 +3619,20 @@
           },
           "xlconstant_0_dout": {
             "ports": [
-              "xlconstant_1/dout",
+              "xlconstant_one/dout",
               "gt0_qplllock_out",
               "gt0_qpllrefclklost_out"
             ]
           },
-          "xlconstant_0_dout1": {
-            "ports": [
-              "xlconstant_0/dout",
-              "aurora_64b66b_2/gt_qpllclk_quad1_in",
-              "aurora_64b66b_2/gt_qpllrefclk_quad1_in"
-            ]
-          },
-          "xlconstant_2_dout": {
-            "ports": [
-              "xlconstant_2/dout",
-              "aurora_64b66b_3/gt_qpllclk_quad1_in",
-              "aurora_64b66b_3/gt_qpllrefclk_quad1_in"
-            ]
-          },
           "xlconstant_3_dout": {
             "ports": [
-              "xlconstant_3/dout",
+              "xlconstant_zero/dout",
               "aurora_64b66b_1/gt_qpllclk_quad2_in",
-              "aurora_64b66b_1/gt_qpllrefclk_quad2_in"
-            ]
-          },
-          "xlconstant_4_dout": {
-            "ports": [
-              "xlconstant_4/dout",
+              "aurora_64b66b_1/gt_qpllrefclk_quad2_in",
+              "aurora_64b66b_2/gt_qpllclk_quad1_in",
+              "aurora_64b66b_2/gt_qpllrefclk_quad1_in",
+              "aurora_64b66b_3/gt_qpllclk_quad1_in",
+              "aurora_64b66b_3/gt_qpllrefclk_quad1_in",
               "aurora_64b66b_4/gt_qpllclk_quad1_in",
               "aurora_64b66b_4/gt_qpllrefclk_quad1_in"
             ]
@@ -3570,8 +3645,11 @@
           },
           "xlconstant_5_dout": {
             "ports": [
-              "xlconstant_5/dout",
-              "core_status/In7"
+              "xlconstant_zero_0/dout",
+              "core_status/In7",
+              "core_status1/In7",
+              "core_status2/In7",
+              "core_status4/In7"
             ]
           },
           "core_status_dout": {
@@ -3584,12 +3662,6 @@
             "ports": [
               "data_downconverter4/STATUS_OUT",
               "CORE_STATUS1"
-            ]
-          },
-          "xlconstant_6_dout": {
-            "ports": [
-              "xlconstant_6/dout",
-              "core_status1/In7"
             ]
           },
           "aurora_64b66b_2_channel_up": {
@@ -3724,22 +3796,10 @@
               "core_status4/In6"
             ]
           },
-          "xlconstant_8_dout": {
-            "ports": [
-              "xlconstant_8/dout",
-              "core_status4/In7"
-            ]
-          },
           "core_status4_dout": {
             "ports": [
               "core_status4/dout",
               "CORE_TEST_STATUS"
-            ]
-          },
-          "xlconstant_7_dout": {
-            "ports": [
-              "xlconstant_7/dout",
-              "core_status2/In7"
             ]
           },
           "aurora_64b66b_3_soft_err": {
@@ -3826,22 +3886,16 @@
               "core_status/In0"
             ]
           },
-          "core_status1_dout": {
-            "ports": [
-              "core_status1/dout",
-              "data_downconverter5/STATUS_IN"
-            ]
-          },
-          "core_status2_dout": {
-            "ports": [
-              "core_status2/dout",
-              "data_downconverter6/STATUS_IN"
-            ]
-          },
           "data_downconverter5_STATUS_OUT": {
             "ports": [
               "data_downconverter5/STATUS_OUT",
               "CORE_STATUS2"
+            ]
+          },
+          "STATUS_IN_1": {
+            "ports": [
+              "core_status1/dout",
+              "data_downconverter5/STATUS_IN"
             ]
           },
           "data_downconverter6_STATUS_OUT": {
@@ -3850,16 +3904,22 @@
               "CORE_STATUS3"
             ]
           },
-          "data_downconverter7_STATUS_OUT": {
+          "STATUS_IN_2": {
             "ports": [
-              "data_downconverter7/STATUS_OUT",
-              "CORE_STATUS"
+              "core_status2/dout",
+              "data_downconverter6/STATUS_IN"
             ]
           },
           "core_status3_dout": {
             "ports": [
               "core_status3/dout",
               "data_downconverter7/STATUS_IN"
+            ]
+          },
+          "data_downconverter7_STATUS_OUT": {
+            "ports": [
+              "data_downconverter7/STATUS_OUT",
+              "CORE_STATUS"
             ]
           }
         }
@@ -4534,16 +4594,16 @@
               }
             },
             "interface_nets": {
-              "auto_pc_to_m01_couplers": {
-                "interface_ports": [
-                  "M_AXI",
-                  "auto_pc/M_AXI"
-                ]
-              },
               "m01_couplers_to_auto_pc": {
                 "interface_ports": [
                   "S_AXI",
                   "auto_pc/S_AXI"
+                ]
+              },
+              "auto_pc_to_m01_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_pc/M_AXI"
                 ]
               }
             },
@@ -4888,10 +4948,10 @@
           }
         },
         "interface_nets": {
-          "microblaze_0_axi_periph_1_to_s00_couplers": {
+          "m00_couplers_to_microblaze_0_axi_periph_1": {
             "interface_ports": [
-              "S00_AXI",
-              "s00_couplers/S_AXI"
+              "M00_AXI",
+              "m00_couplers/M_AXI"
             ]
           },
           "s00_couplers_to_xbar": {
@@ -4900,16 +4960,76 @@
               "xbar/S00_AXI"
             ]
           },
+          "m02_couplers_to_microblaze_0_axi_periph_1": {
+            "interface_ports": [
+              "M02_AXI",
+              "m02_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m03_couplers": {
+            "interface_ports": [
+              "xbar/M03_AXI",
+              "m03_couplers/S_AXI"
+            ]
+          },
           "m05_couplers_to_microblaze_0_axi_periph_1": {
             "interface_ports": [
               "M05_AXI",
               "m05_couplers/M_AXI"
             ]
           },
+          "xbar_to_m00_couplers": {
+            "interface_ports": [
+              "xbar/M00_AXI",
+              "m00_couplers/S_AXI"
+            ]
+          },
           "m01_couplers_to_microblaze_0_axi_periph_1": {
             "interface_ports": [
               "M01_AXI",
               "m01_couplers/M_AXI"
+            ]
+          },
+          "microblaze_0_axi_periph_1_to_s00_couplers": {
+            "interface_ports": [
+              "S00_AXI",
+              "s00_couplers/S_AXI"
+            ]
+          },
+          "m07_couplers_to_microblaze_0_axi_periph_1": {
+            "interface_ports": [
+              "M07_AXI",
+              "m07_couplers/M_AXI"
+            ]
+          },
+          "m03_couplers_to_microblaze_0_axi_periph_1": {
+            "interface_ports": [
+              "M03_AXI",
+              "m03_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m02_couplers": {
+            "interface_ports": [
+              "xbar/M02_AXI",
+              "m02_couplers/S_AXI"
+            ]
+          },
+          "m04_couplers_to_microblaze_0_axi_periph_1": {
+            "interface_ports": [
+              "M04_AXI",
+              "m04_couplers/M_AXI"
+            ]
+          },
+          "xbar_to_m06_couplers": {
+            "interface_ports": [
+              "xbar/M06_AXI",
+              "m06_couplers/S_AXI"
+            ]
+          },
+          "xbar_to_m07_couplers": {
+            "interface_ports": [
+              "xbar/M07_AXI",
+              "m07_couplers/S_AXI"
             ]
           },
           "xbar_to_m05_couplers": {
@@ -4924,76 +5044,16 @@
               "m06_couplers/M_AXI"
             ]
           },
-          "m04_couplers_to_microblaze_0_axi_periph_1": {
-            "interface_ports": [
-              "M04_AXI",
-              "m04_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m03_couplers": {
-            "interface_ports": [
-              "xbar/M03_AXI",
-              "m03_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m02_couplers": {
-            "interface_ports": [
-              "xbar/M02_AXI",
-              "m02_couplers/S_AXI"
-            ]
-          },
-          "m03_couplers_to_microblaze_0_axi_periph_1": {
-            "interface_ports": [
-              "M03_AXI",
-              "m03_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m07_couplers": {
-            "interface_ports": [
-              "xbar/M07_AXI",
-              "m07_couplers/S_AXI"
-            ]
-          },
-          "xbar_to_m06_couplers": {
-            "interface_ports": [
-              "xbar/M06_AXI",
-              "m06_couplers/S_AXI"
-            ]
-          },
-          "m07_couplers_to_microblaze_0_axi_periph_1": {
-            "interface_ports": [
-              "M07_AXI",
-              "m07_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m04_couplers": {
-            "interface_ports": [
-              "xbar/M04_AXI",
-              "m04_couplers/S_AXI"
-            ]
-          },
-          "m00_couplers_to_microblaze_0_axi_periph_1": {
-            "interface_ports": [
-              "M00_AXI",
-              "m00_couplers/M_AXI"
-            ]
-          },
-          "xbar_to_m00_couplers": {
-            "interface_ports": [
-              "xbar/M00_AXI",
-              "m00_couplers/S_AXI"
-            ]
-          },
           "xbar_to_m01_couplers": {
             "interface_ports": [
               "xbar/M01_AXI",
               "m01_couplers/S_AXI"
             ]
           },
-          "m02_couplers_to_microblaze_0_axi_periph_1": {
+          "xbar_to_m04_couplers": {
             "interface_ports": [
-              "M02_AXI",
-              "m02_couplers/M_AXI"
+              "xbar/M04_AXI",
+              "m04_couplers/S_AXI"
             ]
           }
         },
@@ -5284,6 +5344,18 @@
       }
     },
     "interface_nets": {
+      "Aurora_GT_SERIAL_TX3": {
+        "interface_ports": [
+          "CELL_CW_GT_TX",
+          "Aurora/GT_SERIAL_TX3"
+        ]
+      },
+      "microblaze_0_axi_periph_1_M03_AXI": {
+        "interface_ports": [
+          "microblaze_0_axi_periph_1/M03_AXI",
+          "axi_lite_generic_reg/s00_axi"
+        ]
+      },
       "Aurora_USER_DATA_M_AXI_RX2": {
         "interface_ports": [
           "CELL_CCW_AXI_STREAM_RX",
@@ -5374,24 +5446,6 @@
           "Aurora/GT_TEST_SERIAL_RX"
         ]
       },
-      "Aurora_USER_DATA_M_AXI_RX3": {
-        "interface_ports": [
-          "CELL_CW_AXI_STREAM_RX",
-          "Aurora/USER_DATA_M_AXI_RX3"
-        ]
-      },
-      "microblaze_0_axi_periph_1_M03_AXI": {
-        "interface_ports": [
-          "microblaze_0_axi_periph_1/M03_AXI",
-          "axi_lite_generic_reg/s00_axi"
-        ]
-      },
-      "Aurora_GT_SERIAL_TX3": {
-        "interface_ports": [
-          "CELL_CW_GT_TX",
-          "Aurora/GT_SERIAL_TX3"
-        ]
-      },
       "CELL_CCW_AXI_STREAM_SLAVE_1": {
         "interface_ports": [
           "CELL_CCW_AXI_STREAM_TX",
@@ -5456,6 +5510,12 @@
         "interface_ports": [
           "BPM_CW_GT_TX",
           "Aurora/GT_SERIAL_TX1"
+        ]
+      },
+      "Aurora_USER_DATA_M_AXI_RX3": {
+        "interface_ports": [
+          "CELL_CW_AXI_STREAM_RX",
+          "Aurora/USER_DATA_M_AXI_RX3"
         ]
       },
       "microblaze_0_dlmb_1": {
