@@ -13,3 +13,6 @@
 [submodule "software/submodules/spiflash_driver"]
 	path = software/submodules/spiflash_driver
 	url = https://github.com/BerkeleyLab/spiflash_driver.git
+[submodule "gateware/submodules/cell-comm"]
+	path = gateware/submodules/cell-comm
+	url = ../../alsu-instrumentation/cell-comm.git
