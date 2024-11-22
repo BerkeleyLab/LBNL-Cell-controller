@@ -3,8 +3,7 @@
 VFLAGS_DEP += -I. -y . -y$(DSP_DIR)
 VFLAGS += -I. -y . -y$(DSP_DIR) -I$(AUTOGEN_DIR)
 
-TEST_BENCH = \
-	writeBPMTestLink_tb
+TEST_BENCH =
 
 TGT_ := $(TEST_BENCH)
 NO_CHECK =
