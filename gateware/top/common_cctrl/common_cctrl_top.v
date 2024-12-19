@@ -554,12 +554,44 @@ writeBPMTestLink #(
          .dbgFwState(bpmTESTdbgState));
 
 //////////////////////////////////////////////////////////////////////////////
+// Read and send FMPS data to Cell Controller network
+wire        localFMPS_tlast, localFMPS_tvalid;
+wire        localFMPS_tready = 1'b1;
+wire [31:0] localFMPS_tdata;
+wire [2:0] fmpsTESTdbgState;
+wire fmps_TEST_AuroraCoreStatus_channel_up =
+    CELL_CCW_AuroraCoreStatus_channel_up || CELL_CW_AuroraCoreStatus_channel_up;
+
+writeFMPSTestLink #(
+    .faStrobeDebug("false"),
+    .stateDebug("false"),
+    .testInDebug("false"))
+  writeFMPSTestLink (
+         .sysClk(sysClk),
+         // For testing this is enough. We only care about this cell
+         // controller index
+         .sysFMPSCSR(bpmReadLinksCSR),
+         .auroraUserClk(auroraUserClk),
+         .genPacketStrobe(1'b0),
+         .auroraFAstrobe(auroraFAstrobe),
+         // For testing this might be good enough
+         .auroraChannelUp(fmps_TEST_AuroraCoreStatus_channel_up),
+         .FMPS_TEST_AXI_STREAM_TX_tdata(localFMPS_tdata),
+         .FMPS_TEST_AXI_STREAM_TX_tvalid(localFMPS_tvalid),
+         .FMPS_TEST_AXI_STREAM_TX_tlast(localFMPS_tlast),
+         .FMPS_TEST_AXI_STREAM_TX_tready(localFMPS_tready),
+         .dbgFwState(fmpsTESTdbgState));
+
+//////////////////////////////////////////////////////////////////////////////
 // Forward incoming and local streams to next cell
 // Pick up CSR values from fofbReadLinks since we don't have any CSR
 wire auCCWcellInhibit, auCWcellInhibit;
 wire auCCWcellStreamValid = CELL_CCW_AXI_STREAM_RX_tvalid && !auCCWcellInhibit;
 wire auCWcellStreamValid  = CELL_CW_AXI_STREAM_RX_tvalid  && !auCWcellInhibit;
-forwardCellLink #(.dbg("false")) forwardCCWcell (
+forwardCellLink #(
+    .dbg("false"),
+    .withFMPSSupport("true")
+) forwardCCWcell (
        .auroraUserClk(auroraUserClk),
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCCWcellStreamValid),
@@ -570,10 +602,16 @@ forwardCellLink #(.dbg("false")) forwardCCWcell (
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
        .localRxTDATA(localBPMs_tdata),
+       .localFMPSRxTVALID(localFMPS_tvalid),
+       .localFMPSRxTLAST(localFMPS_tlast),
+       .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CW_AXI_STREAM_TX_tlast),
        .cellLinkTxTDATA(CELL_CW_AXI_STREAM_TX_tdata));
-forwardCellLink #(.dbg("false")) forwardCWcell (
+forwardCellLink #(
+    .dbg("false"),
+    .withFMPSSupport("true")
+) forwardCWcell (
        .auroraUserClk(auroraUserClk),
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCWcellStreamValid),
@@ -584,6 +622,9 @@ forwardCellLink #(.dbg("false")) forwardCWcell (
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
        .localRxTDATA(localBPMs_tdata),
+       .localFMPSRxTVALID(localFMPS_tvalid),
+       .localFMPSRxTLAST(localFMPS_tlast),
+       .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CCW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CCW_AXI_STREAM_TX_tlast),
        .cellLinkTxTDATA(CELL_CCW_AXI_STREAM_TX_tdata));
