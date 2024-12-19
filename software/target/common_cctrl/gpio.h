@@ -68,6 +68,10 @@
 #define GPIO_IDX_QSPI_FLASH_CSR           55 // Bootstrap flash
 #define GPIO_IDX_GTX_CSR                  56 // GTX control/status
 #define GPIO_IDX_EVR_GTX_DRP              57 // EVR GTX dynamic reconfig (R/W)
+#define GPIO_IDX_FMPS_COMM_CSR            58 // FMPS communication control(R/W)
+#define GPIO_IDX_FMPS_RX_BITMAP           59 // FMPS with data(R)
+#define GPIO_IDX_FMPS_ENABLE_BITMAP       60 // FMPS with FMPS enabled (R)
+#define GPIO_IDX_FMPS_READOUT             61 // FMPS readout addr(W)/X value(R)
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
@@ -84,6 +88,9 @@
 #define GPIO_RECORDER_CAPACITY      32768
 #define GPIO_CHANNEL_COUNT          24
 #define GPIO_FOFB_MATRIX_ADDR_WIDTH 9
+
+// FMPS
+#define GPIO_FMPS_INDEX_WIDTH       5
 
 #include <xil_io.h>
 #include <xparameters.h>
