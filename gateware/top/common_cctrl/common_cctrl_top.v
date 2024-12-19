@@ -1,7 +1,8 @@
 module common_cctrl_top #(
   parameter          AURORA_TYPE               = "8b10b",
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE",
+  parameter          FMPS_ILA_CHIPSCOPE_DBG     = "FALSE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
@@ -684,6 +685,66 @@ fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
        .auCellCWlinkTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
        .auCellCWlinkTLAST(CELL_CW_AXI_STREAM_TX_tlast),
        .auCellCWlinkTDATA(CELL_CW_AXI_STREAM_TX_tdata));
+
+//////////////////////////////////////////////////////////////////////////////
+// Gather data from outgoing streams and make available to fast MPS
+wire auCCWfmpsInhibit, auCWfmpsInhibit;
+wire  [2:0] sysFMPSStatusCode;
+wire        sysFMPSStatusStrobe;
+wire sysFMPSTimeoutStrobe;
+wire fmpsEnabled;
+wire [31:0] fmpsReadoutCSR, fmpsReadout;
+wire [GPIO_FMPS_INDEX_WIDTH-1:0] fmpsReadoutAddress = 'h0;
+wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
+wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
+
+assign GPIO_IN[GPIO_IDX_FMPS_COMM_CSR] = fmpsReadoutCSR;
+fmpsReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
+                .INDEX_WIDTH(GPIO_FMPS_INDEX_WIDTH),
+                .FAstrobeDebug("false"),
+                .statusDebug("false"),
+                .rawDataDebug("false"),
+                .ccwLinkDebug("false"),
+                .cwLinkDebug("false"),
+                .fmpsCountDebug("false"),
+                .readoutDebug("false"))
+  fmpsReadLinks (
+       .sysClk(sysClk),
+       .csrStrobe(GPIO_STROBES[GPIO_IDX_FMPS_COMM_CSR]),
+       .GPIO_OUT(GPIO_OUT),
+       .csr(fmpsReadoutCSR),
+
+       .fmpsBitmapAllFASnapshot(GPIO_IN[GPIO_IDX_FMPS_RX_BITMAP]),
+       .fmpsEnableBitmapFASnapshot(GPIO_IN[GPIO_IDX_FMPS_ENABLE_BITMAP]),
+       .fmpsEnabled(fmpsEnabled),
+
+       .fmpsBitmapAll(fmpsBitmapAll),
+       .fmpsBitmapEnabled(fmpsBitmapEnabled),
+
+       .FAstrobe(sysFAstrobe),
+       .auReset(auroraReset),
+       .sysStatusStrobe(sysFMPSStatusStrobe),
+       .sysStatusCode(sysFMPSStatusCode),
+       .sysTimeoutStrobe(sysFMPSTimeoutStrobe),
+
+       .fmpsReadoutAddress(fmpsReadoutAddress),
+       .fmpsReadout(fmpsReadout),
+
+       .uBreadoutStrobe(GPIO_STROBES[GPIO_IDX_FMPS_READOUT]),
+       .uBreadout(GPIO_IN[GPIO_IDX_FMPS_READOUT]),
+
+       .auClk(auroraUserClk),
+       .auFAstrobe(auroraFAstrobe),
+       .auCCWfmpsInhibit(auCCWfmpsInhibit),
+       .auCWfmpsInhibit(auCWfmpsInhibit),
+
+       .auFMPSCCWlinkTVALID(CELL_CCW_AXI_STREAM_TX_tvalid),
+       .auFMPSCCWlinkTLAST(CELL_CCW_AXI_STREAM_TX_tlast),
+       .auFMPSCCWlinkTDATA(CELL_CCW_AXI_STREAM_TX_tdata),
+
+       .auFMPSCWlinkTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
+       .auFMPSCWlinkTLAST(CELL_CW_AXI_STREAM_TX_tlast),
+       .auFMPSCWlinkTDATA(CELL_CW_AXI_STREAM_TX_tdata));
 
 //////////////////////////////////////////////////////////////////////////////
 // Keep link reception statistics
@@ -1422,6 +1483,79 @@ assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
 assign probe_test_aurora_ila[159:128] = BPM_CW_AXI_STREAM_RX_tdata;
 
 assign probe_test_aurora_ila[191:160] = localBPMs_tdata;
+assign probe_test_aurora_ila[223:192] = CELL_CW_AXI_STREAM_TX_tdata;
+assign probe_test_aurora_ila[255:224] = CELL_CCW_AXI_STREAM_TX_tdata;
+
+`endif
+
+end // end if
+endgenerate
+
+generate
+if (FMPS_ILA_CHIPSCOPE_DBG != "TRUE" && FMPS_ILA_CHIPSCOPE_DBG != "FALSE") begin
+    FMPS_ILA_CHIPSCOPE_DBG_only_TRUE_or_FALSE_SUPPORTED();
+end
+endgenerate
+
+generate
+if (FMPS_ILA_CHIPSCOPE_DBG == "TRUE") begin
+
+`ifndef SIMULATE
+wire [255:0] probe_test_aurora_ila;
+ila_td256_s4096_cap fmps_ila_td256_s4096_cap_inst (
+    .clk(auroraUserClk),
+    .probe0(probe_test_aurora_ila)
+);
+
+assign probe_test_aurora_ila[0]       = auroraFAstrobe;
+
+assign probe_test_aurora_ila[1]       = auCCWcellStreamValid;
+assign probe_test_aurora_ila[2]       = CELL_CCW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[3]       = CELL_CCW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[4]       = CELL_CCW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[5]       = CELL_CCW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[6]       = CELL_CCW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[7]       = CELL_CCW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[8]       = CELL_CCW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[9]       = CELL_CCW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[10]      = CELL_CCW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[11]      = CELL_CCW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[12]      = CELL_CCW_AuroraCoreStatus_tx_resetdone_out;
+
+assign probe_test_aurora_ila[14]      = auCWcellStreamValid;
+assign probe_test_aurora_ila[15]      = CELL_CW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[16]      = CELL_CW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[17]      = CELL_CW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[18]      = CELL_CW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[19]      = CELL_CW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[20]      = CELL_CW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[21]      = CELL_CW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[22]      = CELL_CW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[23]      = CELL_CW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[24]      = CELL_CW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[25]      = CELL_CW_AuroraCoreStatus_tx_resetdone_out;
+
+assign probe_test_aurora_ila[38]      = localFMPS_tvalid;
+assign probe_test_aurora_ila[39]      = localFMPS_tlast;
+
+assign probe_test_aurora_ila[40]      = sysFMPSStatusStrobe;
+assign probe_test_aurora_ila[42:41]   = sysFMPSStatusCode;
+
+assign probe_test_aurora_ila[43]      = sysCellStatusStrobe;
+assign probe_test_aurora_ila[46:44]   = sysCellStatusCode;
+
+assign probe_test_aurora_ila[47]      = CELL_CW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[48]      = CELL_CW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[49]      = CELL_CCW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[50]      = CELL_CCW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[53:51]   = fmpsTESTdbgState;
+
+assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
+assign probe_test_aurora_ila[159:128] = CELL_CCW_AXI_STREAM_RX_tdata;
+
+assign probe_test_aurora_ila[191:160] = localFMPS_tdata;
 assign probe_test_aurora_ila[223:192] = CELL_CW_AXI_STREAM_TX_tdata;
 assign probe_test_aurora_ila[255:224] = CELL_CCW_AXI_STREAM_TX_tdata;
 
