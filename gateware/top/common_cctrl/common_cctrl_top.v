@@ -557,7 +557,7 @@ writeBPMTestLink #(
 //////////////////////////////////////////////////////////////////////////////
 // Read and send FMPS data to Cell Controller network
 wire        localFMPS_tlast, localFMPS_tvalid;
-wire        localFMPS_tready = 1'b1;
+wire        localFMPS_tready;
 wire [31:0] localFMPS_tdata;
 wire [2:0] fmpsTESTdbgState;
 wire fmps_TEST_AuroraCoreStatus_channel_up =
@@ -597,14 +597,21 @@ forwardCellLink #(
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCCWcellStreamValid),
        .cellLinkRxTLAST(CELL_CCW_AXI_STREAM_RX_tlast),
+       .cellLinkRxTREADY(),
        .cellLinkRxTDATA(CELL_CCW_AXI_STREAM_RX_tdata),
        .cellLinkRxCRCvalid(CELL_CCW_AuroraCoreStatus_crc_valid),
        .cellLinkRxCRCpass(CELL_CCW_AuroraCoreStatus_crc_pass_fail),
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
+       .localRxTREADY(),
        .localRxTDATA(localBPMs_tdata),
        .localFMPSRxTVALID(localFMPS_tvalid),
        .localFMPSRxTLAST(localFMPS_tlast),
+       // assume the modules are excatly the same ones in regards to
+       // TREADY. This is not true in a general case, but for the FMPS
+       // port, it's good enough as we just want the FMPS data generator
+       // to not start sending packets before the module is out of reset.
+       .localFMPSRxTREADY(localFMPS_tready),
        .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CW_AXI_STREAM_TX_tlast),
@@ -617,14 +624,18 @@ forwardCellLink #(
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCWcellStreamValid),
        .cellLinkRxTLAST(CELL_CW_AXI_STREAM_RX_tlast),
+       .cellLinkRxTREADY(),
        .cellLinkRxTDATA(CELL_CW_AXI_STREAM_RX_tdata),
        .cellLinkRxCRCvalid(CELL_CW_AuroraCoreStatus_crc_valid),
        .cellLinkRxCRCpass(CELL_CW_AuroraCoreStatus_crc_pass_fail),
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
+       .localRxTREADY(),
        .localRxTDATA(localBPMs_tdata),
        .localFMPSRxTVALID(localFMPS_tvalid),
        .localFMPSRxTLAST(localFMPS_tlast),
+       // See forwardCCWcell, above
+       .localFMPSRxTREADY(),
        .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CCW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CCW_AXI_STREAM_TX_tlast),
