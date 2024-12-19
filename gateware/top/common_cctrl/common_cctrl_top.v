@@ -551,8 +551,6 @@ writeBPMTestLink #(
          .BPM_TEST_AXI_STREAM_TX_tvalid(BPM_TEST_AXI_STREAM_TX_tvalid),
          .BPM_TEST_AXI_STREAM_TX_tlast(BPM_TEST_AXI_STREAM_TX_tlast),
          .BPM_TEST_AXI_STREAM_TX_tready(BPM_TEST_AXI_STREAM_TX_tready),
-         .TESTstatusStrobe(bpmTESTstatusStrobe),
-         .TESTstatusCode(bpmTESTstatusCode),
          .dbgFwState(bpmTESTdbgState));
 
 //////////////////////////////////////////////////////////////////////////////
