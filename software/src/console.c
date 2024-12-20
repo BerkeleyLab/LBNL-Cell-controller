@@ -359,7 +359,7 @@ cmdFMPS(int argc, char **argv)
         if ((first + n) > CC_PROTOCOL_FMPS_CAPACITY)
             n = CC_PROTOCOL_FMPS_CAPACITY - first;
     }
-    showFOFB(first, n);
+    showFMPS(first, n);
     return 0;
 }
 
