@@ -13,6 +13,7 @@
 #define CC_PROTOCOL_FOFB_CAPACITY_PER_PLANE 512
 #define CC_PROTOCOL_FOFB_CORRECTOR_CAPACITY 24
 #define CC_PROTOCOL_FOFB_CORRECTOR_FIR_SIZE 1000
+#define CC_PROTOCOL_FMPS_CAPACITY           32
 
 struct ccProtocolPacket {
     uint32_t        magic;
