@@ -35,6 +35,7 @@ __SRC_FILES = \
 	evr.c \
 	eyescan.c \
 	fastFeedback.c \
+	fastMPS.c \
 	fofbEthernet.c \
 	main.c \
 	platform.c \
@@ -63,6 +64,7 @@ __HDR_FILES = \
 	evr.h \
 	eyescan.h \
 	fastFeedback.h \
+	fastMPS.h \
 	fofbEthernet.h \
 	platform_config.h \
 	platform.h \
