@@ -38,7 +38,7 @@ showFMPS(int first, int n)
     printf ("Readout usec: %d\n", (GPIO_READ(GPIO_IDX_FMPS_COMM_CSR) &
          FMPS_COMM_CSR_R_READOUT_USEC_MASK) >> FMPS_COMM_CSR_READOUT_USEC_SHIFT);
     for (i = first ; i < first + n ; i++) {
-        GPIO_WRITE(GPIO_IDX_BPM_READOUT_X, i);
+        GPIO_WRITE(GPIO_IDX_FMPS_READOUT, i);
         uint32_t data = GPIO_READ(GPIO_IDX_FMPS_READOUT);
         printf(fmt, i, data & 0x3FFFFFFF);
     }
