@@ -1546,6 +1546,7 @@ assign probe_test_aurora_ila[23]      = CELL_CW_AuroraCoreStatus_soft_err;
 assign probe_test_aurora_ila[24]      = CELL_CW_AuroraCoreStatus_tx_lock;
 assign probe_test_aurora_ila[25]      = CELL_CW_AuroraCoreStatus_tx_resetdone_out;
 
+assign probe_test_aurora_ila[37]      = localFMPS_tready;
 assign probe_test_aurora_ila[38]      = localFMPS_tvalid;
 assign probe_test_aurora_ila[39]      = localFMPS_tlast;
 
