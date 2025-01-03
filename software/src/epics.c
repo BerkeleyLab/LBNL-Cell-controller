@@ -10,6 +10,7 @@
 #include "epics.h"
 #include "evr.h"
 #include "fastFeedback.h"
+#include "fastMPS.h"
 #include "fofbEthernet.h"
 #include "gpio.h"
 #include "psAWG.h"
@@ -327,6 +328,9 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         switch (lo) {
         case CC_PROTOCOL_CMD_LO_I32A_BPM_SETPOINTS:
             ffbStashSetpoints(commandArgCount, cmdp->args, cmdp->cellInfo);
+            // FIXME: FMPS should not be configured as part of the
+            // BPM setpoint configuration
+            fmpsConfig(cmdp->cellInfo);
             break;
         default: return -1;
         }

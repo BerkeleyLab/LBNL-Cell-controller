@@ -43,3 +43,18 @@ showFMPS(int first, int n)
         printf(fmt, i, data & 0x3FFFFFFF);
     }
 }
+
+int
+fmpsConfig(int fmpsInfo)
+{
+    uint32_t csr;
+    int pkFMPSIndex = fmpsInfo & 0xFF;
+    int pkFMPSCount = (fmpsInfo >> 8) & 0xFF;
+
+    csr = GPIO_READ(GPIO_IDX_FMPS_COMM_CSR);
+    csr &= ~FMPS_COMM_CSR_RW_FMPS_COUNT_MASK;
+    csr |= pkFMPSCount & FMPS_COMM_CSR_RW_FMPS_COUNT_MASK;
+    GPIO_WRITE(GPIO_IDX_FMPS_COMM_CSR, csr);
+
+    return 0;
+}
