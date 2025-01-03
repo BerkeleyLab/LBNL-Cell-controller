@@ -692,7 +692,7 @@ wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
 wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
 
 assign GPIO_IN[GPIO_IDX_FMPS_COMM_CSR] = fmpsReadoutCSR;
-fmpsReadLinksCell #(.SYSCLK_RATE(SYSCLK_RATE),
+fmpsReadLinksStream #(.SYSCLK_RATE(SYSCLK_RATE),
                 .INDEX_WIDTH(GPIO_FMPS_INDEX_WIDTH),
                 .FAstrobeDebug("false"),
                 .statusDebug("false"),
@@ -701,7 +701,7 @@ fmpsReadLinksCell #(.SYSCLK_RATE(SYSCLK_RATE),
                 .cwLinkDebug("false"),
                 .fmpsCountDebug("false"),
                 .readoutDebug("false"))
-  fmpsReadLinksCell (
+  fmpsReadLinksStream (
        .sysClk(sysClk),
        .csrStrobe(GPIO_STROBES[GPIO_IDX_FMPS_COMM_CSR]),
        .GPIO_OUT(GPIO_OUT),
