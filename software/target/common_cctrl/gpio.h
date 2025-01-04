@@ -72,6 +72,7 @@
 #define GPIO_IDX_FMPS_RX_BITMAP           59 // FMPS with data(R)
 #define GPIO_IDX_FMPS_ENABLE_BITMAP       60 // FMPS with FMPS enabled (R)
 #define GPIO_IDX_FMPS_READOUT             61 // FMPS readout addr(W)/X value(R)
+#define GPIO_IDX_FMPS_CSR                 62 // FMPS packet generator
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1

@@ -551,9 +551,9 @@ writeFMPSTestLink #(
     .testInDebug("false"))
   writeFMPSTestLink (
          .sysClk(sysClk),
-         // For testing this is enough. We only care about this cell
-         // controller index
-         .sysFMPSCSR(bpmReadLinksCSR),
+         .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_FMPS_CSR]),
+         .GPIO_OUT(GPIO_OUT),
+         .sysCsr(GPIO_IN[GPIO_IDX_FMPS_CSR]),
          .auroraUserClk(auroraUserClk),
          .genPacketStrobe(1'b0),
          .auroraFAstrobe(auroraFAstrobe),
