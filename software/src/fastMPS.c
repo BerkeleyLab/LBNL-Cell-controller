@@ -22,6 +22,12 @@
 #define FMPS_COMM_CSR_CW_PACKET_COUNT_SHIFT      6
 #define FMPS_COMM_CSR_RW_FMPS_COUNT_MASK         0x3F
 
+#define FMPS_CSR_FMPS_INDEX_SHIFT                24
+#define FMPS_CSR_RW_FMPS_INDEX_MASK              0x1F000000
+
+static int fmpsIndex = -1;
+static int fmpsCount = -1;
+
 void
 showFMPS(int first, int n)
 {
@@ -50,6 +56,15 @@ fmpsConfig(int fmpsInfo)
     uint32_t csr;
     int pkFMPSIndex = fmpsInfo & 0xFF;
     int pkFMPSCount = (fmpsInfo >> 8) & 0xFF;
+
+    fmpsIndex = pkFMPSIndex;
+    fmpsCount = pkFMPSCount;
+
+    csr = GPIO_READ(GPIO_IDX_FMPS_CSR);
+    csr &= ~FMPS_CSR_RW_FMPS_INDEX_MASK;
+    csr |= (pkFMPSIndex << FMPS_CSR_FMPS_INDEX_SHIFT) &
+        FMPS_CSR_RW_FMPS_INDEX_MASK;
+    GPIO_WRITE(GPIO_IDX_FMPS_CSR, csr);
 
     csr = GPIO_READ(GPIO_IDX_FMPS_COMM_CSR);
     csr &= ~FMPS_COMM_CSR_RW_FMPS_COUNT_MASK;
