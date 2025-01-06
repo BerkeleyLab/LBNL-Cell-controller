@@ -690,6 +690,9 @@ wire [31:0] fmpsReadoutCSR, fmpsReadout;
 wire [GPIO_FMPS_INDEX_WIDTH-1:0] fmpsReadoutAddress = 'h0;
 wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
 wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
+wire [GPIO_FMPS_INDEX_WIDTH-1:0] fmpsIndex;
+wire [31:0] fmpsData;
+wire fmpsValid;
 
 assign GPIO_IN[GPIO_IDX_FMPS_COMM_CSR] = fmpsReadoutCSR;
 fmpsReadLinksStream #(.SYSCLK_RATE(SYSCLK_RATE),
@@ -713,6 +716,10 @@ fmpsReadLinksStream #(.SYSCLK_RATE(SYSCLK_RATE),
 
        .fmpsBitmapAll(fmpsBitmapAll),
        .fmpsBitmapEnabled(fmpsBitmapEnabled),
+
+       .fmpsIndex(fmpsIndex),
+       .fmpsData(fmpsData),
+       .fmpsValid(fmpsValid),
 
        .FAstrobe(sysFAstrobe),
        .auReset(auroraReset),
@@ -1542,6 +1549,11 @@ assign probe_test_aurora_ila[49]      = CELL_CCW_AXI_STREAM_TX_tvalid;
 assign probe_test_aurora_ila[50]      = CELL_CCW_AXI_STREAM_TX_tlast;
 
 assign probe_test_aurora_ila[53:51]   = fmpsTESTdbgState;
+
+assign probe_test_aurora_ila[62:58]   = fmpsIndex;
+assign probe_test_aurora_ila[63]      = fmpsValid;
+
+assign probe_test_aurora_ila[95:64]   = fmpsData;
 
 assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
 assign probe_test_aurora_ila[159:128] = CELL_CCW_AXI_STREAM_RX_tdata;
