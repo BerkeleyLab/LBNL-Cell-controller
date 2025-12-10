@@ -59,17 +59,21 @@
 /*
  * Receiver alignment state machines
  */
-struct rxAligner {
+static struct rxAligner {
     uint16_t csrIdx;
     uint16_t mgtStatusIdx;
     uint32_t whenEntered;
+    uint16_t lostAlignmentCount;
     uint32_t resetCount;
-    enum rxState { S_ALIGNED, S_APPLY_RESET, S_HOLD_RESET,
-                   S_AWAIT_RESET_COMPLETION, S_POST_RESET_DELAY,
-                   S_POST_ALIGNMENT_DELAY } state;
+    enum rxState { S_APPLY_RESET, S_HOLD_RESET, S_AWAIT_RESET_COMPLETION,
+                        S_POST_RESET_DELAY, S_CONFIRM_ALIGNMENT,
+                        S_ALIGNMENT_ACHIEVED, S_ALIGNED } state;
 } rxAligners[1] = {
-    { .csrIdx       = GPIO_IDX_EVR_GTX_DRP,
-      .mgtStatusIdx = GPIO_IDX_GTX_CSR }
+    {
+        .csrIdx       = GPIO_IDX_EVR_GTX_DRP,
+        .mgtStatusIdx = GPIO_IDX_GTX_CSR,
+        .state        = S_ALIGNED
+    }
 };
 
 static void
@@ -91,11 +95,11 @@ mgtRxBitslide(void)
 
 /*
  * Receiver can place its recovered clock at 20 different phases relative to
- * the incoming data.  This is not acceptable since it affects the measurement
- * of the round-trip latency so the reciver is configured with automatic
- * bit-slide disabled and manual bit-slide never performed.  Instead the
- * following state machine keeps resetting the receiver until the receiver
- * comes out of reset in the spot that is locked.
+ * the incoming data.  This is not acceptable since it affects the alignment
+ * of acquired data to the RF reference clock so the receiver is configured
+ * with automatic bit-slide disabled and manual bit-slide never performed.
+ * Instead the following state machine keeps resetting the receiver until the
+ * receiver comes out of reset in the spot that is aligned.
  */
 static int
 mgtCrankRxAlignerFor(struct rxAligner *rxp)
@@ -103,29 +107,18 @@ mgtCrankRxAlignerFor(struct rxAligner *rxp)
     uint32_t csr = GPIO_READ(rxp->csrIdx);
     enum rxState oldState = rxp->state;
     switch (rxp->state) {
-    case S_ALIGNED:
-        rxp->resetCount = 0;
-        if (!(csr & CSR_R_RX_ALIGNED)) {
-            if (debugFlags & DEBUGFLAG_SHOW_RX_ALIGNER) {
-                printf("EVR CSR %d misaligned after %u us.\n", rxp->csrIdx,
-                                  MICROSECONDS_SINCE_BOOT() - rxp->whenEntered);
-            }
-            rxp->state = S_APPLY_RESET;
-        }
-        break;
 
     case S_APPLY_RESET:
-        rxp->resetCount++;
-        if ((debugFlags & DEBUGFLAG_SHOW_RX_ALIGNER)
-         && ((rxp->resetCount % 1000000) == 0)) {
-            printf("EVR CSR %d reset count %d\n", rxp->csrIdx, rxp->resetCount);
-        }
         GPIO_WRITE(rxp->csrIdx, CSR_W_ENABLE_RESETS | CSR_W_SOFT_RESET);
         rxp->state = S_HOLD_RESET;
         break;
 
     case S_HOLD_RESET:
         if ((MICROSECONDS_SINCE_BOOT() - rxp->whenEntered) > 10) {
+            rxp->resetCount++;
+            if ((debugFlags & DEBUGFLAG_SHOW_RX_ALIGNER) && (rxp->resetCount % 1000000) == 0) {
+                printf("EVR CSR %d reset count %d\n", rxp->csrIdx, rxp->resetCount);
+            }
             GPIO_WRITE(rxp->csrIdx, CSR_W_ENABLE_RESETS);
             rxp->state = S_AWAIT_RESET_COMPLETION;
         }
@@ -133,45 +126,57 @@ mgtCrankRxAlignerFor(struct rxAligner *rxp)
 
     case S_AWAIT_RESET_COMPLETION:
         /*
-         * Large timeout is to limit message rate to a reasonable value.
-         * No problem since the timeout is very unlikely to ever be reached.
+         * Large timeout is to limit warning message rate to a reasonable value
+         * when hardware is misbehaving.  No problem since the timeout is very
+         * unlikely to ever be reached.
          */
         if (csr & CSR_R_RX_RESET_DONE) {
             rxp->state = S_POST_RESET_DELAY;
         }
         else if ((MICROSECONDS_SINCE_BOOT() - rxp->whenEntered) > 250000) {
-            printf("Reg %d (0x%X) Rx reset not done\n", rxp->csrIdx, csr);
+            warn("EVR CSR %d reset incomplete: %X", rxp->csrIdx, csr);
             rxp->state = S_APPLY_RESET;
         }
         break;
 
     case S_POST_RESET_DELAY:
-        if (csr & CSR_R_RX_ALIGNED) {
-            rxp->state = S_POST_ALIGNMENT_DELAY;
+        if ((MICROSECONDS_SINCE_BOOT() - rxp->whenEntered) > 200) {
+            rxp->state = S_CONFIRM_ALIGNMENT;
+        }
+
+    case S_CONFIRM_ALIGNMENT:
+    // FIXME: CHECK RESET DONE TOO?
+        if (!(csr & CSR_R_RX_ALIGNED)) {
+            rxp->state = S_APPLY_RESET;
         }
         else if ((MICROSECONDS_SINCE_BOOT() - rxp->whenEntered) > 1000) {
-            rxp->state = S_APPLY_RESET;
+            rxp->state = S_ALIGNMENT_ACHIEVED;
         }
         break;
 
-    case S_POST_ALIGNMENT_DELAY:
-        if ((MICROSECONDS_SINCE_BOOT() - rxp->whenEntered) > 250000) {
-            if (csr & CSR_R_RX_ALIGNED) {
-                if (debugFlags & DEBUGFLAG_SHOW_RX_ALIGNER) {
-                    printf("EVR CSR %d aligned after %d resets.\n",
-                                                  rxp->csrIdx, rxp->resetCount);
-                }
-                rxp->state = S_ALIGNED;
-            }
-            else {
-                rxp->state = S_APPLY_RESET;
-            }
+    case S_ALIGNMENT_ACHIEVED:
+        printf("EVR CSR %d aligned after %d resets.\n", rxp->csrIdx, rxp->resetCount);
+        rxp->resetCount = 0;
+        GPIO_WRITE(rxp->csrIdx, CSR_W_ENABLE_RESETS | CSR_W_GT_TX_RESET);
+        microsecondSpin(2);
+        GPIO_WRITE(rxp->csrIdx, 0);
+        rxp->state = S_ALIGNED;
+        break;
+
+    case S_ALIGNED:
+        if (!(csr & CSR_R_RX_ALIGNED)) {
+            printf("EVR CSR %d misaligned after %u us\n", rxp->csrIdx,
+                           MICROSECONDS_SINCE_BOOT() - rxp->whenEntered);
+            rxp->lostAlignmentCount++;
+            rxp->state = S_APPLY_RESET;
         }
         break;
     }
+
     if (rxp->state != oldState) {
         rxp->whenEntered = MICROSECONDS_SINCE_BOOT();
     }
+
     return (rxp->state == S_ALIGNED);
 }
 
