@@ -19,7 +19,6 @@ module fofbDSP #(
     input wire                              fofbUseFakeData,
 
     // Read BPM deviations
-    input  wire                       [31:0] fofbReadoutCSR,
     output wire [FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress,
     input  wire                       [31:0] fofbDSPreadoutX,
     input  wire                       [31:0] fofbDSPreadoutY,
@@ -101,7 +100,6 @@ fofbCalc #(
                   .firConfigBusy(firConfigBusy),
                   .firReloadTLASTmissing(firReloadTLASTmissing),
                   .firReloadTLASTunexpected(firReloadTLASTunexpected),
-                  .fofbReadoutCSR(fofbReadoutCSR),
                   .fofbReadoutActive(fofbReadoutActive),
                   .fofbReadoutValid(fofbReadoutValid),
                   .fofbUseFakeData(fofbUseFakeData),

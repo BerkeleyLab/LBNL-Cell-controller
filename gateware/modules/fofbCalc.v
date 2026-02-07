@@ -41,7 +41,6 @@ module fofbCalc #(
     output reg                                   firReloadTLASTmissing,
     output reg                                   firReloadTLASTunexpected,
 
-    input  wire                           [31:0] fofbReadoutCSR,
     input  wire                                  fofbReadoutActive,
     input  wire                                  fofbReadoutValid,
     input  wire                                  fofbUseFakeData,
