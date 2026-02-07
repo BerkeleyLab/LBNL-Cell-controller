@@ -627,6 +627,7 @@ forwardCellLink #(
 // Gather data from outgoing streams and make available to fast orbit feedback
 wire        sysTimeoutStrobe;
 wire [31:0] fofbReadoutCSR, fofbDSPreadoutS, fofbDSPreadoutY, fofbDSPreadoutX;
+wire fofbReadoutActive, fofbReadoutValid, fofbUseFakeData;
 wire [GPIO_FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress;
 assign GPIO_IN[GPIO_IDX_CELL_COMM_CSR] = fofbReadoutCSR;
 fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
@@ -655,6 +656,10 @@ fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
        .sysStatusStrobe(sysCellStatusStrobe),
        .sysStatusCode(sysCellStatusCode),
        .sysTimeoutStrobe(sysTimeoutStrobe),
+
+       .readoutActive(fofbReadoutActive),
+       .readoutValid(fofbReadoutValid),
+       .useFakeData(fofbUseFakeData),
 
        .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
        .fofbDSPreadoutX(fofbDSPreadoutX),
@@ -776,6 +781,9 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .firStatus(GPIO_IN[GPIO_IDX_DSP_CSR]),
     .fofbReadoutCSR(fofbReadoutCSR),
     .fofbEnabled(fofbEnabled),
+    .fofbReadoutActive(fofbReadoutActive),
+    .fofbReadoutValid(fofbReadoutValid),
+    .fofbUseFakeData(fofbUseFakeData),
     .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
     .fofbDSPreadoutX(fofbDSPreadoutX),
     .fofbDSPreadoutY(fofbDSPreadoutY),
