@@ -71,7 +71,7 @@ reduceWidth #(.IWIDTH(32), .OWIDTH(XYDATA_WIDTH)) reduceY (.I(fofbDSPreadoutY),
 (*mark_debug=MATMUL_DEBUG*) reg signed [XYDATA_WIDTH-1:0] xFake, yFake;
 (*mark_debug=MATMUL_DEBUG*)wire signed [XYDATA_WIDTH-1:0] xVal, yVal;
 assign xVal = fofbUseFakeData ? xFake : xNarrow;
-assign yVal = fofbuseFakeData ? yFake : yNarrow;
+assign yVal = fofbUseFakeData ? yFake : yNarrow;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Compute dot product of clipped beam position offset vector
