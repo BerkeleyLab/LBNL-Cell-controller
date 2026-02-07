@@ -14,6 +14,9 @@ module fofbDSP #(
     input  wire                      [31:0] GPIO_OUT,
     output wire                      [31:0] firStatus,
     input wire                              fofbEnabled,
+    input wire                              fofbReadoutActive,
+    input wire                              fofbReadoutValid,
+    input wire                              fofbUseFakeData,
 
     // Read BPM deviations
     input  wire                       [31:0] fofbReadoutCSR,
@@ -99,6 +102,9 @@ fofbCalc #(
                   .firReloadTLASTmissing(firReloadTLASTmissing),
                   .firReloadTLASTunexpected(firReloadTLASTunexpected),
                   .fofbReadoutCSR(fofbReadoutCSR),
+                  .fofbReadoutActive(fofbReadoutActive),
+                  .fofbReadoutValid(fofbReadoutValid),
+                  .fofbUseFakeData(fofbUseFakeData),
                   .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
                   .fofbDSPreadoutX(fofbDSPreadoutX),
                   .fofbDSPreadoutY(fofbDSPreadoutY),
