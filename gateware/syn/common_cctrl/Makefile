@@ -158,9 +158,9 @@ prio_xci_files.tcl: prio_xci_files.tcl.in
 	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_tcl_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd_tcl.tcl  -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
 
 # Cleaning rules
-include $(BUILD_DIR)/bottom_rules.mk
 include $(CELL_COMM_DIR)/bottom_rules.mk
 include $(PLATFORM_DIR)/bottom_rules.mk
+include $(BUILD_DIR)/bottom_rules.mk
 
 CLEAN += *.bit
 CLEAN += *.bin
