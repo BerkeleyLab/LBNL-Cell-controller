@@ -22,14 +22,17 @@ IP_CORES_DIRS += $(cell_controller_IP_CORES_DIRS)
 cell_controller_BD_CORE = \
 	system_aurora_64b66b
 
-cell_controller_BD_CORE_DIRS = $(addprefix $(cell_controller_7series_platform_app_DIR)/, $(cell_controller_BD_CORE))
+cell_controller_BD_CORE_DIR = $(addprefix $(cell_controller_7series_platform_app_DIR)/, $(cell_controller_BD_CORE))
 
 # For top-level makefile
-BD_CORE_TCLS += $(addsuffix .tcl, $(cell_controller_BD_CORE))
+BD_CORE_BDS += $(addprefix $(cell_controller_BD_CORE_DIR)/, $(addsuffix .bd, $(cell_controller_BD_CORE)))
 BD_CORE_DIRS += \
-	$(cell_controller_BD_CORE_DIRS) \
-	$(addsuffix /synth, $(cell_controller_BD_CORE_DIRS)) \
-	$(addsuffix /hdl, $(cell_controller_BD_CORE_DIRS))
+	$(cell_controller_BD_CORE_DIR) \
+	$(addsuffix /synth, $(cell_controller_BD_CORE_DIR)) \
+	$(addsuffix /hdl, $(cell_controller_BD_CORE_DIR))
 
 vpath %.tcl $(IP_CORES_DIRS) $(BD_CORE_DIRS)
 vpath %.bd $(BD_CORE_DIRS)
+
+%.bd: %.tcl axi_lite_generic_reg evr_axi drp_bridge
+	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_tcl_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd_tcl.tcl  -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
