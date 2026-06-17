@@ -12,6 +12,20 @@ proc gen_bd_tcl {bd_tcl_file project_part project_board ipcore_dirs} {
     set_property ip_repo_paths $ipcore_dirs [current_fileset]
     update_ip_catalog -rebuild
 
+    # delete .bd file if it exists. Otherwise Vivado will fail to
+    # generate it
+
+    set bd_file "[file rootname ${bd_tcl_file}].bd"
+
+    if {[file exists ${bd_file}]} {
+        file delete ${bd_file}
+    }
+
+    # set the location of the generated products
+    set bd_tcl_file_dir [file dirname [file normalize ${bd_tcl_file}]]
+    set bd_tcl_file_parent [file join ${bd_tcl_file_dir} ".."]
+    set ::origin_dir_loc ${bd_tcl_file_parent}
+
     # read an BD file into project
     source $bd_tcl_file
 
