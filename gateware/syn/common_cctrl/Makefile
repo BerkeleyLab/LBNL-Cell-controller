@@ -72,10 +72,6 @@ include $(MODULES_DIR)/drp_bridge_rules.mk
 RTEFI_CLIENT_LIST = hello.v
 include $(BADGER_DIR)/rules.mk
 
-BD_SRCS_DIRS = $(BD_DIRS)
-BD_SRCS_DIRS += $(addsuffix /synth, $(BD_DIRS))
-BD_SRCS_DIRS += $(addsuffix /hdl, $(BD_DIRS))
-
 # For iverilog to search for dependencies
 
 # Bedrock directories for searching
@@ -104,6 +100,7 @@ VFLAGS_DEP += -y$(GW_TOP_COMMON_DIR)
 VFLAGS_DEP += -y$(VENDOR_PLATFORM_DIR)
 VFLAGS_DEP += -y$(FPGA_FAMILY_PLATFORM_DIR)
 VFLAGS_DEP += -y$(BWUDP_DIR)
+VFLAGS_DEP += -y$(BD_CORE_DIRS)
 
 # Local directories for include searching
 VFLAGS_DEP += -I.
@@ -111,9 +108,12 @@ VFLAGS_DEP += -I$(MODULES_DIR)
 VFLAGS_DEP += -I$(TOP_LVL_DIR)
 VFLAGS_DEP += -I$(GW_TOP_COMMON_DIR)
 VFLAGS_DEP += -I$(BWUDP_DIR)
+VFLAGS_DEP += -I$(BD_CORE_DIR)
 
 VFLAGS_DEP += $(SYNTH_OPT)
 VFLAGS_DEP += -DSIMULATE -g2012 -Y .sv
+
+BD_CORE_BDS = $(patsubst %.tcl, %.bd, $(BD_CORE_TCLS))
 
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(BWUDP_DIR)
@@ -125,7 +125,7 @@ vpath %.dat $(MODULES_DIR)
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(TOP_LVL_DIR)/$(TARGET)_top.v iicCommandTable.dat $(BD_bds)
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(TOP_LVL_DIR)/$(TARGET)_top.v iicCommandTable.dat $(BD_CORE_BDS)
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/aggregate.v $(TOP_LVL_DIR)/gpioIDX.vh $(RTEFI_V) $(IP_CORES_CUSTOM)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
@@ -154,14 +154,13 @@ prio_xci_files.tcl: prio_xci_files.tcl.in
 	sed -e 's|$$XCI_FILES|ila_td256_s4096_cap.xci|g' \
 		$< > $@
 
-.PHONY: system_bd
-system_bd: $(BD_CORES_TCLS) axi_lite_generic_reg evr_axi drp_bridge
+%.bd: %.tcl axi_lite_generic_reg evr_axi drp_bridge
 	$(VIVADO_CMD) -source $(GW_SCRIPTS_DIR)/bd_tcl_proc.tcl $(GW_SCRIPTS_DIR)/gen_bd_tcl.tcl  -tclargs $< $(PROJECT_PART) $(PROJECT_BOARD) $(IP_CORES_CUSTOM_TARGET_DIRS)
-	touch $@
 
 # Cleaning rules
 include $(BUILD_DIR)/bottom_rules.mk
 include $(CELL_COMM_DIR)/bottom_rules.mk
+include $(PLATFORM_DIR)/bottom_rules.mk
 
 CLEAN += *.bit
 CLEAN += *.bin
@@ -170,7 +169,6 @@ CLEAN += system_top.xdc
 CLEAN += $(TOP_LVL_DIR)/firmwareBuildDate.v
 CLEAN += $(TOP_LVL_DIR)/aggregate.v
 CLEAN += $(TOP_LVL_DIR)/gpioIDX.vh
-CLEAN += system_bd
 CLEAN += $(IP_CORES_CUSTOM)
 CLEAN += *.log *.jou *.str
 CLEAN += *.xsa
