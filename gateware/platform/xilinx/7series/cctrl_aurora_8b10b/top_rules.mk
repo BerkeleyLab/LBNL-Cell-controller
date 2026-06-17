@@ -19,13 +19,17 @@ cell_controller_IP_CORES_DIRS = $(addprefix $(cell_controller_7series_platform_a
 IP_CORES_TCLS += $(addsuffix .tcl, $(cell_controller_IP_CORES))
 IP_CORES_DIRS += $(cell_controller_IP_CORES_DIRS)
 
-cell_controller_BD_CORES = \
+cell_controller_BD_CORE = \
 	system_aurora_8b10b
 
-cell_controller_BD_CORES_DIRS = $(addprefix $(cell_controller_7series_platform_app_DIR)/, $(cell_controller_BD_CORES))
+cell_controller_BD_CORE_DIRS = $(addprefix $(cell_controller_7series_platform_app_DIR)/, $(cell_controller_BD_CORE))
 
 # For top-level makefile
-BD_CORES_TCLS += $(addsuffix .tcl, $(cell_controller_BD_CORES))
-BD_CORES_DIRS += $(cell_controller_BD_CORES_DIRS)
+BD_CORE_TCLS += $(addsuffix .tcl, $(cell_controller_BD_CORE))
+BD_CORE_DIRS += \
+	$(cell_controller_BD_CORE_DIRS) \
+	$(addsuffix /synth, $(cell_controller_BD_CORE_DIRS)) \
+	$(addsuffix /hdl, $(cell_controller_BD_CORE_DIRS))
 
-vpath %.tcl $(IP_CORES_DIRS) $(BD_CORES_DIRS)
+vpath %.tcl $(IP_CORES_DIRS) $(BD_CORE_DIRS)
+vpath %.bd $(BD_CORE_DIRS)
