@@ -121,7 +121,7 @@ vpath %.dat $(MODULES_DIR)
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_CORE_BDS) iicCommandTable.dat
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(IP_CORES_XCIS) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_CORE_BDS) iicCommandTable.dat
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/aggregate.v $(TOP_LVL_DIR)/gpioIDX.vh $(RTEFI_V) $(IP_CORES_CUSTOM)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
