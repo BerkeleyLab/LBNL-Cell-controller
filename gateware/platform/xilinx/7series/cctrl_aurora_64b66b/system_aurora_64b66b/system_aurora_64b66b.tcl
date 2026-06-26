@@ -56,9 +56,9 @@ set design_name system_aurora_64b66b
 
 set run_remote_bd_flow 1
 if { $run_remote_bd_flow == 1 } {
-  # Set the reference directory for source file relative paths (by default
+  # Set the reference directory for source file relative paths (by default 
   # the value is script directory path)
-  set origin_dir .
+  set origin_dir ./gateware/platform/xilinx/7series/cctrl_aurora_64b66b
 
   # Use origin directory path location variable, if specified in the tcl shell
   if { [info exists ::origin_dir_loc] } {
@@ -123,7 +123,7 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\
+   set list_check_ips "\ 
 xilinx.com:ip:axi_bram_ctrl:4.1\
 xilinx.com:ip:axi_uartlite:2.0\
 xilinx.com:ip:xlconstant:1.1\
@@ -224,16 +224,13 @@ proc create_hier_cell_data_upconverter3 { parentCell nameHier } {
 
   # Create instance: axi_stream_cc, and set properties
   set axi_stream_cc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_clock_converter:1.1 axi_stream_cc ]
-  set_property -dict [ list \
-   CONFIG.TUSER_WIDTH {16} \
- ] $axi_stream_cc
 
   # Create instance: axi_stream_dwc, and set properties
   set axi_stream_dwc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axi_stream_dwc ]
   set_property -dict [ list \
-   CONFIG.M_TDATA_NUM_BYTES {4} \
-   CONFIG.S_TDATA_NUM_BYTES {8} \
-   CONFIG.TUSER_BITS_PER_BYTE {2} \
+   CONFIG.HAS_MI_TKEEP {1} \
+   CONFIG.M_TDATA_NUM_BYTES {8} \
+   CONFIG.S_TDATA_NUM_BYTES {4} \
  ] $axi_stream_dwc
 
   # Create instance: axi_stream_sc_in, and set properties
@@ -242,14 +239,12 @@ proc create_hier_cell_data_upconverter3 { parentCell nameHier } {
    CONFIG.M_HAS_TKEEP {1} \
    CONFIG.M_HAS_TREADY {1} \
    CONFIG.M_TDATA_NUM_BYTES {8} \
-   CONFIG.M_TUSER_WIDTH {16} \
    CONFIG.S_HAS_TKEEP {1} \
    CONFIG.S_TDATA_NUM_BYTES {8} \
-   CONFIG.S_TUSER_WIDTH {16} \
    CONFIG.TDATA_REMAP {tdata[31:0],tdata[63:32]} \
    CONFIG.TID_REMAP {1'b0} \
    CONFIG.TKEEP_REMAP {tkeep[3:0],tkeep[7:4]} \
-   CONFIG.TUSER_REMAP {tuser[7:0],tuser[15:8]} \
+   CONFIG.TUSER_REMAP {1'b0} \
  ] $axi_stream_sc_in
 
   # Create instance: axis_data_fifo_3, and set properties
@@ -1399,8 +1394,6 @@ proc create_hier_cell_Aurora { parentCell nameHier } {
    CONFIG.DRP_COUNT {5} \
  ] $drp_bridge_0
 
-  set_property SELECTED_SIM_MODEL rtl  $drp_bridge_0
-
   # Create instance: util_vector_logic_0, and set properties
   set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
   set_property -dict [ list \
@@ -1721,8 +1714,6 @@ proc create_root_design { parentCell } {
    CONFIG.C_S00_AXI_ADDR_WIDTH {9} \
  ] $axi_lite_generic_reg
 
-  set_property SELECTED_SIM_MODEL rtl  $axi_lite_generic_reg
-
   # Create instance: clk_wiz_1, and set properties
   set clk_wiz_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_1 ]
   set_property -dict [ list \
@@ -1773,8 +1764,6 @@ proc create_root_design { parentCell } {
    CONFIG.C_S00_AXI_ADDR_WIDTH {15} \
    CONFIG.C_S00_AXI_ID_WIDTH {12} \
  ] $evr_axi_0
-
-  set_property SELECTED_SIM_MODEL rtl  $evr_axi_0
 
   # Create instance: hwicap, and set properties
   set hwicap [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_hwicap:3.0 hwicap ]
@@ -1929,12 +1918,12 @@ proc create_root_design { parentCell } {
   # Create address segments
   assign_bd_address -offset 0xC0000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs BRAM_BPM_SETPOINTS/S_AXI/Mem0] -force
   assign_bd_address -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs DummyUART/S_AXI/Reg] -force
-  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs iic_proc_gpio/S_AXI/Reg] -force
   assign_bd_address -offset 0x44A30000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs axi_lite_generic_reg/s00_axi/reg0] -force
   assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs microblaze_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
   assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs Aurora/drp_bridge_0/S_AXI/reg0] -force
   assign_bd_address -offset 0x44A40000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs evr_axi_0/s00_axi/reg0] -force
   assign_bd_address -offset 0x40200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs hwicap/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs iic_proc_gpio/S_AXI/Reg] -force
   assign_bd_address -offset 0x44A50000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs xadc_wiz_0/s_axi_lite/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces microblaze_0/Instruction] [get_bd_addr_segs microblaze_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
 
