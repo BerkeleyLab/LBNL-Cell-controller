@@ -56,7 +56,7 @@ set design_name system_aurora_8b10b
 
 set run_remote_bd_flow 1
 if { $run_remote_bd_flow == 1 } {
-  # Set the reference directory for source file relative paths (by default
+  # Set the reference directory for source file relative paths (by default 
   # the value is script directory path)
   set origin_dir .
 
@@ -123,7 +123,7 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\
+   set list_check_ips "\ 
 xilinx.com:ip:axi_bram_ctrl:4.1\
 xilinx.com:ip:axi_uartlite:2.0\
 xilinx.com:ip:xlconstant:1.1\
@@ -682,7 +682,7 @@ proc create_root_design { parentCell } {
  ] $auroraReset
   set auroraUserClk [ create_bd_port -dir O -type clk auroraUserClk ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {BPM_CCW_AXI_STREAM_RX:BPM_CW_AXI_STREAM_RX:CELL_CCW_AXI_STREAM_RX:CELL_CW_AXI_STREAM_RX:CELL_CCW_AXI_STREAM_TX:CELL_CW_AXI_STREAM_TX} \
+   CONFIG.ASSOCIATED_BUSIF {BPM_CCW_AXI_STREAM_RX:BPM_CW_AXI_STREAM_RX:CELL_CCW_AXI_STREAM_RX:CELL_CW_AXI_STREAM_RX:CELL_CCW_AXI_STREAM_TX:CELL_CW_AXI_STREAM_TX:BPM_TEST_AXI_STREAM_TX} \
    CONFIG.ASSOCIATED_RESET {auroraReset_CELL_CCW:auroraReset_BPM_CW:gtxReset_BPM_CW:auroraReset_CELL_CW:gtxReset_CELL_CW:auroraReset:auroraReset_AXI:gtxReset:gtxReset_CELL_CCW} \
  ] $auroraUserClk
   set badgerClk125 [ create_bd_port -dir O -type clk badgerClk125 ]
@@ -944,12 +944,12 @@ proc create_root_design { parentCell } {
   # Create address segments
   assign_bd_address -offset 0xC0000000 -range 0x00002000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs BRAM_BPM_SETPOINTS/S_AXI/Mem0] -force
   assign_bd_address -offset 0x40600000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs DummyUART/S_AXI/Reg] -force
-  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs iic_proc_gpio/S_AXI/Reg] -force
   assign_bd_address -offset 0x44A30000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs axi_lite_generic_reg/s00_axi/reg0] -force
   assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs microblaze_0_local_memory/dlmb_bram_if_cntlr/SLMB/Mem] -force
   assign_bd_address -offset 0x44A10000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs Aurora/drp_bridge_0/S_AXI/reg0] -force
   assign_bd_address -offset 0x44A40000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs evr_axi_0/s00_axi/reg0] -force
   assign_bd_address -offset 0x40200000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs hwicap/S_AXI_LITE/Reg] -force
+  assign_bd_address -offset 0x40000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs iic_proc_gpio/S_AXI/Reg] -force
   assign_bd_address -offset 0x44A50000 -range 0x00010000 -target_address_space [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs xadc_wiz_0/s_axi_lite/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces microblaze_0/Instruction] [get_bd_addr_segs microblaze_0_local_memory/ilmb_bram_if_cntlr/SLMB/Mem] -force
 
