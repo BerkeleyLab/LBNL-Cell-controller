@@ -1,4 +1,6 @@
 module common_cctrl_top #(
+   // Include file is machine generated from C header
+  `include "gpioIDX.vh"
   parameter          AURORA_TYPE               = "8b10b",
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
   parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE",
@@ -134,7 +136,6 @@ IBUFGDS ibufgds_i (
 
 //////////////////////////////////////////////////////////////////////////////
 // General-purpose I/O block
-`include "gpioIDX.vh"
 wire                    [31:0] GPIO_IN[0:GPIO_IDX_COUNT-1];
 wire                    [31:0] GPIO_OUT;
 wire      [GPIO_IDX_COUNT-1:0] GPIO_STROBES;
