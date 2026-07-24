@@ -9,6 +9,7 @@
 
 #define XADC_CHANNEL_COUNT   4
 
+void xadcInit(void);
 uint32_t *xadcUpdate(uint32_t *buf);
 int xadcGetFPGAtemp(void);
 
