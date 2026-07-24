@@ -245,10 +245,14 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         break;
 
     case CC_PROTOCOL_CMD_HI_LONGIN:
+        if (commandArgCount != 0) {
+            return -1;
+        }
+        replyArgCount = 1;
+
         switch (idx) {
         case CC_PROTOCOL_CMD_LONGIN_IDX_GIT_HASH_ID:
             replyp->args[0] = GPIO_READ(GPIO_IDX_GITHASH);
-            replyArgCount = 1;
             break;
 
         default: return -1;
@@ -318,12 +322,6 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         replyArgCount = auroraStats(replyp->args, commandArgCount);
         break;
 
-    case CC_PROTOCOL_CMD_HI_PLL_REG_IO:
-        break;
-
-    case CC_PROTOCOL_CMD_HI_SET_DAC:
-        break;
-
     case CC_PROTOCOL_CMD_HI_I32ARRAY_OUT:
         switch (lo) {
         case CC_PROTOCOL_CMD_LO_I32A_BPM_SETPOINTS:
@@ -368,7 +366,7 @@ epicsHandler(bwudpHandle replyHandle, char *payload, int length)
     int commandArgCount;
     static struct ccProtocolPacket reply;
     static int replySize;
-    static uint32_t lastIdentifier;
+    static uint32_t lastnonce;
 
     /*
      * Ignore weird-sized packets
@@ -376,32 +374,44 @@ epicsHandler(bwudpHandle replyHandle, char *payload, int length)
     if ((length < CC_PROTOCOL_ARG_COUNT_TO_SIZE(0))
      || (length > sizeof(struct ccProtocolPacket))
      || ((length % sizeof(uint32_t)) != 0)) {
+        if (debugFlags & DEBUGFLAG_EPICS) {
+            printf("Unreasonable packet size\n");
+        }
         return;
     }
     commandArgCount = CC_PROTOCOL_SIZE_TO_ARG_COUNT(length);
+
     if (cmdp->magic == CC_PROTOCOL_MAGIC_SWAPPED) {
         mustSwap = 1;
         bswap32(&cmdp->magic, length / sizeof(int32_t));
     }
     if (cmdp->magic == CC_PROTOCOL_MAGIC) {
         if (debugFlags & DEBUGFLAG_EPICS) {
-            printf("Command:%X identifier:%X args:%d 0x%x\n",
-                         (unsigned int)cmdp->command, (unsigned int)cmdp->identifier,
+            printf("Command:%X nonce:%X args:%d 0x%x\n",
+                         (unsigned int)cmdp->command, (unsigned int)cmdp->nonce,
                          commandArgCount, (unsigned int)cmdp->args[0]);
         }
-        if (cmdp->identifier != lastIdentifier) {
+        if (cmdp->nonce != lastnonce) {
             int n;
             memcpy(&reply, cmdp, CC_PROTOCOL_ARG_COUNT_TO_SIZE(0));
             if ((n = handleCommand(commandArgCount, cmdp, &reply)) < 0) {
                 return;
             }
-            lastIdentifier = cmdp->identifier;
+            lastnonce = cmdp->nonce;
             replySize = CC_PROTOCOL_ARG_COUNT_TO_SIZE(n);
             if (mustSwap) {
                 bswap32(&reply.magic, replySize / sizeof(int32_t));
             }
         }
+        if (debugFlags & DEBUGFLAG_EPICS) {
+            printf("Reply:%d\n", replySize);
+        }
         bwudpSend(replyHandle, (const char *)&reply, replySize);
+    }
+    else {
+        if (debugFlags & DEBUGFLAG_EPICS) {
+            printf("Bad magic number 0x%08X\n", cmdp->magic);
+        }
     }
 }
 
