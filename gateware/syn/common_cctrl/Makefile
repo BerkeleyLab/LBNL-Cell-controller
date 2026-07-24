@@ -139,7 +139,7 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(SYSTEM_TOP_TIM_XDC)
 %gitHash.vh: gitHashVerilog.sh
 	sh $(GW_SCRIPTS_DIR)/gitHashVerilog.sh > $@
 
-%gpioIDX.vh:  $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h
+%gpioIDX.vh:  $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/config.h
 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
 
 ipcores_repos.tcl: ipcores_repos.tcl.in
