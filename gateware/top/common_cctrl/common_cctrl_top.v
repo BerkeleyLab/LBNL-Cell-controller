@@ -639,9 +639,9 @@ forwardCellLink #(
 wire        sysTimeoutStrobe;
 wire [31:0] fofbDSPreadoutS, fofbDSPreadoutY, fofbDSPreadoutX;
 wire fofbReadoutActive, fofbReadoutValid, fofbUseFakeData;
-wire [GPIO_FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress;
+wire [CFG_FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress;
 fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
-                .FOFB_INDEX_WIDTH(GPIO_FOFB_MATRIX_ADDR_WIDTH),
+                .FOFB_INDEX_WIDTH(CFG_FOFB_MATRIX_ADDR_WIDTH),
                 .FAstrobeDebug("false"),
                 .statusDebug("false"),
                 .rawDataDebug("false"),
@@ -702,16 +702,16 @@ wire        sysFMPSStatusStrobe;
 wire sysFMPSTimeoutStrobe;
 wire fmpsEnabled;
 wire [31:0] fmpsReadoutCSR, fmpsReadout;
-wire [GPIO_FMPS_INDEX_WIDTH-1:0] fmpsReadoutAddress = 'h0;
-wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
-wire [(1<<GPIO_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
-wire [GPIO_FMPS_INDEX_WIDTH-1:0] fmpsIndex;
+wire [CFG_FMPS_INDEX_WIDTH-1:0] fmpsReadoutAddress = 'h0;
+wire [(1<<CFG_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
+wire [(1<<CFG_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
+wire [CFG_FMPS_INDEX_WIDTH-1:0] fmpsIndex;
 wire [31:0] fmpsData;
 wire fmpsValid;
 
 assign GPIO_IN[GPIO_IDX_FMPS_COMM_CSR] = fmpsReadoutCSR;
 fmpsReadLinksStream #(.SYSCLK_RATE(SYSCLK_RATE),
-                .INDEX_WIDTH(GPIO_FMPS_INDEX_WIDTH),
+                .INDEX_WIDTH(CFG_FMPS_INDEX_WIDTH),
                 .FAstrobeDebug("false"),
                 .statusDebug("false"),
                 .rawDataDebug("false"),
@@ -779,8 +779,8 @@ linkStatistics #(.dbg("false")) linkStatistics (
 wire        FOFB_SETPOINT_AXIS_TVALID;
 wire        FOFB_SETPOINT_AXIS_TLAST;
 wire [31:0] FOFB_SETPOINT_AXIS_TDATA;
-fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
-          .FOFB_MATRIX_ADDR_WIDTH(GPIO_FOFB_MATRIX_ADDR_WIDTH),
+fofbDSP #(.RESULT_COUNT(CFG_CHANNEL_COUNT),
+          .FOFB_MATRIX_ADDR_WIDTH(CFG_FOFB_MATRIX_ADDR_WIDTH),
           .MATMUL_DEBUG("false"),
           .FIR_DEBUG("false"),
           .TX_AXIS_DEBUG("false"))
@@ -803,7 +803,7 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
 
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
-psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
+psSetpointMonitor #(.SETPOINT_COUNT(CFG_CHANNEL_COUNT),
                     .DEBUG("false"))
   psSetpointMonitor (
     .clk(sysClk),
@@ -821,9 +821,9 @@ wire [31:0] AWG_AXIS_TDATA;
 wire        AWG_AXIS_TVALID, AWG_AXIS_TLAST;
 wire        AWGrequest, AWGenabled;
 
-psAWG #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
+psAWG #(.SETPOINT_COUNT(CFG_CHANNEL_COUNT),
         .DATA_WIDTH(32),
-        .ADDR_WIDTH($clog2(GPIO_AWG_CAPACITY)),
+        .ADDR_WIDTH($clog2(CFG_AWG_CAPACITY)),
         .SYSCLK_RATE(SYSCLK_RATE),
         .DEBUG("false"))
   psAWG (.sysClk(sysClk),
@@ -874,7 +874,7 @@ wire [63:0] ethNonce;
 assign  ethRefClk125 = pcs_pma_shared[9];
 assign  ethRefClk125Buff = pcs_pma_shared[8];
 fofbEthernet #(
-    .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
+    .MAX_CORRECTOR_COUNT(CFG_CHANNEL_COUNT),
     .PCS_PMA_SHARED_LOGIC_IN_CORE("true"),
     .SRC_IP_ADDRESS({8'd192, 8'd168, 8'd30, 8'd251}),
     .SRC_MAC_ADDRESS({8'h2A,8'h4C,8'h42,8'h4E,8'h4C,8'h32}),
@@ -901,7 +901,7 @@ fofbEthernet #(
     .ETH_TX_P(QSFP2_TX_P[2]));// P2  MGT_TX_4_P  MGT_TX_4_QSFP_P   QSFP2_TX_3_P Bank 115
 
 fofbEthernet #(
-    .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
+    .MAX_CORRECTOR_COUNT(CFG_CHANNEL_COUNT),
     .PCS_PMA_SHARED_LOGIC_IN_CORE("false"),
     .SRC_IP_ADDRESS({8'd192, 8'd168, 8'd30, 8'd250}),
     .SRC_MAC_ADDRESS({8'h2A,8'h4C,8'h42,8'h4E,8'h4C,8'h33}),
@@ -932,8 +932,8 @@ fofbEthernet #(
 
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
-fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),
-               .CHANNEL_COUNT(GPIO_CHANNEL_COUNT),
+fofbRecorder #(.BUFFER_CAPACITY(CFG_RECORDER_CAPACITY),
+               .CHANNEL_COUNT(CFG_CHANNEL_COUNT),
                .DEBUG("false"))
   fofbRecorder (
     .clk(sysClk),
