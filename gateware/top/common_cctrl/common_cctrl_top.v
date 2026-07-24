@@ -56,6 +56,16 @@ module common_cctrl_top #(
   output PMOD2_6,
   output PMOD2_7,
 
+  // Fan/Tach control
+  //input  FMC1_PMOD3_0,
+  //input  FMC1_PMOD3_1,
+  //input  FMC1_PMOD3_2,
+  //input  FMC1_PMOD3_3,
+  //input  FMC1_PMOD3_4,
+  //input  FMC1_PMOD3_5,
+  //input  FMC1_PMOD3_6,
+  //input  FMC1_PMOD3_7,
+
   output wire        MARBLE_LD16,
   output wire        MARBLE_LD17
 );
@@ -1027,6 +1037,22 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .status(GPIO_IN[GPIO_IDX_UART_CSR]),
                    .TxData(FPGA_RxD),
                    .RxData(FPGA_TxD));
+
+/////////////////////////////////////////////////////////////////////////////
+// Measure fan speeds
+//wire FMC1_FAN1_TACH = FMC1_PMOD3_6;
+//wire FMC1_FAN2_TACH = FMC1_PMOD3_7;
+wire FMC1_FAN1_TACH = 1'b0;
+wire FMC1_FAN2_TACH = 1'b0;
+
+fanTach #(.CLK_FREQUENCY(SYSCLK_RATE),
+          .FAN_COUNT(CFG_FAN_COUNT))
+  fanTachs (
+    .clk(sysClk),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_FAN_TACHOMETERS]),
+    .GPIO_OUT(GPIO_OUT),
+    .value(GPIO_IN[GPIO_IDX_FAN_TACHOMETERS]),
+    .tachs_a({FMC1_FAN1_TACH, FMC1_FAN1_TACH}));
 
 //////////////////////////////////////////////////////////////////////////////
 // Badger Ethernet MAC Interface
