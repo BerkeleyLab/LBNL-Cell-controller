@@ -7,7 +7,7 @@
 #include "xadc.h"
 #include "util.h"
 
-#define In32(offset)    Xil_In32(XPAR_XADC_BASEADDR+(offset))
+#define In32(offset)    Xil_In32(XPAR_XADC_WIZ_0_BASEADDR+(offset))
 
 #define R_TEMP          0x200 /* On-chip Temperature */
 #define R_VCCINT        0x204 /* FPGA VCCINT */
