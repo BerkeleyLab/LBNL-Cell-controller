@@ -172,6 +172,8 @@ assign csrStatus = { 22'b0, rxSlipMonitor, rxPhaseMonitor };
 
 localparam LOOPBACK = 3'd4; // 4 == Far end PMA loopback
 
+`ifndef SIMULATE
+
 evrmgt evrmgt_i (
     .sysclk_in(sysClk), // input wire sysclk_in
     .soft_reset_tx_in(softreset), // input wire soft_reset_tx_in
@@ -268,6 +270,8 @@ evrmgt evrmgt_i (
     .gt0_qplloutclk_in(1'b0), // input wire gt0_qplloutclk_in
     .gt0_qplloutrefclk_in(1'b0) // input wire gt0_qplloutrefclk_in
 );
+
+`endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Xilinx Answer Record 43339
