@@ -75,25 +75,6 @@
 #define GPIO_IDX_FMPS_CSR                 62 // FMPS packet generator
 #define GPIO_IDX_FAN_TACHOMETERS          63 // Monitor internal fans
 
-#define GPIO_DSP_CMD_LATCH_ADDRESS        0
-#define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
-#define GPIO_DSP_CMD_WRITE_MATRIX_ELEMENT 2
-#define GPIO_DSP_CMD_WRITE_FOFB_GAIN      3
-#define GPIO_DSP_CMD_WRITE_PS_OFFSET      4
-#define GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT  5
-#define GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT 6
-#define GPIO_DSP_CMD_FIR_RELOAD           7
-#define GPIO_DSP_CMD_FIR_CONFIG           8
-#define GPIO_DSP_CMD_SHIFT                28
-
-#define GPIO_AWG_CAPACITY           8192
-#define GPIO_RECORDER_CAPACITY      32768
-#define GPIO_CHANNEL_COUNT          24
-#define GPIO_FOFB_MATRIX_ADDR_WIDTH 9
-
-// FMPS
-#define GPIO_FMPS_INDEX_WIDTH       5
-
 #include <xil_io.h>
 #include <xparameters.h>
 #include "config.h"

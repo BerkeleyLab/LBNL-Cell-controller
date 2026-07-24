@@ -147,12 +147,12 @@ static void
 dspUpdate(int cmdCode, int idx, uint32_t value)
 {
     GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_LATCH_ADDRESS << GPIO_DSP_CMD_SHIFT) |
+                            (CFG_DSP_CMD_LATCH_ADDRESS << CFG_DSP_CMD_SHIFT) |
                             (idx << 10));
     GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                         (GPIO_DSP_CMD_LATCH_HIGH_VALUE << GPIO_DSP_CMD_SHIFT) |
+                         (CFG_DSP_CMD_LATCH_HIGH_VALUE << CFG_DSP_CMD_SHIFT) |
                          ((value >> 16) & 0xFFFF));
-    GPIO_WRITE(GPIO_IDX_DSP_CSR, (cmdCode << GPIO_DSP_CMD_SHIFT) |
+    GPIO_WRITE(GPIO_IDX_DSP_CSR, (cmdCode << CFG_DSP_CMD_SHIFT) |
                                  (value & 0xFFFF));
 }
 
@@ -183,17 +183,17 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
 
     switch (hi) {
     case CC_PROTOCOL_CMD_HI_FOFB_GAIN:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_FOFB_GAIN, commandArgCount, cmdp->args);
+            dspUpdateAll(CFG_DSP_CMD_WRITE_FOFB_GAIN, commandArgCount, cmdp->args);
             break;
 
     case CC_PROTOCOL_CMD_HI_CLIP_LIMIT:
         switch(lo) {
         case CC_PROTOCOL_CMD_LO_CLIP_LIMIT_PS:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT, commandArgCount, cmdp->args);
+            dspUpdateAll(CFG_DSP_CMD_WRITE_PS_CLIP_LIMIT, commandArgCount, cmdp->args);
             break;
 
         case CC_PROTOCOL_CMD_LO_CLIP_LIMIT_FFB:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT, commandArgCount, cmdp->args);
+            dspUpdateAll(CFG_DSP_CMD_WRITE_FFB_CLIP_LIMIT, commandArgCount, cmdp->args);
             break;
 
         default: return -1;
@@ -201,7 +201,7 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         break;
 
     case CC_PROTOCOL_CMD_HI_PS_OFFSET:
-            dspUpdateAll(GPIO_DSP_CMD_WRITE_PS_OFFSET, commandArgCount, cmdp->args);
+            dspUpdateAll(CFG_DSP_CMD_WRITE_PS_OFFSET, commandArgCount, cmdp->args);
             break;
 
     case CC_PROTOCOL_CMD_HI_FOFB_FIR: {
@@ -213,18 +213,18 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         if ((activeRow >= 0) && (row != activeRow)) {
             warn("FIR %d incompletely configured", activeRow);
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_LATCH_ADDRESS << GPIO_DSP_CMD_SHIFT) |
-                            (activeRow << (GPIO_FOFB_MATRIX_ADDR_WIDTH+1)) |
-                            (1 << GPIO_FOFB_MATRIX_ADDR_WIDTH));
+                            (CFG_DSP_CMD_LATCH_ADDRESS << CFG_DSP_CMD_SHIFT) |
+                            (activeRow << (CFG_FOFB_MATRIX_ADDR_WIDTH+1)) |
+                            (1 << CFG_FOFB_MATRIX_ADDR_WIDTH));
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                           (GPIO_DSP_CMD_LATCH_HIGH_VALUE<<GPIO_DSP_CMD_SHIFT));
+                           (CFG_DSP_CMD_LATCH_HIGH_VALUE<<CFG_DSP_CMD_SHIFT));
         }
         activeRow = row;
         /* Ensure that previous update has completed */
         while (GPIO_READ(GPIO_IDX_DSP_CSR) & 0x3) continue;
         GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_LATCH_ADDRESS<<GPIO_DSP_CMD_SHIFT) |
-                            (row << (GPIO_FOFB_MATRIX_ADDR_WIDTH+1)) | 0);
+                            (CFG_DSP_CMD_LATCH_ADDRESS<<CFG_DSP_CMD_SHIFT) |
+                            (row << (CFG_FOFB_MATRIX_ADDR_WIDTH+1)) | 0);
         for (i = 1 ; i < commandArgCount ; i++, col++) {
             uint32_t value = cmdp->args[i];
             if (col == CC_PROTOCOL_FOFB_CORRECTOR_FIR_SIZE) {
@@ -234,24 +234,24 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
             if (col == (CC_PROTOCOL_FOFB_CORRECTOR_FIR_SIZE - 1)) {
                 /* Assert reload TLAST (address 'plane select' bit) */
                 GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_LATCH_ADDRESS << GPIO_DSP_CMD_SHIFT) |
-                            (row << (GPIO_FOFB_MATRIX_ADDR_WIDTH+1)) |
-                            (1 << GPIO_FOFB_MATRIX_ADDR_WIDTH));
+                            (CFG_DSP_CMD_LATCH_ADDRESS << CFG_DSP_CMD_SHIFT) |
+                            (row << (CFG_FOFB_MATRIX_ADDR_WIDTH+1)) |
+                            (1 << CFG_FOFB_MATRIX_ADDR_WIDTH));
             }
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                           (GPIO_DSP_CMD_LATCH_HIGH_VALUE<<GPIO_DSP_CMD_SHIFT) |
+                           (CFG_DSP_CMD_LATCH_HIGH_VALUE<<CFG_DSP_CMD_SHIFT) |
                            ((value >> 16) & 0xFFFF));
             /* Ensure that previous update has completed */
             while (GPIO_READ(GPIO_IDX_DSP_CSR) & 0x1) continue;
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_FIR_RELOAD<<GPIO_DSP_CMD_SHIFT) |
+                            (CFG_DSP_CMD_FIR_RELOAD<<CFG_DSP_CMD_SHIFT) |
                             (value & 0xFFFF));
             if (col == (CC_PROTOCOL_FOFB_CORRECTOR_FIR_SIZE - 1)) {
                 uint32_t csr;
                 /* Ensure that previous update has completed */
                 while (GPIO_READ(GPIO_IDX_DSP_CSR) & 0x2) continue;
                 GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                            (GPIO_DSP_CMD_FIR_CONFIG<<GPIO_DSP_CMD_SHIFT));
+                            (CFG_DSP_CMD_FIR_CONFIG<<CFG_DSP_CMD_SHIFT));
                 activeRow = -1;
                 csr = GPIO_READ(GPIO_IDX_DSP_CSR);
                 if (csr & 0xC) {
@@ -276,13 +276,13 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
         for (i = 1 ; i < commandArgCount ; i++, col++) {
             uint32_t value = cmdp->args[i];
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                        (GPIO_DSP_CMD_LATCH_ADDRESS<<GPIO_DSP_CMD_SHIFT) |
+                        (CFG_DSP_CMD_LATCH_ADDRESS<<CFG_DSP_CMD_SHIFT) |
                         (row << 10) | col);
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                        (GPIO_DSP_CMD_LATCH_HIGH_VALUE<<GPIO_DSP_CMD_SHIFT) |
+                        (CFG_DSP_CMD_LATCH_HIGH_VALUE<<CFG_DSP_CMD_SHIFT) |
                         ((value >> 16) & 0xFFFF));
             GPIO_WRITE(GPIO_IDX_DSP_CSR,
-                        (GPIO_DSP_CMD_WRITE_MATRIX_ELEMENT<<GPIO_DSP_CMD_SHIFT) |
+                        (CFG_DSP_CMD_WRITE_MATRIX_ELEMENT<<CFG_DSP_CMD_SHIFT) |
                         (value & 0xFFFF));
         }
         }
@@ -349,7 +349,7 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
 
 
         case CC_PROTOCOL_CMD_LONGOUT_LO_PS_OFFSET:
-            dspUpdate(GPIO_DSP_CMD_WRITE_PS_OFFSET, idx, cmdp->args[0]);
+            dspUpdate(CFG_DSP_CMD_WRITE_PS_OFFSET, idx, cmdp->args[0]);
             break;
 
         case CC_PROTOCOL_CMD_LONGOUT_LO_AWG:
