@@ -28,8 +28,6 @@
 
 int main()
 {
-    uint32_t lastDiagnostic, now;
-
     /*
      * Announce our presence
      */
@@ -81,17 +79,12 @@ int main()
     /*
      * Main processing loop
      */
-    lastDiagnostic = MICROSECONDS_SINCE_BOOT();
     for (;;) {
-        now = MICROSECONDS_SINCE_BOOT();
-        if ((now - lastDiagnostic) >= 1000000) {
-            lastDiagnostic = now;
-            xadcUpdate();
-        }
-        mgtCrankRxAligner();
         bwudpCrank();
         consoleCheck();
+        mgtCrankRxAligner();
     }
+
     cleanup_platform();
     return 0;
 }
