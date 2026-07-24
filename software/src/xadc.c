@@ -7,7 +7,7 @@
 #include "xadc.h"
 #include "util.h"
 
-#define In32(offset)    Xil_In32(XPAR_XADC_WIZ_0_BASEADDR+(offset))
+#define In32(offset)    Xil_In32(XPAR_XADC_BASEADDR+(offset))
 
 #define R_TEMP          0x200 /* On-chip Temperature */
 #define R_VCCINT        0x204 /* FPGA VCCINT */
@@ -51,12 +51,20 @@ xadcInit(void)
 /*
  * Update the ADC readings
  */
-uint16_t xadcVal[XADC_CHANNEL_COUNT];
-void
-xadcUpdate(void)
+uint32_t *
+xadcUpdate(uint32_t *buf)
 {
-    xadcVal[0] = In32(R_TEMP);
-    xadcVal[1] = In32(R_VCCINT);
-    xadcVal[2] = In32(R_VCCAUX);
-    xadcVal[3] = In32(R_VBRAM);
+    *buf++ = (In32(R_VCCINT) << 16) | In32(R_TEMP);
+    *buf++ = (In32(R_VBRAM) << 16) | In32(R_VCCAUX);
+    return buf;
+}
+
+/*
+ * Return FPGA temperature in units of 0.1 degree C
+ * Avoid floating point arithmetic
+ */
+int
+xadcGetFPGAtemp(void)
+{
+    return ((In32(R_TEMP) * 5040) >> 16) - 2732;
 }
