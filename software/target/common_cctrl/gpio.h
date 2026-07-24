@@ -73,6 +73,7 @@
 #define GPIO_IDX_FMPS_ENABLE_BITMAP       60 // FMPS with FMPS enabled (R)
 #define GPIO_IDX_FMPS_READOUT             61 // FMPS readout addr(W)/X value(R)
 #define GPIO_IDX_FMPS_CSR                 62 // FMPS packet generator
+#define GPIO_IDX_FAN_TACHOMETERS          63 // Monitor internal fans
 
 #define GPIO_DSP_CMD_LATCH_ADDRESS        0
 #define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
@@ -95,6 +96,7 @@
 
 #include <xil_io.h>
 #include <xparameters.h>
+#include "config.h"
 
 #define GPIO_READ(i)    Xil_In32(XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(i)))
 #define GPIO_WRITE(i,x) Xil_Out32(XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(i)),(x))
