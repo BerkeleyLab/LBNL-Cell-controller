@@ -12,6 +12,7 @@
 #include "eyescan.h"
 #include "fastFeedback.h"
 #include "fofbEthernet.h"
+#include "fastMPS.h"
 #include "gpio.h"
 #include "util.h"
 #include "qsfp.h"
