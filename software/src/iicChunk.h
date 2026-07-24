@@ -35,6 +35,8 @@
 #ifndef _IICCHUNK_H_
 #define _IICCHUNK_H_
 
+#include <stdint.h>
+
 void iicChunkInit(void);
 uint32_t *iicChunkReadback(uint32_t *buf);
 int iicChunkIsQSFP2present(void);
