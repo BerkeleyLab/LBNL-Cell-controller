@@ -176,9 +176,9 @@ handleCommand(int commandArgCount, struct ccProtocolPacket *cmdp,
                                    struct ccProtocolPacket *replyp)
 {
     int replyArgCount = 0;
-    int hi  = cmdp->command & CC_PROTOCOL_CMD_MASK_HI;
-    int lo  = cmdp->command & CC_PROTOCOL_CMD_MASK_LO;
-    int idx = cmdp->command & CC_PROTOCOL_CMD_MASK_IDX;
+    unsigned int hi  = cmdp->command & CC_PROTOCOL_CMD_MASK_HI;
+    unsigned int lo  = cmdp->command & CC_PROTOCOL_CMD_MASK_LO;
+    unsigned int idx = cmdp->command & CC_PROTOCOL_CMD_MASK_IDX;
     static int powerUpStatus = 1;
 
     switch (hi) {
