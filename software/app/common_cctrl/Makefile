@@ -144,11 +144,11 @@ INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 
 .PHONY: all clean bsp
 
-vpath *.c $(SW_SRC_DIR) $(TARGET_DIR)
-vpath *.h $(SW_SRC_DIR) $(TARGET_DIR)
-vpath *.py $(GW_SCRIPTS_DIR)
-vpath *.o $(SW_SRC_DIR)
-vpath *.mmi $(GW_TGT_DIR)
+vpath %.c $(SW_SRC_DIR) $(TARGET_DIR)
+vpath %.h $(SW_SRC_DIR) $(TARGET_DIR)
+vpath %.py $(GW_SCRIPTS_DIR)
+vpath %.o $(SW_SRC_DIR)
+vpath %.mmi $(GW_TGT_DIR)
 
 # FIXME: We are considering BSP done if the directory exists. This
 # could lead to mismatches!
