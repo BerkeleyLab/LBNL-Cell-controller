@@ -99,7 +99,7 @@ __HDR_SPIFLASHDRIVER_FILES = \
     spiflash.h
 HDR_SPIFLASHDRIVER_FILES = $(addprefix $(SW_SPIFLASHDRIVER_DIR)/, $(__HDR_SPIFLASHDRIVER_FILES))
 
-__HDR_GEN_FILES =
+__HDR_GEN_FILES = iicCommandTable.h
 HDR_GEN_FILES = $(addprefix $(SW_SRC_DIR)/, $(__HDR_GEN_FILES))
 
 __SRC_BWUDP_FILES = \
@@ -146,6 +146,7 @@ INCLUDE_FLAGS = $(addprefix -I, $(INCLUDE_DIRS))
 
 vpath *.c $(SW_SRC_DIR) $(TARGET_DIR)
 vpath *.h $(SW_SRC_DIR) $(TARGET_DIR)
+vpath *.py $(GW_SCRIPTS_DIR)
 vpath *.o $(SW_SRC_DIR)
 vpath *.mmi $(GW_TGT_DIR)
 
@@ -171,6 +172,9 @@ $(DEPLOY_BIT): $(MMI) $(BIT) $(ELF)
 # Pull in dependency info for *existing* .o files and don't complain if the
 # corresponding .d file is not found
 -include $(OBJ_FILES:.o=.d)
+
+%iicCommandTable.h: marble_i2c_prog.py
+	PYTHONPATH=$$PYTHONPATH:$(PERIPH_DRIVERS_DIR)/i2cbridge:$(PROJECTS_DIR)/test_marble_family/i2c python3 $< c > $@
 
 %.o: %.c
 	$(CC) -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" $(CFLAGS) $(USER_FLAGS) $(INCLUDE_FLAGS) -c $*.c -o $@

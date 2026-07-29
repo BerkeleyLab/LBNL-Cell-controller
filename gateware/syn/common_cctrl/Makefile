@@ -4,7 +4,7 @@ PROJECT_BOARD = none
 XILINX_TOOL := VIVADO
 FPGA_VENDOR := xilinx
 FPGA_PLATFORM := 7series
-FPGA_APPLICATION ?= cctrl
+FPGA_APPLICATION ?= cctrl_aurora_64b66b
 
 CMD_SEP = ;
 __THIS_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -111,17 +111,21 @@ VFLAGS_DEP += -I$(BWUDP_DIR)
 VFLAGS_DEP += $(SYNTH_OPT)
 VFLAGS_DEP += -DSIMULATE -g2012 -Y .sv
 
+BEDROCK_I2C_SCRIPTS = $(PROJECTS_DIR)/test_marble_family/i2c
+
 # Search prerequisites for generated .v/.vh/.vhd/.xdc here
 vpath %.v $(BWUDP_DIR)
 vpath %.v $(CORE_DIR) $(CRC_DIR)
 vpath %.tcl $(GW_SCRIPTS_DIR)
 vpath %.sh $(GW_SCRIPTS_DIR)
+vpath %.py $(GW_SCRIPTS_DIR)
+vpath %.py $(BEDROCK_I2C_SCRIPTS)
 vpath %.dat $(MODULES_DIR)
 
 # List top level depedencies here. Eveything named .bit will be used as
 # a top-level target in top_rules.mk. .v and .sv files will be used as
 # prerequisites as well as a system_top.xdc file
-$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(IP_CORES_XCIS) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_CORE_BDS) iicCommandTable.dat
+$(TARGET)_top.bit: system_top.xdc $(VIVADO_SYNTH_EXTRA_TCL) $(IP_CORES_TCLS) $(IP_CORES_XCIS) $(TOP_LVL_DIR)/$(TARGET)_top.v $(BD_CORE_BDS) $(MODULES_DIR)/iicCommandTable.dat 
 $(TOP_LVL_DIR)/$(TARGET)_top.v: $(TOP_LVL_DIR)/gitHash.vh $(TOP_LVL_DIR)/aggregate.v $(TOP_LVL_DIR)/gpioIDX.vh $(RTEFI_V) $(IP_CORES_CUSTOM)
 
 $(TARGET)_top.mmi: $(XPR) $(TARGET)_top.bit
@@ -138,6 +142,18 @@ system_top.xdc: $(SYSTEM_TOP_PINS_XDC) $(SYSTEM_TOP_TIM_XDC)
 
 %gitHash.vh: gitHashVerilog.sh
 	sh $(GW_SCRIPTS_DIR)/gitHashVerilog.sh > $@
+
+%iicCommandTable.dat: marble_i2c_prog.py
+	PYTHONPATH=$$PYTHONPATH:$(PERIPH_DRIVERS_DIR)/i2cbridge:$(PROJECTS_DIR)/test_marble_family/i2c python3 $< p > $@
+
+%iicCommandTable.vh: marble_i2c_prog.py
+	PYTHONPATH=$$PYTHONPATH:$(PERIPH_DRIVERS_DIR)/i2cbridge:$(PROJECTS_DIR)/test_marble_family/i2c python3 $< v > $@
+
+%iicCommandTable.json: marble_i2c_prog.py
+	PYTHONPATH=$$PYTHONPATH:$(PERIPH_DRIVERS_DIR)/i2cbridge:$(PROJECTS_DIR)/test_marble_family/i2c python3 $< j > $@
+
+%iicCommandTable_decoded.txt: marble_i2c_decoder.py iicCommandTable.dat
+	PYTHONPATH=$$PYTHONPATH:$(PERIPH_DRIVERS_DIR)/i2cbridge:$(PROJECTS_DIR)/test_marble_family/i2c python3 $(filter %.py, $^) $(filter %.dat, $^) > $@
 
 %gpioIDX.vh:  $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/gpio.h $(SW_TGT_DIR)/$(FPGA_APPLICATION)_$(HARDWARE)/config.h
 	sh $(GW_SCRIPTS_DIR)/createVerilogIDX.sh $^ > $@
