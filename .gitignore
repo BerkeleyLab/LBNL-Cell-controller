@@ -120,6 +120,7 @@ gateware/syn/*/construct_tx_table.v
 gateware/syn/*/rtefi_blob.v
 gateware/syn/*/rtefi_preblob.vh
 gateware/modules/*.dat
+software/src/iicCommandTable.h
 
 # Verilator testbench files
 gateware/tb/obj_dir
