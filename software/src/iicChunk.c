@@ -53,12 +53,14 @@
 #define IIC_IDX_INA219_STRIDE   4
 
 /* QSFP */
-#define QSFP_CHANNEL_COUNT      4
-#define QSFP_IDX_PER_CHANNEL_STRIDE (QSFP1_TEMPERATURE_SIZE + \
+#define QSFP_COUNT              2
+#define QSFP_INFO_SIZE          (QSFP1_TEMPERATURE_SIZE + \
                                     QSFP1_VSUPPLY_SIZE + \
                                     QSFP1_RXPOWER_SIZE + \
                                     QSFP1_TXBIAS_SIZE + \
                                     QSFP1_TXPWR_SIZE)
+#define QSFP_WORD_SIZE          4
+#define QSFP_INFO_SIZE_WORD     (QSFP_INFO_SIZE/QSFP_WORD_SIZE)
 #define QSFP1_IDX_PER_CHANNEL_BASE  QSFP1_TEMPERATURE
 #define QSFP2_IDX_PER_CHANNEL_BASE  QSFP2_TEMPERATURE
 
@@ -113,14 +115,14 @@ iicChunkReadback(uint32_t *buf)
     }
 
     /* QSFP 1 */
-    for (i = 0, b = QSFP1_IDX_PER_CHANNEL_BASE ; i < QSFP_CHANNEL_COUNT ;
-        i++, b += QSFP_IDX_PER_CHANNEL_STRIDE) {
+    for (i = 0, b = QSFP1_IDX_PER_CHANNEL_BASE ; i < QSFP_INFO_SIZE_WORD ;
+        i++, b += QSFP_WORD_SIZE) {
         *buf++ = (grab16(b+2) << 16) | grab16(b);
     }
 
     /* QSFP 2 */
-    for (i = 0, b = QSFP2_IDX_PER_CHANNEL_BASE ; i < QSFP_CHANNEL_COUNT ;
-        i++, b += QSFP_IDX_PER_CHANNEL_STRIDE) {
+    for (i = 0, b = QSFP2_IDX_PER_CHANNEL_BASE ; i < QSFP_INFO_SIZE_WORD ;
+        i++, b += QSFP_WORD_SIZE) {
         *buf++ = (grab16(b+2) << 16) | grab16(b);
     }
 
