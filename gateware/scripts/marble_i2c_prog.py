@@ -34,6 +34,7 @@ class MarbleI2CProg(marble_i2c.MarbleI2C):
         # for bit meaning
         self.u34_port0_out = 0b01001000
         self.u34_port1_out = 0b01001000
+        self.u39_port0_out = 0b00000000
 
 
     def INA219_read_config(self, ic_name, reg_name=None):
