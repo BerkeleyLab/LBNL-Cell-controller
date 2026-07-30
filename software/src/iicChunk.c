@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include "gpio.h"
 #include "iicChunk.h"
+#include "iicCommandTable.h"
 #include "util.h"
 
 #define CSR_RESET           0x80000000
@@ -47,13 +48,19 @@
 #define CSR_DATA_SHIFT      16
 #define CSR_UPDATED         0x8000
 
-#define IIC_IDX_U39_PORT_0      0
-#define IIC_IDX_U39_PORT_1      1
-#define IIC_IDX_U34_PORT_0      2
-#define IIC_IDX_U34_PORT_1      3
 #define IIC_INA219_COUNT        3
-#define IIC_IDX_INA219_BASE     4
+#define IIC_IDX_INA219_BASE     U17_SHUNTV
 #define IIC_IDX_INA219_STRIDE   4
+
+/* QSFP */
+#define QSFP_CHANNEL_COUNT      4
+#define QSFP_IDX_PER_CHANNEL_STRIDE (QSFP1_TEMPERATURE_SIZE + \
+                                    QSFP1_VSUPPLY_SIZE + \
+                                    QSFP1_RXPOWER_SIZE + \
+                                    QSFP1_TXBIAS_SIZE + \
+                                    QSFP1_TXPWR_SIZE)
+#define QSFP1_IDX_PER_CHANNEL_BASE  QSFP1_TEMPERATURE
+#define QSFP2_IDX_PER_CHANNEL_BASE  QSFP2_TEMPERATURE
 
 static int iicReadbackBase;
 void
@@ -95,22 +102,40 @@ iicChunkReadback(uint32_t *buf)
     int i, b;
 
     GPIO_WRITE(GPIO_IDX_I2C_CHUNK_CSR, CSR_FREEZE | CSR_RUN);
-    *buf++ = (grab8(IIC_IDX_U39_PORT_1) << 24) |
-             (grab8(IIC_IDX_U39_PORT_0) << 16) |
-             (grab8(IIC_IDX_U34_PORT_1) << 8)  |
-              grab8(IIC_IDX_U34_PORT_0);
+
+    *buf++ = (grab8(U39_PORT_DATA+1) << 24) |
+             (grab8(U39_PORT_DATA) << 16) |
+             (grab8(U34_PORT_DATA+1) << 8)  |
+              grab8(U34_PORT_DATA);
     for (i = 0, b = IIC_IDX_INA219_BASE ; i < IIC_INA219_COUNT ;
                                               i++, b += IIC_IDX_INA219_STRIDE) {
         *buf++ = (grab16(b+2) << 16) | grab16(b);
     }
+
+    /* QSFP 1 */
+    for (i = 0, b = QSFP1_IDX_PER_CHANNEL_BASE ; i < QSFP_CHANNEL_COUNT ;
+        i++, b += QSFP_IDX_PER_CHANNEL_STRIDE) {
+        *buf++ = (grab16(b+2) << 16) | grab16(b);
+    }
+
+    /* QSFP 2 */
+    for (i = 0, b = QSFP2_IDX_PER_CHANNEL_BASE ; i < QSFP_CHANNEL_COUNT ;
+        i++, b += QSFP_IDX_PER_CHANNEL_STRIDE) {
+        *buf++ = (grab16(b+2) << 16) | grab16(b);
+    }
+
     GPIO_WRITE(GPIO_IDX_I2C_CHUNK_CSR, CSR_RUN);
     return buf;
 }
 
 int
-iicChunkIsQSFP2present(void)
+iicChunkIsQSFPpresent(int channel)
 {
-    return (grab8(IIC_IDX_U34_PORT_1) & 0x20) == 0;
+    if (channel < 0 || channel > 1) {
+        return 0;
+    }
+
+    return (grab8(U34_PORT_DATA + channel) & 0x20) == 0;
 }
 
 void

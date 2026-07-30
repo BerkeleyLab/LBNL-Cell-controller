@@ -39,7 +39,7 @@
 
 void iicChunkInit(void);
 uint32_t *iicChunkReadback(uint32_t *buf);
-int iicChunkIsQSFP2present(void);
+int iicChunkIsQSFPpresent(int channel);
 void iicChunkSuspend(void);
 void iicChunkResume(void);
 
