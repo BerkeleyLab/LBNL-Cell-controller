@@ -1,7 +1,10 @@
 module common_cctrl_top #(
+   // Include file is machine generated from C header
+  `include "gpioIDX.vh"
   parameter          AURORA_TYPE               = "8b10b",
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE",
+  parameter          FMPS_ILA_CHIPSCOPE_DBG     = "FALSE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
@@ -33,28 +36,10 @@ module common_cctrl_top #(
   output wire        RGMII_TX_CTRL,
   output wire  [3:0] RGMII_TXD,
 
-/*
-  Transceiver Assignments (Kintex-7):
-  -----------------------------------
-    This is copied directly from
-      https://controls.als.lbl.gov/alscg/beampositionmonitor/BPM_CC/Documents/HardwareNotes.html
-
-    RX N/P  TX N/P  Tile  MGT           Fiber Pair  QSFP (BMB7) QSFP (Marble)  Desc.
-    --------------------------------------------------------------------------------
-    C3/C4   B1/B2   X0Y6  MGT2 Bank 116 1:12        1-0         1-1             EVR
-    B5/B6   A3/A4   X0Y7  MGT3 Bank 116 2:11        1-1         1-3             BPM CCW
-    E3/E4   D1/D2   X0Y5  MGT1 Bank 116 3:10        1-2         1-0             BPM CW
-    G3/G4   F1/F2   X0Y4  MGT0 Bank 116 4:9         1-3         1-2             (Unused)
-    L3/L4   K1/K2   X0Y2  MGT2 Bank 115 1:12        2-0         2-1             Cell CCW
-    J3/J4   H1/H2   X0Y3  MGT3 Bank 115 2:11        2-1         2-3             Cell CW
-    N3/N4   M1/M2   X0Y1  MGT1 Bank 115 3:10        2-2         2-0             FOFB power supply chain head (Tx)
-    R3/R4   P1/P2   X0Y0  MGT0 Bank 115 4:9         2-3         2-2             FOFB power supply chain tail (Rx)
-*/
-
-  input  wire  [3:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR;     [1]->BPM_CCW_GT_RX_rxn;   [2]->BPM_CW_GT_RX_rxn;    [3]->BPM_TEST_RX
-  output wire  [3:0] QSFP1_TX_N, QSFP1_TX_P, // [0]->EVR;     [1]->BPM_CCW;             [2]->BPM_CW;              [3]->BPM_TEST_TX
-  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW_GT_RX_rxn; [1]->CELL_CW_GT_RX_rxn; [2]->fofb(psTx); [3]->fofb(psRx)
-  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT_TX_txn; [1]->CELL_CW_GT_TX_txn; [2]->fofb(psTx); [3]->fofb(psRx)
+  input  wire  [3:0] QSFP1_RX_N, QSFP1_RX_P, // [0]->EVR                ; [1]->BPM_CCW           ; [2]->BPM_CW     ; [3]->BPM_TEST_RX
+  output wire  [3:0] QSFP1_TX_N, QSFP1_TX_P, // [0]->EVR                ; [1]->BPM_CCW           ; [2]->BPM_CW     ; [3]->BPM_TEST_TX
+  input  wire  [3:0] QSFP2_RX_N, QSFP2_RX_P, // [0]->CELL_CCW           ; [1]->CELL_CW           ; [2]->fofb(psTx) ; [3]->fofb(psRx)
+  output wire  [3:0] QSFP2_TX_N, QSFP2_TX_P, // [0]->CELL_CCW_GT        ; [1]->CELL_CW           ; [2]->fofb(psTx) ; [3]->fofb(psRx)
 
   inout TWI_SDA,
   inout TWI_SCL,
@@ -72,6 +57,16 @@ module common_cctrl_top #(
   output PMOD2_5,
   output PMOD2_6,
   output PMOD2_7,
+
+  // Fan/Tach control
+  //input  FMC1_PMOD3_0,
+  //input  FMC1_PMOD3_1,
+  //input  FMC1_PMOD3_2,
+  //input  FMC1_PMOD3_3,
+  //input  FMC1_PMOD3_4,
+  //input  FMC1_PMOD3_5,
+  //input  FMC1_PMOD3_6,
+  //input  FMC1_PMOD3_7,
 
   output wire        MARBLE_LD16,
   output wire        MARBLE_LD17
@@ -141,7 +136,6 @@ IBUFGDS ibufgds_i (
 
 //////////////////////////////////////////////////////////////////////////////
 // General-purpose I/O block
-`include "gpioIDX.vh"
 wire                    [31:0] GPIO_IN[0:GPIO_IDX_COUNT-1];
 wire                    [31:0] GPIO_OUT;
 wire      [GPIO_IDX_COUNT-1:0] GPIO_STROBES;
@@ -484,6 +478,7 @@ wire [31:0] BRAM_BPM_SETPOINTS_RDATA;
 
 reg localFOFBcontrol = 0;
 wire fofbEnabled;
+wire [31:0] bpmReadLinksCSR;
 always @(posedge sysClk) begin
     if (GPIO_STROBES[GPIO_IDX_FOFB_CSR]) localFOFBcontrol <= GPIO_OUT[0];
 end
@@ -501,7 +496,7 @@ readBPMlinks #(.faStrobeDebug("false"),
          .sysClk(sysClk),
          .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_BPMLINKS_CSR]),
          .GPIO_OUT(GPIO_OUT),
-         .sysCsr(GPIO_IN[GPIO_IDX_BPMLINKS_CSR]),
+         .sysCsr(bpmReadLinksCSR),
          .sysAdditionalStatus(GPIO_IN[GPIO_IDX_BPMLINKS_EXTRA_STATUS]),
          .sysRxBitmap(GPIO_IN[GPIO_IDX_BPM_RX_BITMAP]),
          .sysLocalFOFBenabled(localFOFBcontrol),
@@ -531,6 +526,8 @@ readBPMlinks #(.faStrobeDebug("false"),
          .localBPMs_tvalid(localBPMs_tvalid),
          .localBPMs_tlast(localBPMs_tlast));
 
+assign GPIO_IN[GPIO_IDX_BPMLINKS_CSR] = bpmReadLinksCSR;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Test BPM data
 wire [2:0] bpmTESTdbgState;
@@ -539,6 +536,8 @@ writeBPMTestLink #(
     .stateDebug("false"),
     .testInDebug("false"))
   writeBPMTestLink (
+         .sysClk(sysClk),
+         .sysBPMCSR(bpmReadLinksCSR),
          .auroraUserClk(auroraUserClk),
          .auroraFAstrobe(auroraFAstrobe),
          .auroraChannelUp(BPM_TEST_AuroraCoreStatus_channel_up),
@@ -546,9 +545,36 @@ writeBPMTestLink #(
          .BPM_TEST_AXI_STREAM_TX_tvalid(BPM_TEST_AXI_STREAM_TX_tvalid),
          .BPM_TEST_AXI_STREAM_TX_tlast(BPM_TEST_AXI_STREAM_TX_tlast),
          .BPM_TEST_AXI_STREAM_TX_tready(BPM_TEST_AXI_STREAM_TX_tready),
-         .TESTstatusStrobe(bpmTESTstatusStrobe),
-         .TESTstatusCode(bpmTESTstatusCode),
          .dbgFwState(bpmTESTdbgState));
+
+//////////////////////////////////////////////////////////////////////////////
+// Read and send FMPS data to Cell Controller network
+wire        localFMPS_tlast, localFMPS_tvalid;
+wire        localFMPS_tready;
+wire [31:0] localFMPS_tdata;
+wire [2:0] fmpsTESTdbgState;
+wire fmps_TEST_AuroraCoreStatus_channel_up =
+    CELL_CCW_AuroraCoreStatus_channel_up || CELL_CW_AuroraCoreStatus_channel_up;
+
+writeFMPSTestLink #(
+    .faStrobeDebug("false"),
+    .stateDebug("false"),
+    .testInDebug("false"))
+  writeFMPSTestLink (
+         .sysClk(sysClk),
+         .sysCsrStrobe(GPIO_STROBES[GPIO_IDX_FMPS_CSR]),
+         .GPIO_OUT(GPIO_OUT),
+         .sysCsr(GPIO_IN[GPIO_IDX_FMPS_CSR]),
+         .auroraUserClk(auroraUserClk),
+         .genPacketStrobe(1'b0),
+         .auroraFAstrobe(auroraFAstrobe),
+         // For testing this might be good enough
+         .auroraChannelUp(fmps_TEST_AuroraCoreStatus_channel_up),
+         .FMPS_TEST_AXI_STREAM_TX_tdata(localFMPS_tdata),
+         .FMPS_TEST_AXI_STREAM_TX_tvalid(localFMPS_tvalid),
+         .FMPS_TEST_AXI_STREAM_TX_tlast(localFMPS_tlast),
+         .FMPS_TEST_AXI_STREAM_TX_tready(localFMPS_tready),
+         .dbgFwState(fmpsTESTdbgState));
 
 //////////////////////////////////////////////////////////////////////////////
 // Forward incoming and local streams to next cell
@@ -556,31 +582,54 @@ writeBPMTestLink #(
 wire auCCWcellInhibit, auCWcellInhibit;
 wire auCCWcellStreamValid = CELL_CCW_AXI_STREAM_RX_tvalid && !auCCWcellInhibit;
 wire auCWcellStreamValid  = CELL_CW_AXI_STREAM_RX_tvalid  && !auCWcellInhibit;
-forwardCellLink #(.dbg("false")) forwardCCWcell (
+forwardCellLink #(
+    .dbg("false"),
+    .withFMPSSupport("true")
+) forwardCCWcell (
        .auroraUserClk(auroraUserClk),
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCCWcellStreamValid),
        .cellLinkRxTLAST(CELL_CCW_AXI_STREAM_RX_tlast),
+       .cellLinkRxTREADY(),
        .cellLinkRxTDATA(CELL_CCW_AXI_STREAM_RX_tdata),
        .cellLinkRxCRCvalid(CELL_CCW_AuroraCoreStatus_crc_valid),
        .cellLinkRxCRCpass(CELL_CCW_AuroraCoreStatus_crc_pass_fail),
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
+       .localRxTREADY(),
        .localRxTDATA(localBPMs_tdata),
+       .localFMPSRxTVALID(localFMPS_tvalid),
+       .localFMPSRxTLAST(localFMPS_tlast),
+       // assume the modules are excatly the same ones in regards to
+       // TREADY. This is not true in a general case, but for the FMPS
+       // port, it's good enough as we just want the FMPS data generator
+       // to not start sending packets before the module is out of reset.
+       .localFMPSRxTREADY(localFMPS_tready),
+       .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CW_AXI_STREAM_TX_tlast),
        .cellLinkTxTDATA(CELL_CW_AXI_STREAM_TX_tdata));
-forwardCellLink #(.dbg("false")) forwardCWcell (
+forwardCellLink #(
+    .dbg("false"),
+    .withFMPSSupport("true")
+) forwardCWcell (
        .auroraUserClk(auroraUserClk),
        .auroraFAstrobe(auroraFAstrobe),
        .cellLinkRxTVALID(auCWcellStreamValid),
        .cellLinkRxTLAST(CELL_CW_AXI_STREAM_RX_tlast),
+       .cellLinkRxTREADY(),
        .cellLinkRxTDATA(CELL_CW_AXI_STREAM_RX_tdata),
        .cellLinkRxCRCvalid(CELL_CW_AuroraCoreStatus_crc_valid),
        .cellLinkRxCRCpass(CELL_CW_AuroraCoreStatus_crc_pass_fail),
        .localRxTVALID(localBPMs_tvalid),
        .localRxTLAST(localBPMs_tlast),
+       .localRxTREADY(),
        .localRxTDATA(localBPMs_tdata),
+       .localFMPSRxTVALID(localFMPS_tvalid),
+       .localFMPSRxTLAST(localFMPS_tlast),
+       // See forwardCCWcell, above
+       .localFMPSRxTREADY(),
+       .localFMPSRxTDATA(localFMPS_tdata),
        .cellLinkTxTVALID(CELL_CCW_AXI_STREAM_TX_tvalid),
        .cellLinkTxTLAST(CELL_CCW_AXI_STREAM_TX_tlast),
        .cellLinkTxTDATA(CELL_CCW_AXI_STREAM_TX_tdata));
@@ -588,11 +637,11 @@ forwardCellLink #(.dbg("false")) forwardCWcell (
 //////////////////////////////////////////////////////////////////////////////
 // Gather data from outgoing streams and make available to fast orbit feedback
 wire        sysTimeoutStrobe;
-wire [31:0] fofbReadoutCSR, fofbDSPreadoutS, fofbDSPreadoutY, fofbDSPreadoutX;
-wire [GPIO_FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress;
-assign GPIO_IN[GPIO_IDX_CELL_COMM_CSR] = fofbReadoutCSR;
+wire [31:0] fofbDSPreadoutS, fofbDSPreadoutY, fofbDSPreadoutX;
+wire fofbReadoutActive, fofbReadoutValid, fofbUseFakeData;
+wire [CFG_FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress;
 fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
-                .FOFB_INDEX_WIDTH(GPIO_FOFB_MATRIX_ADDR_WIDTH),
+                .FOFB_INDEX_WIDTH(CFG_FOFB_MATRIX_ADDR_WIDTH),
                 .FAstrobeDebug("false"),
                 .statusDebug("false"),
                 .rawDataDebug("false"),
@@ -604,16 +653,23 @@ fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
        .sysClk(sysClk),
        .csrStrobe(GPIO_STROBES[GPIO_IDX_CELL_COMM_CSR]),
        .GPIO_OUT(GPIO_OUT),
-       .csr(fofbReadoutCSR),
-       .rxBitmap(GPIO_IN[GPIO_IDX_CELL_RX_BITMAP]),
-       .fofbEnableBitmap(GPIO_IN[GPIO_IDX_FOFB_ENABLE_BITMAP]),
+       .csr(GPIO_IN[GPIO_IDX_CELL_COMM_CSR]),
+       .fofbBitmapAllFASnapshot(GPIO_IN[GPIO_IDX_CELL_RX_BITMAP]),
+       .fofbEnableBitmapFASnapshot(GPIO_IN[GPIO_IDX_FOFB_ENABLE_BITMAP]),
        .fofbEnabled(fofbEnabled),
+
+       .fofbBitmapAll(),
+       .fofbBitmapEnabled(),
 
        .FAstrobe(sysFAstrobe),
        .auReset(auroraReset),
        .sysStatusStrobe(sysCellStatusStrobe),
        .sysStatusCode(sysCellStatusCode),
        .sysTimeoutStrobe(sysTimeoutStrobe),
+
+       .readoutActive(fofbReadoutActive),
+       .readoutValid(fofbReadoutValid),
+       .useFakeData(fofbUseFakeData),
 
        .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
        .fofbDSPreadoutX(fofbDSPreadoutX),
@@ -639,6 +695,70 @@ fofbReadLinks #(.SYSCLK_RATE(SYSCLK_RATE),
        .auCellCWlinkTDATA(CELL_CW_AXI_STREAM_TX_tdata));
 
 //////////////////////////////////////////////////////////////////////////////
+// Gather data from outgoing streams and make available to fast MPS
+wire auCCWfmpsInhibit, auCWfmpsInhibit;
+wire  [2:0] sysFMPSStatusCode;
+wire        sysFMPSStatusStrobe;
+wire sysFMPSTimeoutStrobe;
+wire fmpsEnabled;
+wire [31:0] fmpsReadoutCSR, fmpsReadout;
+wire [CFG_FMPS_INDEX_WIDTH-1:0] fmpsReadoutAddress = 'h0;
+wire [(1<<CFG_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapAll;
+wire [(1<<CFG_FMPS_INDEX_WIDTH)-1:0] fmpsBitmapEnabled;
+wire [CFG_FMPS_INDEX_WIDTH-1:0] fmpsIndex;
+wire [31:0] fmpsData;
+wire fmpsValid;
+
+assign GPIO_IN[GPIO_IDX_FMPS_COMM_CSR] = fmpsReadoutCSR;
+fmpsReadLinksStream #(.SYSCLK_RATE(SYSCLK_RATE),
+                .INDEX_WIDTH(CFG_FMPS_INDEX_WIDTH),
+                .FAstrobeDebug("false"),
+                .statusDebug("false"),
+                .rawDataDebug("false"),
+                .ccwLinkDebug("false"),
+                .cwLinkDebug("false"),
+                .fmpsCountDebug("false"),
+                .readoutDebug("false"))
+  fmpsReadLinksStream (
+       .sysClk(sysClk),
+       .csrStrobe(GPIO_STROBES[GPIO_IDX_FMPS_COMM_CSR]),
+       .GPIO_OUT(GPIO_OUT),
+       .csr(fmpsReadoutCSR),
+
+       .fmpsBitmapAllFASnapshot(GPIO_IN[GPIO_IDX_FMPS_RX_BITMAP]),
+       .fmpsEnableBitmapFASnapshot(GPIO_IN[GPIO_IDX_FMPS_ENABLE_BITMAP]),
+       .fmpsEnabled(fmpsEnabled),
+
+       .fmpsBitmapAll(fmpsBitmapAll),
+       .fmpsBitmapEnabled(fmpsBitmapEnabled),
+
+       .fmpsIndex(fmpsIndex),
+       .fmpsData(fmpsData),
+       .fmpsValid(fmpsValid),
+
+       .FAstrobe(sysFAstrobe),
+       .auReset(auroraReset),
+       .sysStatusStrobe(sysFMPSStatusStrobe),
+       .sysStatusCode(sysFMPSStatusCode),
+       .sysTimeoutStrobe(sysFMPSTimeoutStrobe),
+
+       .uBreadoutStrobe(GPIO_STROBES[GPIO_IDX_FMPS_READOUT]),
+       .uBreadout(GPIO_IN[GPIO_IDX_FMPS_READOUT]),
+
+       .auClk(auroraUserClk),
+       .auFAstrobe(auroraFAstrobe),
+       .auCCWfmpsInhibit(auCCWfmpsInhibit),
+       .auCWfmpsInhibit(auCWfmpsInhibit),
+
+       .auFMPSCCWlinkTVALID(CELL_CCW_AXI_STREAM_TX_tvalid),
+       .auFMPSCCWlinkTLAST(CELL_CCW_AXI_STREAM_TX_tlast),
+       .auFMPSCCWlinkTDATA(CELL_CCW_AXI_STREAM_TX_tdata),
+
+       .auFMPSCWlinkTVALID(CELL_CW_AXI_STREAM_TX_tvalid),
+       .auFMPSCWlinkTLAST(CELL_CW_AXI_STREAM_TX_tlast),
+       .auFMPSCWlinkTDATA(CELL_CW_AXI_STREAM_TX_tdata));
+
+//////////////////////////////////////////////////////////////////////////////
 // Keep link reception statistics
 linkStatistics #(.dbg("false")) linkStatistics (
          .auroraUserClk(auroraUserClk),
@@ -659,8 +779,8 @@ linkStatistics #(.dbg("false")) linkStatistics (
 wire        FOFB_SETPOINT_AXIS_TVALID;
 wire        FOFB_SETPOINT_AXIS_TLAST;
 wire [31:0] FOFB_SETPOINT_AXIS_TDATA;
-fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
-          .FOFB_MATRIX_ADDR_WIDTH(GPIO_FOFB_MATRIX_ADDR_WIDTH),
+fofbDSP #(.RESULT_COUNT(CFG_CHANNEL_COUNT),
+          .FOFB_MATRIX_ADDR_WIDTH(CFG_FOFB_MATRIX_ADDR_WIDTH),
           .MATMUL_DEBUG("false"),
           .FIR_DEBUG("false"),
           .TX_AXIS_DEBUG("false"))
@@ -669,8 +789,10 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
     .csrStrobe(GPIO_STROBES[GPIO_IDX_DSP_CSR]),
     .GPIO_OUT(GPIO_OUT),
     .firStatus(GPIO_IN[GPIO_IDX_DSP_CSR]),
-    .fofbReadoutCSR(fofbReadoutCSR),
     .fofbEnabled(fofbEnabled),
+    .fofbReadoutActive(fofbReadoutActive),
+    .fofbReadoutValid(fofbReadoutValid),
+    .fofbUseFakeData(fofbUseFakeData),
     .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
     .fofbDSPreadoutX(fofbDSPreadoutX),
     .fofbDSPreadoutY(fofbDSPreadoutY),
@@ -681,7 +803,7 @@ fofbDSP #(.RESULT_COUNT(GPIO_CHANNEL_COUNT),
 
 //////////////////////////////////////////////////////////////////////////////
 // Provide CPU read access to power supply setpoints
-psSetpointMonitor #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
+psSetpointMonitor #(.SETPOINT_COUNT(CFG_CHANNEL_COUNT),
                     .DEBUG("false"))
   psSetpointMonitor (
     .clk(sysClk),
@@ -699,9 +821,9 @@ wire [31:0] AWG_AXIS_TDATA;
 wire        AWG_AXIS_TVALID, AWG_AXIS_TLAST;
 wire        AWGrequest, AWGenabled;
 
-psAWG #(.SETPOINT_COUNT(GPIO_CHANNEL_COUNT),
+psAWG #(.SETPOINT_COUNT(CFG_CHANNEL_COUNT),
         .DATA_WIDTH(32),
-        .ADDR_WIDTH($clog2(GPIO_AWG_CAPACITY)),
+        .ADDR_WIDTH($clog2(CFG_AWG_CAPACITY)),
         .SYSCLK_RATE(SYSCLK_RATE),
         .DEBUG("false"))
   psAWG (.sysClk(sysClk),
@@ -752,7 +874,7 @@ wire [63:0] ethNonce;
 assign  ethRefClk125 = pcs_pma_shared[9];
 assign  ethRefClk125Buff = pcs_pma_shared[8];
 fofbEthernet #(
-    .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
+    .MAX_CORRECTOR_COUNT(CFG_CHANNEL_COUNT),
     .PCS_PMA_SHARED_LOGIC_IN_CORE("true"),
     .SRC_IP_ADDRESS({8'd192, 8'd168, 8'd30, 8'd251}),
     .SRC_MAC_ADDRESS({8'h2A,8'h4C,8'h42,8'h4E,8'h4C,8'h32}),
@@ -779,7 +901,7 @@ fofbEthernet #(
     .ETH_TX_P(QSFP2_TX_P[2]));// P2  MGT_TX_4_P  MGT_TX_4_QSFP_P   QSFP2_TX_3_P Bank 115
 
 fofbEthernet #(
-    .MAX_CORRECTOR_COUNT(GPIO_CHANNEL_COUNT),
+    .MAX_CORRECTOR_COUNT(CFG_CHANNEL_COUNT),
     .PCS_PMA_SHARED_LOGIC_IN_CORE("false"),
     .SRC_IP_ADDRESS({8'd192, 8'd168, 8'd30, 8'd250}),
     .SRC_MAC_ADDRESS({8'h2A,8'h4C,8'h42,8'h4E,8'h4C,8'h33}),
@@ -810,8 +932,8 @@ fofbEthernet #(
 
 //////////////////////////////////////////////////////////////////////////////
 // Fast orbit feedback waveform recorder
-fofbRecorder #(.BUFFER_CAPACITY(GPIO_RECORDER_CAPACITY),
-               .CHANNEL_COUNT(GPIO_CHANNEL_COUNT),
+fofbRecorder #(.BUFFER_CAPACITY(CFG_RECORDER_CAPACITY),
+               .CHANNEL_COUNT(CFG_CHANNEL_COUNT),
                .DEBUG("false"))
   fofbRecorder (
     .clk(sysClk),
@@ -916,6 +1038,22 @@ fifoUART #(.CLK_RATE(SYSCLK_RATE),
                    .status(GPIO_IN[GPIO_IDX_UART_CSR]),
                    .TxData(FPGA_RxD),
                    .RxData(FPGA_TxD));
+
+/////////////////////////////////////////////////////////////////////////////
+// Measure fan speeds
+//wire FMC1_FAN1_TACH = FMC1_PMOD3_6;
+//wire FMC1_FAN2_TACH = FMC1_PMOD3_7;
+wire FMC1_FAN1_TACH = 1'b0;
+wire FMC1_FAN2_TACH = 1'b0;
+
+fanTach #(.CLK_FREQUENCY(SYSCLK_RATE),
+          .FAN_COUNT(CFG_FAN_COUNT))
+  fanTachs (
+    .clk(sysClk),
+    .csrStrobe(GPIO_STROBES[GPIO_IDX_FAN_TACHOMETERS]),
+    .GPIO_OUT(GPIO_OUT),
+    .value(GPIO_IN[GPIO_IDX_FAN_TACHOMETERS]),
+    .tachs_a({FMC1_FAN1_TACH, FMC1_FAN1_TACH}));
 
 //////////////////////////////////////////////////////////////////////////////
 // Badger Ethernet MAC Interface
@@ -1375,6 +1513,85 @@ assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
 assign probe_test_aurora_ila[159:128] = BPM_CW_AXI_STREAM_RX_tdata;
 
 assign probe_test_aurora_ila[191:160] = localBPMs_tdata;
+assign probe_test_aurora_ila[223:192] = CELL_CW_AXI_STREAM_TX_tdata;
+assign probe_test_aurora_ila[255:224] = CELL_CCW_AXI_STREAM_TX_tdata;
+
+`endif
+
+end // end if
+endgenerate
+
+generate
+if (FMPS_ILA_CHIPSCOPE_DBG != "TRUE" && FMPS_ILA_CHIPSCOPE_DBG != "FALSE") begin
+    FMPS_ILA_CHIPSCOPE_DBG_only_TRUE_or_FALSE_SUPPORTED();
+end
+endgenerate
+
+generate
+if (FMPS_ILA_CHIPSCOPE_DBG == "TRUE") begin
+
+`ifndef SIMULATE
+wire [255:0] probe_test_aurora_ila;
+ila_td256_s4096_cap fmps_ila_td256_s4096_cap_inst (
+    .clk(auroraUserClk),
+    .probe0(probe_test_aurora_ila)
+);
+
+assign probe_test_aurora_ila[0]       = auroraFAstrobe;
+
+assign probe_test_aurora_ila[1]       = auCCWcellStreamValid;
+assign probe_test_aurora_ila[2]       = CELL_CCW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[3]       = CELL_CCW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[4]       = CELL_CCW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[5]       = CELL_CCW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[6]       = CELL_CCW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[7]       = CELL_CCW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[8]       = CELL_CCW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[9]       = CELL_CCW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[10]      = CELL_CCW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[11]      = CELL_CCW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[12]      = CELL_CCW_AuroraCoreStatus_tx_resetdone_out;
+
+assign probe_test_aurora_ila[14]      = auCWcellStreamValid;
+assign probe_test_aurora_ila[15]      = CELL_CW_AXI_STREAM_RX_tlast;
+assign probe_test_aurora_ila[16]      = CELL_CW_AuroraCoreStatus_channel_up;
+assign probe_test_aurora_ila[17]      = CELL_CW_AuroraCoreStatus_crc_pass_fail;
+assign probe_test_aurora_ila[18]      = CELL_CW_AuroraCoreStatus_crc_valid;
+assign probe_test_aurora_ila[19]      = CELL_CW_AuroraCoreStatus_frame_err;
+assign probe_test_aurora_ila[20]      = CELL_CW_AuroraCoreStatus_hard_err;
+assign probe_test_aurora_ila[21]      = CELL_CW_AuroraCoreStatus_lane_up;
+assign probe_test_aurora_ila[22]      = CELL_CW_AuroraCoreStatus_rx_resetdone_out;
+assign probe_test_aurora_ila[23]      = CELL_CW_AuroraCoreStatus_soft_err;
+assign probe_test_aurora_ila[24]      = CELL_CW_AuroraCoreStatus_tx_lock;
+assign probe_test_aurora_ila[25]      = CELL_CW_AuroraCoreStatus_tx_resetdone_out;
+
+assign probe_test_aurora_ila[37]      = localFMPS_tready;
+assign probe_test_aurora_ila[38]      = localFMPS_tvalid;
+assign probe_test_aurora_ila[39]      = localFMPS_tlast;
+
+assign probe_test_aurora_ila[40]      = sysFMPSStatusStrobe;
+assign probe_test_aurora_ila[42:41]   = sysFMPSStatusCode;
+
+assign probe_test_aurora_ila[43]      = sysCellStatusStrobe;
+assign probe_test_aurora_ila[46:44]   = sysCellStatusCode;
+
+assign probe_test_aurora_ila[47]      = CELL_CW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[48]      = CELL_CW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[49]      = CELL_CCW_AXI_STREAM_TX_tvalid;
+assign probe_test_aurora_ila[50]      = CELL_CCW_AXI_STREAM_TX_tlast;
+
+assign probe_test_aurora_ila[53:51]   = fmpsTESTdbgState;
+
+assign probe_test_aurora_ila[62:58]   = fmpsIndex;
+assign probe_test_aurora_ila[63]      = fmpsValid;
+
+assign probe_test_aurora_ila[95:64]   = fmpsData;
+
+assign probe_test_aurora_ila[127:96]  = CELL_CW_AXI_STREAM_RX_tdata;
+assign probe_test_aurora_ila[159:128] = CELL_CCW_AXI_STREAM_RX_tdata;
+
+assign probe_test_aurora_ila[191:160] = localFMPS_tdata;
 assign probe_test_aurora_ila[223:192] = CELL_CW_AXI_STREAM_TX_tdata;
 assign probe_test_aurora_ila[255:224] = CELL_CCW_AXI_STREAM_TX_tdata;
 

@@ -8,8 +8,8 @@
 #include "psWaveformRecorder.h"
 #include "util.h"
 
-#if ((GPIO_RECORDER_CAPACITY & (GPIO_RECORDER_CAPACITY - 1)) != 0)
-# error "GPIO_RECORDER_CAPACITY must be a power of 2"
+#if ((CFG_RECORDER_CAPACITY & (CFG_RECORDER_CAPACITY - 1)) != 0)
+# error "CFG_RECORDER_CAPACITY must be a power of 2"
 #endif
 
 #define CSR_W_ARM            0x80000000
@@ -45,7 +45,7 @@ psRecorderArm(int enable)
             activeChannelBitmap = 1;
             activeChannelCount = 1;
         }
-        sampleCapacity = GPIO_RECORDER_CAPACITY / activeChannelCount;
+        sampleCapacity = CFG_RECORDER_CAPACITY / activeChannelCount;
         if (pretriggerCount <= 0) {
             pretriggerCount = 1;
         }
@@ -96,9 +96,9 @@ psRecorderFetch(uint32_t *buf, int capacity, int channel, int offset)
         while ((n < capacity) && (offset < dataCount)) {
             uint32_t v;
             int dataLocation = (triggerLocation + offset +
-                                GPIO_RECORDER_CAPACITY -
+                                CFG_RECORDER_CAPACITY -
                                 (acqPretriggerCount * acqActiveChannelCount)) %
-                                                         GPIO_RECORDER_CAPACITY;
+                                                         CFG_RECORDER_CAPACITY;
             GPIO_WRITE(GPIO_IDX_WFR_ADDRESS, dataLocation);
             v = GPIO_READ(dataIdx);
             if ((debugFlags & DEBUGFLAG_PS_WAVEFORM_RECORDER) && (offset < 20)) {

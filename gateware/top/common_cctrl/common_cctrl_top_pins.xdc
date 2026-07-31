@@ -157,10 +157,11 @@ set_property -dict {PACKAGE_PIN J3} [get_ports {QSFP2_RX_N[3]}]
 #set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_P]
 #set_property -dict {PACKAGE_PIN AA24 IOSTANDARD LVDS_25 DIFF_TERM 1} [get_ports FMC2_CLK0_M2C_N]
 
-# Bank 0 setup
-set_property CFGBVS VCCO [current_design]
-set_property CONFIG_VOLTAGE 3.3 [current_design]
-
 # Marble LEDs
 set_property -dict {PACKAGE_PIN Y13 IOSTANDARD LVCMOS15} [get_ports MARBLE_LD16]
 set_property -dict {PACKAGE_PIN V12 IOSTANDARD LVCMOS15} [get_ports MARBLE_LD17]
+
+# Bank 0 setup
+set_property CFGBVS VCCO                     [current_design]
+set_property CONFIG_VOLTAGE 3.3              [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]

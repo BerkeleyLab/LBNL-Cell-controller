@@ -2,7 +2,8 @@ __CCTRL_AURORA_8B10B_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 CCTRL_AURORA_8B10B_DIR := $(__CCTRL_AURORA_8B10B_DIR:/=)
 
 __HDR_CCTRL_AURORA_8B10B_FILES = \
-	gpio.h
+	gpio.h \
+	config.h
 HDR_CCTRL_AURORA_8B10B_FILES = $(addprefix $(CCTRL_AURORA_8B10B_DIR)/, $(__HDR_CCTRL_AURORA_8B10B_FILES))
 
 # For top-level makfile

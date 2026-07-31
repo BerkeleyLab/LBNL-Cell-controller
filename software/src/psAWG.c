@@ -29,7 +29,7 @@ psAWGstashSamples(uint32_t *samples, unsigned int base, unsigned int count)
         }
         printf("\n");
     }
-    if ((base < GPIO_AWG_CAPACITY) && (base <= (GPIO_AWG_CAPACITY - count))) {
+    if ((base < CFG_AWG_CAPACITY) && (base <= (CFG_AWG_CAPACITY - count))) {
         while (count--) {
             GPIO_WRITE(GPIO_IDX_AWG_ADDRESS, base);
             GPIO_WRITE(GPIO_IDX_AWG_DATA, *samples);

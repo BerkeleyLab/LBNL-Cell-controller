@@ -9,10 +9,8 @@
 
 #define XADC_CHANNEL_COUNT   4
 
-extern uint16_t xadcVal[XADC_CHANNEL_COUNT];
-
 void xadcInit(void);
-void xadcUpdate(void);
-
+uint32_t *xadcUpdate(uint32_t *buf);
+int xadcGetFPGAtemp(void);
 
 #endif /* _XADC_H_ */

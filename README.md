@@ -38,7 +38,7 @@ and redirect stdout/stderr to a file so you can inspect it later:
 
 ```bash
 MB_TOOLCHAIN_LOCATION=/media/Xilinx/Vivado/2020.2.2/Vitis/2020.2/gnu/microblaze/lin
-(time make CROSS_COMPILE=${MB_TOOLCHAIN_LOCATION}/bin/mb- APP=cctrl PLATFORM=bmb7 && notify-send 'Compilation SUCCESS' || notify-send 'Compilation ERROR'; date) 2>&1 | tee make_output
+(time make CROSS_COMPILE=${MB_TOOLCHAIN_LOCATION}/bin/mb- APP=cctrl_aurora_64b66b PLATFORM=marble && notify-send 'Compilation SUCCESS' || notify-send 'Compilation ERROR'; date) 2>&1 | tee make_output
 ```
 
 For now the following APPs are supported:

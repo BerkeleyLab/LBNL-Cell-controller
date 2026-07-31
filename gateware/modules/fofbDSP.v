@@ -2,6 +2,7 @@
 // Compute power supply setpoints
 //
 module fofbDSP #(
+    `include "gpioIDX.vh"
     parameter SOFT_START_STEPS             = 1024,
     parameter RESULT_COUNT                 = 1,
     parameter MATRIX_MULTIPLY_RESULT_WIDTH = 26,
@@ -14,9 +15,11 @@ module fofbDSP #(
     input  wire                      [31:0] GPIO_OUT,
     output wire                      [31:0] firStatus,
     input wire                              fofbEnabled,
+    input wire                              fofbReadoutActive,
+    input wire                              fofbReadoutValid,
+    input wire                              fofbUseFakeData,
 
     // Read BPM deviations
-    input  wire                       [31:0] fofbReadoutCSR,
     output wire [FOFB_MATRIX_ADDR_WIDTH-1:0] fofbDSPreadoutAddress,
     input  wire                       [31:0] fofbDSPreadoutX,
     input  wire                       [31:0] fofbDSPreadoutY,
@@ -35,8 +38,7 @@ localparam PRODUCT_WIDEN       = FOFB_MATRIX_ADDR_WIDTH;
 localparam ACCUMULATOR_WIDTH   = PRODUCT_WIDTH + PRODUCT_WIDEN;
 localparam MULTIPLIER_LATENCY  = 4;
 
-`include "gpioIDX.vh"
-wire [3:0] csrAction = GPIO_OUT[GPIO_DSP_CMD_SHIFT+:4];
+wire [3:0] csrAction = GPIO_OUT[CFG_DSP_CMD_SHIFT+:4];
 
 // Status register
 wire firReloadBusy, firConfigBusy;
@@ -54,21 +56,21 @@ reg [COEFFICIENT_WIDTH/2-1:0] coefficientHighLatch;
 wire  [COEFFICIENT_WIDTH-1:0] coefficientWriteValue = { coefficientHighLatch,
                                             GPIO_OUT[COEFFICIENT_WIDTH/2-1:0] };
 wire matrixWriteStrobe = csrStrobe &&
-                              (csrAction == GPIO_DSP_CMD_WRITE_MATRIX_ELEMENT);
-wire firReloadStrobe = csrStrobe && (csrAction == GPIO_DSP_CMD_FIR_RELOAD);
-wire firConfigStrobe = csrStrobe && (csrAction == GPIO_DSP_CMD_FIR_CONFIG);
+                              (csrAction == CFG_DSP_CMD_WRITE_MATRIX_ELEMENT);
+wire firReloadStrobe = csrStrobe && (csrAction == CFG_DSP_CMD_FIR_RELOAD);
+wire firConfigStrobe = csrStrobe && (csrAction == CFG_DSP_CMD_FIR_CONFIG);
 
 // DSP/FOFB control
 always @(posedge clk) begin
     if (csrStrobe) begin
         case (csrAction)
-        GPIO_DSP_CMD_LATCH_ADDRESS: begin
+        CFG_DSP_CMD_LATCH_ADDRESS: begin
             coefficientWriteColumn <= GPIO_OUT[0+:FOFB_MATRIX_ADDR_WIDTH];
             coefficientWritePlane <= GPIO_OUT[FOFB_MATRIX_ADDR_WIDTH+:1];
             coefficientWriteRow <= GPIO_OUT[FOFB_MATRIX_ADDR_WIDTH+1+:
                                                            COEF_ROWINDEX_WIDTH];
         end
-        GPIO_DSP_CMD_LATCH_HIGH_VALUE: begin
+        CFG_DSP_CMD_LATCH_HIGH_VALUE: begin
             coefficientHighLatch <= GPIO_OUT[COEFFICIENT_WIDTH/2-1:0];
         end
         default: ;
@@ -98,7 +100,9 @@ fofbCalc #(
                   .firConfigBusy(firConfigBusy),
                   .firReloadTLASTmissing(firReloadTLASTmissing),
                   .firReloadTLASTunexpected(firReloadTLASTunexpected),
-                  .fofbReadoutCSR(fofbReadoutCSR),
+                  .fofbReadoutActive(fofbReadoutActive),
+                  .fofbReadoutValid(fofbReadoutValid),
+                  .fofbUseFakeData(fofbUseFakeData),
                   .fofbDSPreadoutAddress(fofbDSPreadoutAddress),
                   .fofbDSPreadoutX(fofbDSPreadoutX),
                   .fofbDSPreadoutY(fofbDSPreadoutY),
@@ -107,10 +111,10 @@ fofbCalc #(
                   .dout(fofbData));
 
 // Convert setpoint values to floating point AXI stream
-wire gainWriteStrobe = csrStrobe && (csrAction==GPIO_DSP_CMD_WRITE_FOFB_GAIN);
-wire ffbClipWriteStrobe=csrStrobe&&(csrAction==GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT);
-wire psOffsetWriteStrobe=csrStrobe && (csrAction==GPIO_DSP_CMD_WRITE_PS_OFFSET);
-wire psClipWriteStrobe=csrStrobe&&(csrAction==GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT);
+wire gainWriteStrobe = csrStrobe && (csrAction==CFG_DSP_CMD_WRITE_FOFB_GAIN);
+wire ffbClipWriteStrobe=csrStrobe&&(csrAction==CFG_DSP_CMD_WRITE_FFB_CLIP_LIMIT);
+wire psOffsetWriteStrobe=csrStrobe && (csrAction==CFG_DSP_CMD_WRITE_PS_OFFSET);
+wire psClipWriteStrobe=csrStrobe&&(csrAction==CFG_DSP_CMD_WRITE_PS_CLIP_LIMIT);
 psSetpointCalc #(
     .SOFT_START_STEPS(SOFT_START_STEPS),
     .RESULT_COUNT(RESULT_COUNT),

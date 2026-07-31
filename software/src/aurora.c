@@ -103,8 +103,11 @@ int
 auroraReadoutStats(unsigned int link, int idx, unsigned int *hi, unsigned int *lo)
 {
     // BPM Test link doesn't have stats
-    if(link > AURORA_LINK_READOUT_COUNT-1)
+    if(link > AURORA_LINK_READOUT_COUNT-1) {
+        *hi = 0;
+        *lo = 0;
         return 0;
+    }
 
     unsigned int h, l;
     int addrLo = (((link & 0x7) << 2) | (idx & 0x3)) << 1;

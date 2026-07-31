@@ -39,8 +39,8 @@
 #define GPIO_IDX_FOFB_CSR                 24 // FOFB control(R/W)
 #define GPIO_IDX_ETHERNET0_CSR            28 // First PS QSFP ethernet CSR(R/W)
 #define GPIO_IDX_ETHERNET1_CSR            29 // First PS QSFP ethernet CSR(R/W)
-#define GPIO_IDX_EVR_TLOG_CSR            30 // Event logger CSR(R/W)
-#define GPIO_IDX_EVR_TLOG_TICKS          31 // Event logger tick counter(R)
+#define GPIO_IDX_EVR_TLOG_CSR             30 // Event logger CSR(R/W)
+#define GPIO_IDX_EVR_TLOG_TICKS           31 // Event logger tick counter(R)
 #define GPIO_IDX_FREQUENCY_MONITOR_CSR    32 // Frequency counters(R/W)
 #define GPIO_IDX_PILOT_TONE_REFERENCE     35 // Pilot tone ref generator(R/W)
 #define GPIO_IDX_FOFB_PS_SETPOINT         36 // Access to ps setpoints(R/W)
@@ -68,25 +68,16 @@
 #define GPIO_IDX_QSPI_FLASH_CSR           55 // Bootstrap flash
 #define GPIO_IDX_GTX_CSR                  56 // GTX control/status
 #define GPIO_IDX_EVR_GTX_DRP              57 // EVR GTX dynamic reconfig (R/W)
-
-#define GPIO_DSP_CMD_LATCH_ADDRESS        0
-#define GPIO_DSP_CMD_LATCH_HIGH_VALUE     1
-#define GPIO_DSP_CMD_WRITE_MATRIX_ELEMENT 2
-#define GPIO_DSP_CMD_WRITE_FOFB_GAIN      3
-#define GPIO_DSP_CMD_WRITE_PS_OFFSET      4
-#define GPIO_DSP_CMD_WRITE_PS_CLIP_LIMIT  5
-#define GPIO_DSP_CMD_WRITE_FFB_CLIP_LIMIT 6
-#define GPIO_DSP_CMD_FIR_RELOAD           7
-#define GPIO_DSP_CMD_FIR_CONFIG           8
-#define GPIO_DSP_CMD_SHIFT                28
-
-#define GPIO_AWG_CAPACITY           8192
-#define GPIO_RECORDER_CAPACITY      32768
-#define GPIO_CHANNEL_COUNT          24
-#define GPIO_FOFB_MATRIX_ADDR_WIDTH 9
+#define GPIO_IDX_FMPS_COMM_CSR            58 // FMPS communication control(R/W)
+#define GPIO_IDX_FMPS_RX_BITMAP           59 // FMPS with data(R)
+#define GPIO_IDX_FMPS_ENABLE_BITMAP       60 // FMPS with FMPS enabled (R)
+#define GPIO_IDX_FMPS_READOUT             61 // FMPS readout addr(W)/X value(R)
+#define GPIO_IDX_FMPS_CSR                 62 // FMPS packet generator
+#define GPIO_IDX_FAN_TACHOMETERS          63 // Monitor internal fans
 
 #include <xil_io.h>
 #include <xparameters.h>
+#include "config.h"
 
 #define GPIO_READ(i)    Xil_In32(XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(i)))
 #define GPIO_WRITE(i,x) Xil_Out32(XPAR_AXI_LITE_GENERIC_REG_BASEADDR+(4*(i)),(x))

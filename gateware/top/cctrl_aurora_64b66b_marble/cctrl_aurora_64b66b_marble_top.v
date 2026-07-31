@@ -1,7 +1,8 @@
 module cctrl_aurora_64b66b_marble_top #(
   parameter          AURORA_TYPE               = "64b66b",
   parameter          EVR_ILA_CHIPSCOPE_DBG     = "FALSE",
-  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE"
+  parameter          BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG = "FALSE",
+  parameter          FMPS_ILA_CHIPSCOPE_DBG     = "FALSE"
   ) (
   input              DDR_REF_CLK_P, // 125 MHz
   input              DDR_REF_CLK_N, // 125 MHz (complement)
@@ -80,7 +81,8 @@ module cctrl_aurora_64b66b_marble_top #(
 common_cctrl_top #(
   .AURORA_TYPE                        (AURORA_TYPE),
   .EVR_ILA_CHIPSCOPE_DBG              (EVR_ILA_CHIPSCOPE_DBG),
-  .BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG  (BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG)
+  .BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG  (BPM_TEST_AURORA_ILA_CHIPSCOPE_DBG),
+  .FMPS_ILA_CHIPSCOPE_DBG             (FMPS_ILA_CHIPSCOPE_DBG)
   ) common_cctrl_top_inst (
   .DDR_REF_CLK_P(DDR_REF_CLK_P),
   .DDR_REF_CLK_N(DDR_REF_CLK_N),

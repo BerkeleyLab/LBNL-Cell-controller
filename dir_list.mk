@@ -12,6 +12,7 @@ GW_SCRIPTS_DIR     = $(GATEWARE_DIR)/scripts
 BEDROCK_DIR        = $(SUBMODULES_DIR)/bedrock
 ETHERNET_CORE_DIR  = $(SUBMODULES_DIR)/ethernet-core
 BWUDP_DIR          = $(SUBMODULES_DIR)/bwudp
+CELL_COMM_DIR      = $(SUBMODULES_DIR)/cell-comm
 
 GW_TOP_DIR         = $(GATEWARE_DIR)/top
 GW_TOP_COMMON_DIR  = $(GW_TOP_DIR)/common_cctrl
@@ -34,3 +35,6 @@ CORE_DIR           = $(ETHERNET_CORE_DIR)/core
 CLIENTS_DIR        = $(ETHERNET_CORE_DIR)/clients
 CRC_DIR            = $(ETHERNET_CORE_DIR)/crc
 MODEL_DIR          = $(ETHERNET_CORE_DIR)/model
+
+# Cell Controller modules
+include $(CELL_COMM_DIR)/dir_list.mk

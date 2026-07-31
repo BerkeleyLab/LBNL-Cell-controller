@@ -1,5 +1,3 @@
-#! /usr/bin/python3
-
 # Marble-specific I2C map and associated functions
 
 import sys
@@ -23,12 +21,38 @@ qsfp_poll_d = {
     22 : (2, "QSFP{}_TEMPERATURE"),
     26 : (2, "QSFP{}_VSUPPLY"),
     34 : (8, "QSFP{}_RXPOWER"), # 4 channels, 2 bytes each
+    42 : (8, "QSFP{}_TXBIAS"), # 4 channels, 2 bytes each
+    50 : (8, "QSFP{}_TXPWR"), # 4 channels, 2 bytes each
     128: (2, "QSFP{}_IDENTIFIER"), # identifier and extended identifier
     }
 
 class MarbleI2CProg(marble_i2c.MarbleI2C):
     def __init__(self, i2c_assembler=None):
         super().__init__(i2c_assembler)
+        self.INA219_list = ["U17", "U32", "U57"]
+        # Overriden values. Check marble_i2c.py class
+        # for bit meaning
+        self.u34_port0_out = 0b01001000
+        self.u34_port1_out = 0b01001000
+        self.u39_port0_out = 0b00000000
+
+
+    def INA219_read_config(self, ic_name, reg_name=None):
+        """Add a read instruction to the I2C program to read the value of the config register within 219 IC given by 'ic_name'
+        Params:
+            string ic_name: One of ('U17', 'U32', or 'U57')
+            string reg_name: The name to be used in the memory map for the result address
+        Gotchas:
+            Raises an Exception if you specify an IC other than the three listed above
+        """
+        matched = False
+        for index, name in self._ina219_map.items():
+            if name == ic_name:
+                matched = True
+        if not matched:
+            raise Exception(f"Using 219 helper function on incompatible IC {ic_name}")
+        ina219_reg_cfg = 0  # Just for clarity
+        return self.read(ic_name, ina219_reg_cfg, 2, reg_name=reg_name)
 
 
     def qsfp_init(self, qsfp_n=0):
@@ -51,12 +75,27 @@ class MarbleI2CProg(marble_i2c.MarbleI2C):
         return
 
 
+    # Overridden
     def bsp_config(self):
-        # Overridden
-        self.set_resx(0)  # Start from address 0
         self.busmux_reset()
         self.U34_configure()
         self.U39_configure()
+        return
+
+
+    def bsp_init(self):
+        for ina in self.INA219_list:
+            self.INA219_read_config(ina, reg_name=f"{ina}_CFG")
+        return
+
+
+    # Overridden
+    def bsp_poll(self):
+        self.U34_read_data()
+        self.U39_read_data()
+        for ina in self.INA219_list:
+            self.INA219_read_shunt_voltage(ina, reg_name=f"{ina}_SHUNTV")
+            self.INA219_read_bus_voltage(ina, reg_name=f"{ina}_BUSV")
         return
 
 
@@ -65,12 +104,15 @@ def build_prog(argv):
 
     # ======= Program Instructions =======
     # Setup
+    m.set_resx(0)  # Start from address 0
     m.bsp_config()
+    m.bsp_init()
     m.qsfp_init(0)
     m.qsfp_init(1)
     # HACK! Doing this twice so this info is in both buffers
     m.buffer_flip()
-    m.set_resx(0)  # Go back to resx 0
+    m.set_resx(0)  # Start from address 0
+    m.bsp_init()
     m.qsfp_init(0)
     m.qsfp_init(1)
     # Loop start
@@ -95,10 +137,16 @@ def build_prog(argv):
     # ======= End Program =======
     if len(argv) > 1:
         op = argv[1]
-        m.write_reg_map(style=op)
-    else:
-        m.write_program()
-    return
+        if len(argv) > 2:
+            offset = _int(argv[2])
+        else:
+            offset = 0
+
+        if op == 'p':
+            m.write_program()
+        else:
+            m.write_reg_map(offset=offset, style=op)
+        return 0
 
 if __name__ == "__main__":
     build_prog(sys.argv)

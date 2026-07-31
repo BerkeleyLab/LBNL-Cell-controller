@@ -12,6 +12,7 @@
 #include "eyescan.h"
 #include "fastFeedback.h"
 #include "fofbEthernet.h"
+#include "fastMPS.h"
 #include "gpio.h"
 #include "util.h"
 #include "qsfp.h"
@@ -334,6 +335,32 @@ static int
 cmdFOFBlink(int argc, char **argv)
 {
     fofbEthernetShowStatus();
+    return 0;
+}
+
+static int
+cmdFMPS(int argc, char **argv)
+{
+    char *endp;
+    int first = 0;
+    int n = 1;
+
+    if (argc > 1) {
+        first = strtol(argv[1], &endp, 0);
+        if (*endp != '\0')
+            return 1;
+        if (argc > 2) {
+            n = strtol(argv[2], &endp, 0);
+            if (*endp != '\0')
+                return 1;
+        }
+        if ((first < 0)
+         || (first >= CC_PROTOCOL_FMPS_CAPACITY) || (n < 0))
+            return 1;
+        if ((first + n) > CC_PROTOCOL_FMPS_CAPACITY)
+            n = CC_PROTOCOL_FMPS_CAPACITY - first;
+    }
+    showFMPS(first, n);
     return 0;
 }
 
@@ -697,6 +724,7 @@ static struct commandInfo commandTable[] = {
   { "debug",      cmdDEBUG,      "Set debug flags"                    },
   { "evr",        cmdEVR,        "Show EVR status"                    },
   { "fofb",       cmdFOFB,       "Show fast orbit feedback values"    },
+  { "fmps",       cmdFMPS,       "Show fast MPS values"               },
   { "gtx",        eyescanCommand,"Perform GTX eye scan"               },
   { "fmon",       cmdFMON,       "Show clock frequencies"             },
   { "log",        cmdREPLAY,     "Replay start up messages"           },

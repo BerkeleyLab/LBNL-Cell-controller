@@ -42,19 +42,63 @@
 #define PCS_SV_LINK_SYNCED  0x2
 #define PCS_SV_LINK_STATUS  0x1
 
+struct psEthInfo {
+    int gpioIdx;
+    const char *desc;
+};
+
+static const struct psEthInfo psEthInfos[PS_ETH_NUM_DEVICES] = {
+    { .gpioIdx = GPIO_IDX_ETHERNET0_CSR, .desc = "PS_TX" }, // PS_ETH_TX_IDX
+    { .gpioIdx = GPIO_IDX_ETHERNET1_CSR, .desc = "PS_RX" }, // PS_ETH_RX_IDX
+};
+
+static int
+psEthGetGPIOIdx(unsigned int idx)
+{
+    if (idx >= PS_ETH_NUM_DEVICES) {
+        return -1;
+    }
+
+    const struct psEthInfo *info = &psEthInfos[idx];
+    return info->gpioIdx;
+}
+
+static const char *
+psEthGetDesc(unsigned int idx)
+{
+    if (idx >= PS_ETH_NUM_DEVICES) {
+        return "PS_UNKNOWN";
+    }
+
+    const struct psEthInfo *info = &psEthInfos[idx];
+    return info->desc;
+}
+
 static void
 updateCSR(int idx, uint32_t mask, uint32_t new)
 {
-    uint32_t csr = GPIO_READ(GPIO_IDX_ETHERNET0_CSR+idx);
+    int gpioIdx = psEthGetGPIOIdx(idx);
+    if (gpioIdx < 0) {
+        return;
+    }
+
+    uint32_t csr = GPIO_READ(gpioIdx);
     csr &= ~mask;
     csr |= new;
-    GPIO_WRITE(GPIO_IDX_ETHERNET0_CSR+idx, csr);
+    GPIO_WRITE(gpioIdx, csr);
 }
 
 static void
 showStatusVector(int idx, uint32_t sv)
 {
-    printf("FOFB Ethernet %d PCS/PMA status: %04X\n", idx, sv);
+    int gpioIdx = psEthGetGPIOIdx(idx);
+    if (gpioIdx < 0) {
+        return;
+    }
+
+    const char *desc = psEthGetDesc(idx);
+
+    printf("FOFB Ethernet %s PCS/PMA status: %04X\n", desc, sv);
     printf ("  Link %s\n", sv & PCS_SV_LINK_STATUS ? "up" : "down");
     if (sv & PCS_SV_LINK_SYNCED) {
         printf ("  Link synchronized\n");
@@ -75,20 +119,32 @@ fofbEthernetShowStatus(void)
 {
     int idx;
     for (idx = 0 ; idx < 2 ; idx++) {
-        uint32_t csr = GPIO_READ(GPIO_IDX_ETHERNET0_CSR+idx);
+        int gpioIdx = psEthGetGPIOIdx(idx);
+        if (gpioIdx < 0) {
+            return;
+        }
+
+        uint32_t csr = GPIO_READ(gpioIdx);
         showStatusVector(idx, (csr & ETH_CSR_STATUS_WORD_MASK)
-                                                  >> ETH_CSR_STATUS_WORD_SHIFT);
-        showReg(GPIO_IDX_ETHERNET0_CSR+idx);
+                         >> ETH_CSR_STATUS_WORD_SHIFT);
+        showReg(gpioIdx);
     }
 }
 
 uint32_t
 fofbEthernetGetPCSPMAstatus(void)
 {
-    return (GPIO_READ(GPIO_IDX_ETHERNET0_CSR+1) & ETH_CSR_STATUS_WORD_MASK) |
-           ((GPIO_READ(GPIO_IDX_ETHERNET0_CSR+0) & ETH_CSR_STATUS_WORD_MASK) >> 
-                                                   ETH_CSR_STATUS_WORD_SHIFT);
+    int psTxgpioIdx = psEthGetGPIOIdx(PS_ETH_TX_IDX);
+    int psRxgpioIdx = psEthGetGPIOIdx(PS_ETH_RX_IDX);
+    if (psTxgpioIdx < 0 || psRxgpioIdx < 0) {
+        return 0xFFFFFFFF;
+    }
 
+    uint32_t ret = (GPIO_READ(psRxgpioIdx) & ETH_CSR_STATUS_WORD_MASK) |
+        ((GPIO_READ(psTxgpioIdx) & ETH_CSR_STATUS_WORD_MASK) >>
+        ETH_CSR_STATUS_WORD_SHIFT);
+
+    return ret;
 }
 
 void
@@ -105,6 +161,13 @@ fofbNegotiate(int idx)
     int pass;
 
     for (;;) {
+        int gpioIdx = psEthGetGPIOIdx(idx);
+        if (gpioIdx < 0) {
+            return;
+        }
+
+        const char *desc = psEthGetDesc(idx);
+
         updateCSR(idx, ETH_CSR_STARTUP_MASK, autoNegotiate | ETH_CSR_RESET);
         microsecondSpin(10);
         updateCSR(idx, ETH_CSR_STARTUP_MASK, autoNegotiate);
@@ -117,13 +180,16 @@ fofbNegotiate(int idx)
                                    autoNegotiate | ETH_CSR_START_AUTONEGOTIATE);
         for (pass = 0 ; ; pass++) {
             microsecondSpin(100);
-            csr = GPIO_READ(GPIO_IDX_ETHERNET0_CSR);
+            csr = GPIO_READ(gpioIdx);
             if (csr & ETH_CSR_AUTONEGOTIATED) {
                 return;
             }
             if (pass > 10000) {
-                if (autoNegotiate == 0) return;
-                warn("FOFB Ethernet %d negotiation failed to complete.\n", idx);
+                if (autoNegotiate == 0) {
+                    return;
+                }
+
+                warn("FOFB Ethernet %s negotiation failed to complete.\n", desc);
                 printf("           Will disable negotiation and continue.\n");
                 autoNegotiate = 0;
                 break;
@@ -147,7 +213,12 @@ fofbEthernetBringUp(void)
 {
     int idx;
     for (idx = 0 ; idx < 2 ; idx++) {
-        uint32_t csr = GPIO_READ(GPIO_IDX_ETHERNET0_CSR+idx);
+        int gpioIdx = psEthGetGPIOIdx(idx);
+        if (gpioIdx < 0) {
+            return;
+        }
+
+        uint32_t csr = GPIO_READ(gpioIdx);
         uint32_t sv = (csr&ETH_CSR_STATUS_WORD_MASK)>>ETH_CSR_STATUS_WORD_SHIFT;
         if (!(sv & PCS_SV_LINK_SYNCED)) {
             fofbNegotiate(idx);

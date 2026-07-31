@@ -41,7 +41,9 @@ module fofbCalc #(
     output reg                                   firReloadTLASTmissing,
     output reg                                   firReloadTLASTunexpected,
 
-    input  wire                           [31:0] fofbReadoutCSR,
+    input  wire                                  fofbReadoutActive,
+    input  wire                                  fofbReadoutValid,
+    input  wire                                  fofbUseFakeData,
     output reg         [MATRIX_COLUMN_WIDTH-1:0] fofbDSPreadoutAddress,
     input  wire                           [31:0] fofbDSPreadoutX,
     input  wire                           [31:0] fofbDSPreadoutY,
@@ -68,9 +70,8 @@ reduceWidth #(.IWIDTH(32), .OWIDTH(XYDATA_WIDTH)) reduceY (.I(fofbDSPreadoutY),
                                                            .O(yNarrow));
 (*mark_debug=MATMUL_DEBUG*) reg signed [XYDATA_WIDTH-1:0] xFake, yFake;
 (*mark_debug=MATMUL_DEBUG*)wire signed [XYDATA_WIDTH-1:0] xVal, yVal;
-wire useFakeData = fofbReadoutCSR[20];
-assign xVal = useFakeData ? xFake : xNarrow;
-assign yVal = useFakeData ? yFake : yNarrow;
+assign xVal = fofbUseFakeData ? xFake : xNarrow;
+assign yVal = fofbUseFakeData ? yFake : yNarrow;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Compute dot product of clipped beam position offset vector
@@ -82,8 +83,6 @@ localparam ST_IDLE       = 2'd0,
            ST_ACCUMULATE = 2'd2;
 reg [1:0] state = ST_IDLE;
 
-wire fofbReadoutActive = fofbReadoutCSR[31];
-wire fofbReadoutValid = fofbReadoutCSR[30];
 reg fofbReadoutActive_d, fofbReadoutValid_d = 0;
 (*mark_debug=MATMUL_DEBUG*)reg accumulate = 0, clear = 0;
 (*mark_debug=FIR_DEBUG*) reg sumValid = 0;

@@ -173,8 +173,12 @@ evrShow(void)
                     case 15:    printf("IRQ");                break;
                     case 14:    printf("LATCH TIME");         break;
                     case 13:    printf("FIFO");               break;
-                    default: if (b <= 7) printf("TRG %d", b);
-                             else        printf("0x%x", 1<<b);break;
+                    default:
+                        if (b <= 7)
+                            printf("TRG %d", b);
+                        else
+                            printf("0x%x", 1<<b);
+                        break;
                     }
                     action &= ~m;
                     if (action == 0) {
