@@ -27,7 +27,7 @@
 #define CFG_DSP_CMD_FIR_CONFIG           8
 #define CFG_DSP_CMD_SHIFT                28
 
-#define CFG_AWG_CAPACITY           8192
+#define CFG_AWG_CAPACITY           65536
 #define CFG_RECORDER_CAPACITY      32768
 #define CFG_CHANNEL_COUNT          24
 #define CFG_FOFB_MATRIX_ADDR_WIDTH 9
