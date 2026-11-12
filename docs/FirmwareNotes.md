@@ -70,7 +70,8 @@ Once the cell controller has its local beam positions, has computed their deviat
 | Property | Value |
 |---|---|
 | Dot product resolution | 2<sup>−10</sup> mA (976.5625 nA) per count. All later stages use this representation until the conversion to floating-point amperes. |
-| Dot product width | 26 bits — range about ±32.7 A |
+| Matrix multiplication result | 32 bits into the FIR filters |
+| FIR filter output | Saturated to 26 bits — range about ±32.7 A, applied before the gain |
 | Multiplier product and later stages | 28 bits — range about ±131 A |
 | Soft start/stop | Ramps the FOFB gain between zero and the set value over about 100 ms |
 
@@ -83,7 +84,7 @@ The soft-start gain is held at 0 until **every** cell controller reports its loc
 
 First, raw corrector currents are obtained by multiplying the vector of beam position deviations by the [inverse sensitivity matrix](https://git.als.lbl.gov/accelerator-controls/epics/iocs/sioccellcontroller/-/blob/HEAD/documentation/EPICSnotes.md#fast-orbit-feedback-matrix-rows):
 
-$$
+```math
 \begin{bmatrix}
 c_{x_{0,0}} & \cdots & c_{x_{0,511}} & c_{y_{0,0}} & \cdots & c_{y_{0,511}} \\
 c_{x_{1,0}} & \cdots & c_{x_{1,511}} & c_{y_{1,0}} & \cdots & c_{y_{1,511}} \\
@@ -98,7 +99,7 @@ c_{x_{N,0}} & \cdots & c_{x_{N,511}} & c_{y_{N,0}} & \cdots & c_{y_{N,511}}
 \begin{bmatrix}
 S_0 \\ S_1 \\ \vdots \\ S_N
 \end{bmatrix}
-$$
+```
 
 - The multiplication takes about **5.2 µs** regardless of the number of rows.
 - All 1024 elements of the vector and of each matrix row always take part. Missing BPMs are handled by setting the corresponding matrix elements to zero.
