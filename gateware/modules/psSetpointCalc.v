@@ -11,6 +11,7 @@ module psSetpointCalc #(
     parameter DIN_WIDTH        = 26,
     parameter DBUS_WIDTH       = 32,
     parameter FLOAT_WIDTH      = 32,
+    parameter SIMULATION       = "FALSE",
     parameter RESULT_COUNT_WIDTH = RESULT_COUNT == 1 ? 1 : $clog2(RESULT_COUNT)
     ) (
     input clk,
@@ -41,15 +42,22 @@ localparam UNCLIPPED_SETPOINT_WIDTH = SETPOINT_WIDTH + 1;
 // Soft gain adjustment
 // Gain multiplication
 // FFB clipping
+// Accumulator
+// Accumulator clipping
 // Offset addition
 // Offset clipping
-localparam ACTIVE_MSB = 6;
+localparam ACTIVE_MSB = 8;
 reg [ACTIVE_MSB:0] active = 0;
 
 // Coefficient read addresses
-reg [RESULT_COUNT_WIDTH-1:0] gainChannelIndex, dinMuxChannelIndex,
-                             ffbClipChannelIndex, psOffsetChannelIndex,
+reg [RESULT_COUNT_WIDTH-1:0] gainChannelIndex,
+                             dinMuxChannelIndex,
+                             ffbClipChannelIndex,
+                             accChannelIndex,
+                             accClipChannelIndex,
+                             accClipFwdChannelIndex,
                              psClipChannelIndex;
+
 /////////////////////////////////////////////////////////////////////////////
 // State machine control
 reg dinMatch = 0;
@@ -71,8 +79,10 @@ always @(posedge clk) begin
     active[ACTIVE_MSB:1] <= active[ACTIVE_MSB-1:0];
     dinMuxChannelIndex   <= gainChannelIndex;
     ffbClipChannelIndex  <= dinMuxChannelIndex;
-    psOffsetChannelIndex <= ffbClipChannelIndex;
-    psClipChannelIndex   <= psOffsetChannelIndex;
+    accClipChannelIndex  <= ffbClipChannelIndex;
+    accChannelIndex      <= accClipChannelIndex;
+    accClipFwdChannelIndex <= accChannelIndex;
+    psClipChannelIndex   <= accClipFwdChannelIndex;
 end
 
 /////////////////////////////////////////////////////////////////////////////
@@ -158,6 +168,45 @@ always @(posedge clk) begin
 end
 
 /////////////////////////////////////////////////////////////////////////////
+// Simple accumulator
+reg signed [SETPOINT_WIDTH-1:0] accTermClipped;
+reg signed [SETPOINT_WIDTH-1:0] accClipLevels [0:RESULT_COUNT-1], accClipLevelQ;
+reg signed [FOFB_TERM_WIDTH-1:0] acc [0:RESULT_COUNT-1];
+reg signed [FOFB_TERM_WIDTH-1:0] accCurr;
+
+integer i;
+initial begin
+    for (i = 0; i < RESULT_COUNT; i = i + 1) begin
+        acc[i] = {FOFB_TERM_WIDTH{1'b0}};
+    end
+end
+
+always @(posedge clk) begin
+    accClipLevelQ <= accClipLevels[accClipChannelIndex];
+    if (ffbClipWriteStrobe) begin
+        accClipLevels[writeAddress] <= writeData[SETPOINT_WIDTH-1:0];
+    end
+
+    acc[accChannelIndex] <= acc[accChannelIndex] + ffbTermClipped;
+    if (acc[accChannelIndex] > accClipLevelQ) begin
+        acc[accChannelIndex] <= accClipLevelQ;
+    end
+    else if (acc[accChannelIndex] < -accClipLevelQ) begin
+        acc[accChannelIndex] <= -accClipLevelQ;
+    end
+end
+
+/////////////////////////////////////////////////////////////////////////////
+// Get last acc value
+reg signed [FOFB_TERM_WIDTH-1:0] accClipped;
+always @(posedge clk) begin
+    accClipped <= acc[accClipFwdChannelIndex];
+end
+
+// Prepare the offset ahead of time
+wire [RESULT_COUNT_WIDTH-1:0] psOffsetChannelIndex = accClipFwdChannelIndex;
+
+/////////////////////////////////////////////////////////////////////////////
 // Merge fast and slow orbit feedback terms
 reg signed [SETPOINT_WIDTH-1:0] psOffsets [0:RESULT_COUNT-1], psOffsetQ;
 reg signed [UNCLIPPED_SETPOINT_WIDTH-1:0] unclippedSetpoint;
@@ -166,7 +215,7 @@ always @(posedge clk) begin
     if (psOffsetWriteStrobe) begin
         psOffsets[writeAddress] <= writeData[SETPOINT_WIDTH-1:0];
     end
-    unclippedSetpoint <= psOffsetQ + ffbTermClipped;
+    unclippedSetpoint <= psOffsetQ + accClipped;
 end
 
 /////////////////////////////////////////////////////////////////////////////
@@ -196,7 +245,16 @@ wire intClippedTVALID = active[ACTIVE_MSB];
 wire intClippedTLAST = active[ACTIVE_MSB] && !active[ACTIVE_MSB-1];
 wire floatClippedTVALID, floatClippedTLAST;
 wire [FLOAT_WIDTH-1:0] floatClippedTDATA;
-`ifndef SIMULATE
+`ifdef SIMULATE
+psSetpointCalcFixToFloatDummy psSetpointCalcFixToFloat (
+    .aclk(clk),
+    .s_axis_a_tvalid(intClippedTVALID),
+    .s_axis_a_tlast(intClippedTLAST),
+    .s_axis_a_tdata({{AXI_PAD_WIDTH{1'bx}}, psClippedSetpoint}),
+    .m_axis_result_tvalid(floatClippedTVALID),
+    .m_axis_result_tlast(floatClippedTLAST),
+    .m_axis_result_tdata(floatClippedTDATA));
+`else
 psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
     .aclk(clk),
     .s_axis_a_tvalid(intClippedTVALID),
@@ -209,7 +267,18 @@ psSetpointCalcFixToFloat psSetpointCalcFixToFloat (
 
 /////////////////////////////////////////////////////////////////////////////
 // Convert mA*2^-10 to A
-`ifndef SIMULATE
+`ifdef SIMULATE
+psSetpointCalcConvertToAmpsDummy psSetpointCalcConvertToAmps (
+    .aclk(clk),
+    .s_axis_a_tvalid(floatClippedTVALID),
+    .s_axis_a_tlast(floatClippedTLAST),
+    .s_axis_a_tdata(floatClippedTDATA),
+    .s_axis_b_tvalid(1'b1),
+    .s_axis_b_tdata(32'h3583126f),   // 1.0 / (1000 * 1024)
+    .m_axis_result_tvalid(SETPOINT_TVALID),
+    .m_axis_result_tlast(SETPOINT_TLAST),
+    .m_axis_result_tdata(SETPOINT_TDATA));
+`else
 psSetpointCalcConvertToAmps psSetpointCalcConvertToAmps (
     .aclk(clk),
     .s_axis_a_tvalid(floatClippedTVALID),

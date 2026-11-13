@@ -3,7 +3,9 @@
 VFLAGS_DEP += -I. -y . -y$(DSP_DIR)
 VFLAGS += -I. -y . -y$(DSP_DIR) -I$(AUTOGEN_DIR)
 
-TEST_BENCH =
+VERILOG += -g2012
+
+TEST_BENCH = psSetpointCalc_tb
 
 TGT_ := $(TEST_BENCH)
 NO_CHECK =
@@ -12,6 +14,8 @@ CHK_ = $(filter-out $(NO_CHECK), $(TEST_BENCH:%_tb=%_check))
 .PHONY: targets checks
 targets: $(TGT_)
 checks: $(CHK_)
+
+psSetpointCalc_tb: psSetpointCalcFixToFloatDummy.v psSetpointCalcConvertToAmpsDummy.v
 
 CLEAN += $(TGT_) *_tb *.pyc *.bit *.in *.vcd *.lxt *~
 CLEAN_DIRS += _xilinx __pycache__
