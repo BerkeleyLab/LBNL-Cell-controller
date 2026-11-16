@@ -120,7 +120,7 @@ showFOFB(int first, int n)
     const char *fmt;
 
     if (debugFlags & DEBUGFLAG_SHOW_FOFB_HEX) {
-        fmt = " %4d  0x%08X 0x%08X  0x%08X  %s\n";
+        fmt = " %4d  0x%08X  0x%08X  0x%08X  %s\n";
     }
     else {
         fmt = " %4d%11d%11d%11d%s\n";

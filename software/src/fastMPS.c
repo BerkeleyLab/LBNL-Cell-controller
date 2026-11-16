@@ -34,7 +34,7 @@ showFMPS(int first, int n)
     int i;
     const char *fmt;
 
-    if (DEBUGFLAG_SHOW_FMPS_HEX) {
+    if (debugFlags & DEBUGFLAG_SHOW_FMPS_HEX) {
         fmt = " %2d  0x%08X\n";
     }
     else {
